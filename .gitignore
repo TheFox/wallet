@@ -1,0 +1,6 @@
+/.bundle/
+/Gemfile.lock
+/vendor/
+/wallet/
+/wallet_test/
+*.yml

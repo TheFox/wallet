@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby -w
+
+require 'bundler/setup'
+require 'wallet'
+
+wallet = Wallet::Wallet.new('wallet')
