@@ -29,7 +29,16 @@ module Wallet
 			if !amount.is_a?(Fixnum) && !amount.is_a?(Float)
 				raise ArgumentError, 'amount (' + amount.class.to_s + ') must be a Fixnum or a Float'
 			end
+			
 			@amount = amount
+		end
+		
+		def category=(category)
+			if !category.is_a? String
+				raise ArgumentError, 'category must be a String'
+			end
+			
+			@category = category
 		end
 		
 		def to_h

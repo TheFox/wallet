@@ -31,8 +31,6 @@ class TestEntry < MiniTest::Test
 		entry = Wallet::Entry.new
 		entry.date = DateTime.now.to_date
 		assert_equal(now.to_s, entry.date.to_s)
-		
-		
 	end
 	
 	def test_set_amount
@@ -58,6 +56,9 @@ class TestEntry < MiniTest::Test
 	def test_set_category
 		entry = Wallet::Entry.new('2015-02-21', 20, 'c1')
 		assert_equal('c1', entry.category)
+		
+		entry.category = 'c2'
+		assert_equal('c2', entry.category)
 	end
 	
 	def test_to_hash
