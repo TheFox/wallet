@@ -31,6 +31,8 @@ class TestEntry < MiniTest::Test
 		entry = Wallet::Entry.new
 		entry.date = DateTime.now.to_date
 		assert_equal(now.to_s, entry.date.to_s)
+		
+		assert_raises(ArgumentError){ entry.date = 12 }
 	end
 	
 	def test_set_amount
@@ -51,6 +53,8 @@ class TestEntry < MiniTest::Test
 		
 		entry = Wallet::Entry.new('2015-02-21', -42.24)
 		assert_equal(-42.24, entry.amount)
+		
+		assert_raises(ArgumentError){ entry.amount = 'string1' }
 	end
 	
 	def test_set_category
@@ -64,12 +68,5 @@ class TestEntry < MiniTest::Test
 	def test_to_hash
 		entry = Wallet::Entry.new('2015-02-21', 20)
 		puts entry.to_h.to_s
-	end
-	
-	def test_exceptions
-		entry = Wallet::Entry.new('2015-02-21', 20)
-		
-		assert_raises(ArgumentError){ entry.date = 12 }
-		assert_raises(ArgumentError){ entry.amount = 'string1' }
 	end
 end
