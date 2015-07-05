@@ -3,9 +3,12 @@
 require 'bundler/setup'
 require 'minitest/autorun'
 require 'wallet'
-#require 'wallet/entry'
 
 class TestWallet < MiniTest::Test
+	def test_that_it_has_a_version_number
+		refute_nil ::Wallet::VERSION
+	end
+	
 	def test_base
 		wallet = Wallet::Wallet.new('wallet_test')
 		
