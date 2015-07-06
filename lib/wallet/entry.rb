@@ -10,7 +10,7 @@ module Wallet
 		attr_reader :balance
 		attr_reader :category
 		
-		def initialize(title = '', date = DateTime.now.to_date, revenue = 0.0, expense = 0.0, category = 'default')
+		def initialize(title = '', date = Date.today, revenue = 0.0, expense = 0.0, category = 'default')
 			revenue_t = revenue.to_f
 			expense_t = expense.to_f
 			
@@ -29,7 +29,7 @@ module Wallet
 				self.expense = expense_t
 			end
 			
-			@category = category
+			self.category = category
 		end
 		
 		def title=(title)
@@ -69,7 +69,7 @@ module Wallet
 		end
 		
 		def category=(category)
-			@category = category.to_s
+			@category = category.nil? ? 'default' : category.to_s
 		end
 		
 		def to_h

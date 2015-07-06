@@ -20,7 +20,7 @@ class TestEntry < MiniTest::Test
 	end
 	
 	def test_set_date
-		now = DateTime.now.to_date
+		now = Date.today
 		
 		entry = Wallet::Entry.new
 		assert_equal('Date', entry.date.class.to_s)
@@ -43,7 +43,7 @@ class TestEntry < MiniTest::Test
 		assert_equal('2015-01-02', entry.date.to_s)
 		
 		entry = Wallet::Entry.new
-		entry.date = DateTime.now.to_date
+		entry.date = Date.today
 		assert_equal(now.to_s, entry.date.to_s)
 		
 		assert_raises(ArgumentError){ entry.date = 12 }

@@ -13,28 +13,179 @@ class TestWallet < MiniTest::Test
 		wallet = Wallet::Wallet.new('wallet_test')
 		
 		assert_equal('Wallet::Wallet', wallet.class.to_s)
-		assert_equal(true, Dir.exist?('wallet_test'))
+		assert_equal(true, !Dir.exist?('wallet_test'))
 	end
 	
 	def test_add
 		wallet = Wallet::Wallet.new('wallet_test')
 		
-		wallet.add Wallet::Entry.new('2014-01-01', 100)
-		wallet.add Wallet::Entry.new('2014-01-02', -10)
-		wallet.add Wallet::Entry.new('2015-01-01', 100)
-		wallet.add Wallet::Entry.new('2015-01-02', -10)
-		wallet.add Wallet::Entry.new('2015-02-21', 20)
-		wallet.add Wallet::Entry.new('2015-02-21', -5)
-		wallet.add Wallet::Entry.new('2015-02-21', -1.5)
-		wallet.add Wallet::Entry.new('2015-02-22', 10)
+		wallet.add Wallet::Entry.new('test', '2014-01-01', 100)
+		wallet.add Wallet::Entry.new('test', '2014-01-01', 50)
+		wallet.add Wallet::Entry.new('test', '2014-01-01', -10)
+		wallet.add Wallet::Entry.new('test', '2014-01-02', -10)
+		wallet.add Wallet::Entry.new('test', '2015-01-01', 100, 0, 'c1')
+		wallet.add Wallet::Entry.new('test', '2015-01-02', 0, -10, 'c2')
+		wallet.add Wallet::Entry.new('test', '2015-02-21', 20)
+		wallet.add Wallet::Entry.new('test', '2015-02-21', 0, -5, 'c1')
+		wallet.add Wallet::Entry.new('test', '2015-02-21', 0, -1.5, 'c2')
+		wallet.add Wallet::Entry.new('test', '2015-02-22', 10)
 		
-		puts wallet.balance.to_s
+		sum = wallet.sum()
+		assert_equal(280, sum[:revenue])
+		assert_equal(-36.5, sum[:expense])
+		assert_equal(243.5, sum[:balance])
 		
+		sum = wallet.sum(2014)
+		assert_equal(150, sum[:revenue])
+		assert_equal(-20, sum[:expense])
+		assert_equal(130, sum[:balance])
+		
+		sum = wallet.sum(2014, 1)
+		assert_equal(150, sum[:revenue])
+		assert_equal(-20, sum[:expense])
+		assert_equal(130, sum[:balance])
+		
+		sum = wallet.sum(2014, 1, 1)
+		assert_equal(150, sum[:revenue])
+		assert_equal(-10, sum[:expense])
+		assert_equal(140, sum[:balance])
+		
+		sum = wallet.sum(2015)
+		assert_equal(130, sum[:revenue])
+		assert_equal(-16.5, sum[:expense])
+		assert_equal(113.5, sum[:balance])
+		
+		sum = wallet.sum(2015, 1)
+		assert_equal(100, sum[:revenue])
+		assert_equal(-10, sum[:expense])
+		assert_equal(90, sum[:balance])
+		
+		sum = wallet.sum(2015, 2)
+		assert_equal(30, sum[:revenue])
+		assert_equal(-6.5, sum[:expense])
+		assert_equal(23.5, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, 21)
+		assert_equal(20, sum[:revenue])
+		assert_equal(-6.5, sum[:expense])
+		assert_equal(13.5, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, 22)
+		assert_equal(10, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(10, sum[:balance])
+		
+		sum = wallet.sum(nil, nil, nil, 'c1')
+		assert_equal(100, sum[:revenue])
+		assert_equal(-5, sum[:expense])
+		assert_equal(95, sum[:balance])
+		
+		sum = wallet.sum(2014, nil, nil, 'c1')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2014, 1, nil, 'c1')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2014, 1, 1, 'c1')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2015, nil, nil, 'c1')
+		assert_equal(100, sum[:revenue])
+		assert_equal(-5, sum[:expense])
+		assert_equal(95, sum[:balance])
+		
+		sum = wallet.sum(2015, 1, nil, 'c1')
+		assert_equal(100, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(100, sum[:balance])
+		
+		sum = wallet.sum(2015, 1, 1, 'c1')
+		assert_equal(100, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(100, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, nil, 'c1')
+		assert_equal(0, sum[:revenue])
+		assert_equal(-5, sum[:expense])
+		assert_equal(-5, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, 1, 'c1')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, 21, 'c1')
+		assert_equal(0, sum[:revenue])
+		assert_equal(-5, sum[:expense])
+		assert_equal(-5, sum[:balance])
+		
+		sum = wallet.sum(nil, nil, nil, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(-11.5, sum[:expense])
+		assert_equal(-11.5, sum[:balance])
+		
+		sum = wallet.sum(2014, nil, nil, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2014, 1, nil, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2014, 1, 1, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2015, nil, nil, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(-11.5, sum[:expense])
+		assert_equal(-11.5, sum[:balance])
+		
+		sum = wallet.sum(2015, 1, nil, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(-10, sum[:expense])
+		assert_equal(-10, sum[:balance])
+		
+		sum = wallet.sum(2015, 1, 1, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, nil, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(-1.5, sum[:expense])
+		assert_equal(-1.5, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, 1, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(0, sum[:expense])
+		assert_equal(0, sum[:balance])
+		
+		sum = wallet.sum(2015, 2, 21, 'c2')
+		assert_equal(0, sum[:revenue])
+		assert_equal(-1.5, sum[:expense])
+		assert_equal(-1.5, sum[:balance])
+		
+		assert_equal(['c1', 'c2', 'default'], wallet.categories)
+		
+		assert_equal(true, File.exist?('wallet_test/data/month_2014_01.yml'))
+		assert_equal(true, File.exist?('wallet_test/data/month_2015_01.yml'))
 		assert_equal(true, File.exist?('wallet_test/data/month_2015_02.yml'))
 		
-		# File.unlink 'wallet_test/data/month_2015_02.yml'
-		# Dir.unlink 'wallet_test/data'
-		# Dir.unlink 'wallet_test'
+		File.unlink 'wallet_test/data/month_2014_01.yml'
+		File.unlink 'wallet_test/data/month_2015_01.yml'
+		File.unlink 'wallet_test/data/month_2015_02.yml'
+		Dir.unlink 'wallet_test/data'
+		Dir.unlink 'wallet_test'
 	end
 	
 	def test_exceptions
