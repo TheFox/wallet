@@ -4,3 +4,4 @@
 /wallet/
 /wallet_test/
 *.yml
+CHANGELOG-*.txt
