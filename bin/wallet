@@ -103,12 +103,16 @@ end
 wallet = Wallet::Wallet.new(params[:wallet])
 
 if params[:add]
+	if category.to_s.length == 0
+		category = 'default'
+	end
+	
 	puts 'title:    ' + title
 	puts 'date:     ' + date
 	puts 'revenue:  ' + revenue.to_s
 	puts 'expense:  ' + expense.to_s
 	puts 'balance:  ' + balance.to_s
-	puts 'category: ' + category
+	puts 'category: ' + category.to_s
 	
 	wallet.add Wallet::Entry.new(title, date, revenue, expense, category)
 elsif params[:list]
