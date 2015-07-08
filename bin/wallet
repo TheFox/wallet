@@ -7,7 +7,7 @@ require 'ArgsParser'
 
 parser = ArgsParser.parser
 parser.bind(:help, :h, 'Help')
-parser.bind(:wallet, :w, 'Wallet', 'wallet_test2')
+parser.bind(:wallet, :w, 'Wallet', 'wallet')
 parser.bind(:add, :a, 'Add')
 parser.bind(:interactive, :i, 'Add interactively')
 parser.bind(:list, :l, 'List')
