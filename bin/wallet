@@ -2,5 +2,206 @@
 
 require 'bundler/setup'
 require 'wallet'
+require 'ArgsParser'
 
-wallet = Wallet::Wallet.new('wallet')
+
+parser = ArgsParser.parser
+parser.bind(:help, :h, 'Help')
+parser.bind(:wallet, :w, 'Wallet', 'wallet_test2')
+parser.bind(:add, :a, 'Add')
+parser.bind(:interactive, :i, 'Add interactively')
+parser.bind(:list, :l, 'List')
+parser.bind(:categories, :lc, 'Categories')
+parser.bind(:html, :m, 'HTML')
+parser.bind(:csv, :csv, 'CSV')
+parser.bind(:title, :t, 'Title')
+parser.bind(:date, :d, 'Date', Date.today.to_s)
+parser.bind(:revenue, :r, 'Revenue', 0)
+parser.bind(:expense, :e, 'Expense', 0)
+parser.bind(:category, :c, 'Category')
+
+*, params = parser.parse(ARGV)
+
+if parser.has_option(:help) || ARGV.length == 0
+	script_name = File.basename(__FILE__)
+	padding = ' ' * (script_name.length + 8)
+	
+	puts 'Usage: ' + script_name + ' --help (-h)         Show this help'
+	puts padding + '--add (-a)          Add a new entry'
+	puts padding + '--interactive (-i)  Add a new entry interactively'
+	puts padding + '--list (-l)         List entries'
+	puts padding + '--categories (-lc)  List categories'
+	puts padding + '--html (-m)         Generate HTML files'
+	puts padding + '--csv PATH          Import CSV file'
+	puts
+	puts 'Options:'
+	puts padding + '-w|--wallet PATH    Optional'
+	puts padding + '-t|--title TITLE    Required for --add'
+	puts padding + '-d|--date           Optional. Default: today'
+	puts padding + '-r|--revenue        Optional. Default: 0'
+	puts padding + '-e|--expense        Optional. Default: 0'
+	puts padding + '-c|--category       Optional. Default: default'
+	
+	exit 3
+elsif params[:add] && !params[:title]
+	puts 'title: ' + params[:title].to_s + ' ' + parser.has_option(:title).to_s + ' ' + (!parser.has_option(:title)).to_s
+	puts 'ERROR: Option --title is required for Command --add'
+	exit 1
+end
+
+puts 'wallet: ' + params[:wallet]
+
+title = params[:title].to_s
+date = params[:date].to_s
+revenue = params[:revenue].to_f.round(3).abs
+expense = -params[:expense].to_f.round(3).abs
+balance = (revenue + expense).to_f.round(3)
+category = params[:category]
+
+if params[:interactive]
+	params[:add] = true
+	
+	print 'title: [' + title + '] '
+	title_t = STDIN.gets.strip
+	if title_t.length > 0
+		title = title_t
+	end
+	
+	print 'date: [' + date + '] '
+	date_t = STDIN.gets.strip
+	if date_t.length > 0
+		date = date_t
+	end
+	
+	print 'revenue: [' + revenue.to_s + '] '
+	revenue_t = STDIN.gets.strip
+	if revenue_t.length > 0
+		revenue = revenue_t.to_f.round(3).abs
+	end
+	
+	print 'expense: [' + expense.to_s + '] '
+	expense_t = STDIN.gets.strip
+	if expense_t.length > 0
+		expense = -expense_t.to_f.round(3).abs
+	end
+	
+	balance = (revenue + expense).to_f.round(3)
+	
+	if category.to_s.length == 0
+		category = 'default'
+	end
+	print 'category: [' + category + '] '
+	category_t = STDIN.gets.strip
+	if category_t.length > 0
+		category = category_t
+	end
+	
+	puts '-' * 20
+end
+
+wallet = Wallet::Wallet.new(params[:wallet])
+
+if params[:add]
+	puts 'title:    ' + title
+	puts 'date:     ' + date
+	puts 'revenue:  ' + revenue.to_s
+	puts 'expense:  ' + expense.to_s
+	puts 'balance:  ' + balance.to_s
+	puts 'category: ' + category
+	
+	wallet.add Wallet::Entry.new(title, date, revenue, expense, category)
+elsif params[:list]
+	puts
+	
+	year = nil
+	month = nil
+	day = nil
+	
+	year, month, day = date.scan(/^(\d{2,4}).?(\d{0,2}).?(\d{0,2})/).shift.map{ |x| y = x.to_i; y == 0 ? nil : y }
+	
+	entries = wallet.entries(year, month, day, category)
+	
+	title_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['title'].length } }.flatten.max.to_i
+	revenue_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['revenue']).length } }.flatten.max.to_i
+	expense_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['expense']).length } }.flatten.max.to_i
+	balance_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['balance']).length } }.flatten.max.to_i
+	category_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['category'].length } }.flatten.max.to_i
+	
+	if title_l < 6
+		title_l = 6
+	end
+	if title_l > 25
+		title_l = 25
+	end
+	
+	if revenue_l < 7
+		revenue_l = 7
+	end
+	if expense_l < 7
+		expense_l = 7
+	end
+	if balance_l < 7
+		balance_l = 7
+	end
+	if category_l < 8
+		category_l = 8
+	end
+	
+	title_f = '%-' + title_l.to_s + 's'
+	revenue_f = '%' + revenue_l.to_s + 's'
+	expense_f = '%' + expense_l.to_s + 's'
+	balance_f = '%' + balance_l.to_s + 's'
+	category_f = '%' + category_l.to_s + 's'
+	
+	header = ''
+	header += 'Date ' + ' ' * 7
+	header += title_f % 'Title' + '  '
+	header += revenue_f % 'Revenue' + '  '
+	header += expense_f % 'Expense' + '  '
+	header += balance_f % 'Balance' + '  '
+	header += category_f % 'Category'
+	
+	puts header
+	puts '-' * header.length
+	
+	revenue_total = 0.0
+	expense_total = 0.0
+	balance_total = 0.0
+	entries.each do |day_name, day_items|
+		day_items.each do |entry|
+			revenue_total += entry['revenue']
+			expense_total += entry['expense']
+			balance_total += entry['balance']
+			
+			out = ''
+			out += entry['date']
+			out += '  ' + title_f % entry['title'][0, 20]
+			out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % entry['revenue'])
+			out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % entry['expense'])
+			out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % entry['balance'])
+			out += '  ' + category_f % entry['category']
+			puts out
+		end
+	end
+	
+	out = ''
+	out += ' ' * 10
+	out += '  ' + title_f % 'TOTAL'
+	out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % revenue_total)
+	out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % expense_total)
+	out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % balance_total)
+	puts out
+elsif params[:categories]
+	puts 'categories:'
+	wallet.categories.each do |category_item|
+		puts "\t" + category_item
+	end
+elsif params[:html]
+	puts 'generate html ...'
+	wallet.gen_html
+	puts 'generate html ... done'
+elsif params[:csv]
+	puts 'import csv ' + params[:csv] + ' ...'
+	wallet.import_csv_file params[:csv]
+	puts 'import csv ' + params[:csv] + ' ... done'
+end
