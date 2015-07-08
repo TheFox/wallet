@@ -1,6 +1,6 @@
 # Wallet
 
-A Ruby library for tracking your finances. Using the best data format ever, YAML.
+A spreadsheet likewise Ruby library to track your finances. Using the best data format ever, YAML. It's designed to host the data offline, e.g. in a Git repository.
 
 ## Installation
 
