@@ -26,6 +26,7 @@ if parser.has_option(:help) || ARGV.length == 0
 	script_name = File.basename(__FILE__)
 	padding = ' ' * (script_name.length + 8)
 	
+	puts 'Version: ' + ::Wallet::VERSION
 	puts 'Usage: ' + script_name + ' --help (-h)         Show this help'
 	puts padding + '--add (-a)          Add a new entry'
 	puts padding + '--interactive (-i)  Add a new entry interactively'
