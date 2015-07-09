@@ -198,6 +198,16 @@ module Wallet
 			
 			if !Dir.exist? @html_path
 				Dir.mkdir(@html_path)
+				
+				wallet_js_dir_path = @html_path + '/js'
+				Dir.mkdir(wallet_js_dir_path)
+				
+				lib_base_path = File.expand_path(File.dirname(__FILE__) + '/../..')
+				js_base_path = lib_base_path + '/js'
+				puts 'lib_base_path: ' + lib_base_path
+				puts 'js_base_path:  ' + js_base_path
+				
+				FileUtils.cp(['highcharts.js', 'jquery-1.8.2.js'].map{ |file_name| js_base_path + '/' + file_name }, wallet_js_dir_path)
 			end
 			
 			categories_available = categories()
@@ -242,8 +252,8 @@ module Wallet
 						<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 						<title>' + @dir_path + '</title>
 						<link rel="stylesheet" href="style.css" type="text/css" />
-						<script type="text/javascript" src="../../js/jquery-1.8.2.js"></script>
-						<script type="text/javascript" src="../../js/highcharts.js"></script>
+						<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+						<script type="text/javascript" src="js/highcharts.js"></script>
 					</head>
 					<body>
 						<h1>' + @dir_path + '</h1>
@@ -272,8 +282,8 @@ module Wallet
 							<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 							<title>' + year_s + ' - ' + @dir_path + '</title>
 							<link rel="stylesheet" href="style.css" type="text/css" />
-							<script type="text/javascript" src="../../js/jquery-1.8.2.js"></script>
-							<script type="text/javascript" src="../../js/highcharts.js"></script>
+							<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+							<script type="text/javascript" src="js/highcharts.js"></script>
 						</head>
 						<body>
 							<h1><a href="index.html">' + @dir_path + '</a></h1>
