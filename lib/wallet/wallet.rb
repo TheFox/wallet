@@ -530,6 +530,8 @@ module Wallet
 					</tr>')
 			end
 			
+			years_total_series_out = years_total.map{ |item| item[1]['balance'].round(3) }.take(5).reverse
+			
 			balance_class = ''
 			if balance_total < 0
 				balance_class = 'red'
@@ -545,20 +547,20 @@ module Wallet
 				<!--	</tr>
 				</table>//-->
 				
-				<p><div id="charts" style="width:' + (years_total.keys.count * 100).to_s + 'px; height:400px;"></div></p>
+				<p><div id="charts" style="width:' + (years_total_series_out.count * 100).to_s + 'px; height:400px;"></div></p>
 				<script type="text/javascript">
 					$(function(){
 						$(\'#charts\').highcharts({
 							chart: { type: \'line\' },
 							title: { text: \'Years\' },
-							xAxis: { categories: [\'' + years_total.keys.reverse.join("', '") + '\'] },
+							xAxis: { categories: [\'' + years_total.keys.take(5).reverse.join("', '") + '\'] },
 							yAxis: { title: { text: \'Money\' } },
 							tooltip: { enabled: false },
 							legend: { enabled: false },
 							series: [
 								{
 									name: \'Balance\',
-									data: [' + years_total.map{ |item| item[1]['balance'].round(3) }.reverse.join(', ') + ']
+									data: [' + years_total_series_out.join(', ') + ']
 								}
 							]
 						});
