@@ -565,11 +565,12 @@ module Wallet
 				revenue = 0.0
 				expense = 0.0
 				category = ''
+				comment = ''
 				
 				if row.count < 2
 					raise IndexError, 'invalid row ' + row_n.to_s + ': "' + row.join(',') + '"'
 				elsif row.count >= 2
-					date, title, revenue, expense, category = row
+					date, title, revenue, expense, category, comment = row
 					revenue = revenue.to_f
 					if revenue < 0
 						expense = revenue
@@ -577,7 +578,7 @@ module Wallet
 					end
 				end
 				
-				add Entry.new(title, date, revenue, expense, category)
+				add Entry.new(title, date, revenue, expense, category, comment)
 			end
 		end
 		

@@ -114,6 +114,17 @@ class TestEntry < MiniTest::Test
 		assert_equal('1.23', entry.category)
 	end
 	
+	def test_set_comment
+		entry = Wallet::Entry.new('test', '2015-02-21', 20, 0, 'c1', 'co1')
+		assert_equal('co1', entry.comment)
+		
+		entry.comment = 'co2'
+		assert_equal('co2', entry.comment)
+		
+		entry.comment = 1.23
+		assert_equal('1.23', entry.comment)
+	end
+	
 	def test_to_hash
 		entry = Wallet::Entry.new('test', '2015-02-21', 20, -12.34, 'c3')
 		

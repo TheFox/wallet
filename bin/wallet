@@ -19,6 +19,7 @@ parser.bind(:date, :d, 'Date', Date.today.to_s)
 parser.bind(:revenue, :r, 'Revenue', 0)
 parser.bind(:expense, :e, 'Expense', 0)
 parser.bind(:category, :c, 'Category')
+parser.bind(:comment, :o, 'Comment')
 
 *, params = parser.parse(ARGV)
 
@@ -42,6 +43,7 @@ if parser.has_option(:help) || ARGV.length == 0
 	puts padding + '-r|--revenue        Optional. Default: 0'
 	puts padding + '-e|--expense        Optional. Default: 0'
 	puts padding + '-c|--category       Optional. Default: default'
+	puts padding + '-o|--comment        Optional'
 	
 	exit 3
 elsif params[:add] && !params[:title]
@@ -58,6 +60,7 @@ revenue = params[:revenue].to_f.round(3).abs
 expense = -params[:expense].to_f.round(3).abs
 balance = (revenue + expense).to_f.round(3)
 category = params[:category]
+comment = params[:comment]
 
 if params[:interactive]
 	params[:add] = true
@@ -97,6 +100,12 @@ if params[:interactive]
 		category = category_t
 	end
 	
+	print 'comment: [' + comment + '] '
+	comment_t = STDIN.gets.strip
+	if comment_t.length > 0
+		comment = comment_t
+	end
+	
 	puts '-' * 20
 end
 
@@ -113,8 +122,9 @@ if params[:add]
 	puts 'expense:  ' + expense.to_s
 	puts 'balance:  ' + balance.to_s
 	puts 'category: ' + category.to_s
+	puts 'comment:  ' + comment.to_s
 	
-	wallet.add Wallet::Entry.new(title, date, revenue, expense, category)
+	wallet.add Wallet::Entry.new(title, date, revenue, expense, category, comment)
 elsif params[:list]
 	puts
 	
@@ -131,6 +141,7 @@ elsif params[:list]
 	expense_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['expense']).length } }.flatten.max.to_i
 	balance_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['balance']).length } }.flatten.max.to_i
 	category_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['category'].length } }.flatten.max.to_i
+	comment_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'].length } }.flatten.max.to_i
 	
 	if title_l < 6
 		title_l = 6
@@ -151,12 +162,16 @@ elsif params[:list]
 	if category_l < 8
 		category_l = 8
 	end
+	if comment_l > 25
+		comment_l = 25
+	end
 	
 	title_f = '%-' + title_l.to_s + 's'
 	revenue_f = '%' + revenue_l.to_s + 's'
 	expense_f = '%' + expense_l.to_s + 's'
 	balance_f = '%' + balance_l.to_s + 's'
 	category_f = '%' + category_l.to_s + 's'
+	comment_f = '%' + comment_l.to_s + 's'
 	
 	header = ''
 	header += 'Date ' + ' ' * 7
@@ -164,7 +179,8 @@ elsif params[:list]
 	header += revenue_f % 'Revenue' + '  '
 	header += expense_f % 'Expense' + '  '
 	header += balance_f % 'Balance' + '  '
-	header += category_f % 'Category'
+	header += category_f % 'Category' + '  '
+	header += comment_f % 'Comment'
 	
 	puts header
 	puts '-' * header.length
@@ -185,6 +201,7 @@ elsif params[:list]
 			out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % entry['expense'])
 			out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % entry['balance'])
 			out += '  ' + category_f % entry['category']
+			out += '  ' + comment_f % entry['comment'][0, 25]
 			puts out
 		end
 	end

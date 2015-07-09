@@ -9,8 +9,9 @@ module Wallet
 		attr_reader :expense
 		attr_reader :balance
 		attr_reader :category
+		attr_reader :comment
 		
-		def initialize(title = '', date = Date.today, revenue = 0.0, expense = 0.0, category = 'default')
+		def initialize(title = '', date = Date.today, revenue = 0.0, expense = 0.0, category = 'default', comment = '')
 			revenue_t = revenue.to_f
 			expense_t = expense.to_f
 			
@@ -30,6 +31,7 @@ module Wallet
 			end
 			
 			self.category = category
+			self.comment = comment
 		end
 		
 		def title=(title)
@@ -72,6 +74,10 @@ module Wallet
 			@category = category.nil? ? 'default' : category.to_s
 		end
 		
+		def comment=(comment)
+			@comment = comment.nil? ? '' : comment.to_s
+		end
+		
 		def to_h
 			{
 				'title' => @title,
@@ -80,6 +86,7 @@ module Wallet
 				'expense' => @expense,
 				'balance' => @balance,
 				'category' => @category,
+				'comment' => @comment,
 			}
 		end
 		
