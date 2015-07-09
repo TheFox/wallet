@@ -196,7 +196,7 @@ elsif params[:list]
 			
 			out = ''
 			out += entry['date']
-			out += '  ' + title_f % entry['title'][0, 20]
+			out += '  ' + title_f % entry['title'][0, 25]
 			out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % entry['revenue'])
 			out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % entry['expense'])
 			out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % entry['balance'])
