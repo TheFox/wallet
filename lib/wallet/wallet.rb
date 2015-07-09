@@ -480,7 +480,7 @@ module Wallet
 								series: [
 									{
 										name: \'Balance\',
-										data: [' + year_total.map{ |item| item[1]['balance'] }.join(', ') + ']
+										data: [' + year_total.map{ |item| item[1]['balance'].round(3) }.join(', ') + ']
 									}
 								]
 							});
@@ -558,7 +558,7 @@ module Wallet
 							series: [
 								{
 									name: \'Balance\',
-									data: [' + years_total.map{ |item| item[1]['balance'] }.reverse.join(', ') + ']
+									data: [' + years_total.map{ |item| item[1]['balance'].round(3) }.reverse.join(', ') + ']
 								}
 							]
 						});
