@@ -577,6 +577,8 @@ module Wallet
 				category = ''
 				comment = ''
 				
+				print 'import row ' + row_n.to_s + "\r"
+				
 				if row.count < 2
 					raise IndexError, 'invalid row ' + row_n.to_s + ': "' + row.join(',') + '"'
 				elsif row.count >= 2
