@@ -60,7 +60,7 @@ revenue = params[:revenue].to_f.round(3).abs
 expense = -params[:expense].to_f.round(3).abs
 balance = (revenue + expense).to_f.round(3)
 category = params[:category]
-comment = params[:comment]
+comment = params[:comment].to_s
 
 if params[:interactive]
 	params[:add] = true
