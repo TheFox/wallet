@@ -195,6 +195,7 @@ elsif params[:list]
 	out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % revenue_total)
 	out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % expense_total)
 	out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % balance_total)
+	puts
 	puts out
 elsif params[:categories]
 	puts 'categories:'
