@@ -373,6 +373,7 @@ module Wallet
 							
 							revenue_out = entry['revenue'] > 0 ? ::Wallet::NUMBER_FORMAT % entry['revenue'] : '&nbsp;'
 							expense_out = entry['expense'] < 0 ? ::Wallet::NUMBER_FORMAT % entry['expense'] : '&nbsp;'
+							category_out = entry['category'] == 'default' ? '&nbsp;' : entry['category']
 							
 							month_file.write('
 								<tr>
@@ -381,7 +382,7 @@ module Wallet
 									<td class="right">' + revenue_out + '</td>
 									<td class="right red">' + expense_out + '</td>
 									<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
-									<td class="right">' + entry['category'] + '</td>
+									<td class="right">' + category_out + '</td>
 								</tr>')
 						end
 					end
