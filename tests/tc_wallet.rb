@@ -175,7 +175,7 @@ class TestWallet < MiniTest::Test
 		assert_equal(-1.5, sum[:expense])
 		assert_equal(-1.5, sum[:balance])
 		
-		assert_equal(['c1', 'c2', 'default'], wallet.categories)
+		assert_equal(['default', 'c1', 'c2'], wallet.categories)
 		
 		assert_equal(true, File.exist?('wallet_test/data/month_2014_01.yml'))
 		assert_equal(true, File.exist?('wallet_test/data/month_2015_01.yml'))
