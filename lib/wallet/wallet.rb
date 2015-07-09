@@ -499,9 +499,9 @@ module Wallet
 							<th class="right">Balance</th>
 						</tr>')
 			years_total.each do |year_name, year_data|
-				revenue_total = year_data['revenue']
-				expense_total = year_data['expense']
-				balance_total = year_data['balance']
+				revenue_total += year_data['revenue']
+				expense_total += year_data['expense']
+				balance_total += year_data['balance']
 				
 				balance_class = ''
 				if year_data['balance'] < 0
