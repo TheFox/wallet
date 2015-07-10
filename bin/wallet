@@ -34,7 +34,7 @@ end
 wallet = params[:wallet].to_s
 title = params[:title].to_s
 date = params[:date].to_s
-revenue = params[:revenue].to_f.round(3).abs
+revenue = params[:revenue].to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
 category = params[:category].to_s
 comment = params[:comment].to_s
 path = params[:path].to_s
@@ -45,7 +45,7 @@ export = false
 if params[:expense].is_a? TrueClass
 	export = true
 else
-	expense = -params[:expense].to_f.round(3).abs
+	expense = -params[:expense].to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
 end
 
 # puts 'argv len: ' + ARGV.length.to_s
@@ -108,13 +108,13 @@ if command == 'int'
 	print 'revenue: [' + revenue.to_s + '] '
 	revenue_t = STDIN.gets.strip
 	if revenue_t.length > 0
-		revenue = revenue_t.to_f.round(3).abs
+		revenue = revenue_t.to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
 	end
 	
 	print 'expense: [' + expense.to_s + '] '
 	expense_t = STDIN.gets.strip
 	if expense_t.length > 0
-		expense = -expense_t.to_f.round(3).abs
+		expense = -expense_t.to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
 	end
 	
 	if category.to_s.length == 0
