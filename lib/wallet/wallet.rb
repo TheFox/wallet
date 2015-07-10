@@ -9,6 +9,8 @@ module Wallet
 	
 	class Wallet
 		
+		attr_reader :html_path
+		
 		def initialize(dir_path = 'wallet')
 			@dir_path = dir_path
 			@data_path = File.expand_path('data', @dir_path)
@@ -132,10 +134,17 @@ module Wallet
 				glob += year_s + '_' + month_f + '.yml'
 			end
 			
+			# puts 'glob:     ' + glob
+			# puts 'year:     ' + '%-10s' % year.class.to_s + '   = "' + year.to_s + '"'
+			# puts 'month:    ' + '%-10s' % month.class.to_s + '   = "' + month.to_s + '"'
+			# puts 'day:      ' + '%-10s' % day.class.to_s + '   = "' + day.to_s + '"'
+			# puts 'category: ' + '%-10s' % category.class.to_s + '   = "' + category.to_s + '"'
+			# puts
+			
 			entries_a = {}
 			Dir[glob].each do |file_path|
 				data = YAML.load_file(file_path)
-				if category.nil?
+				if category.nil? || category.to_s.length == 0
 					if day
 						day_key = year_s + '-' + month_f + '-' + day_f
 						if data['days'].has_key?(day_key)

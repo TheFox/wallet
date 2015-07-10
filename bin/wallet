@@ -6,64 +6,83 @@ require 'ArgsParser'
 
 
 parser = ArgsParser.parser
-parser.bind(:help, :h, 'Help')
 parser.bind(:wallet, :w, 'Wallet', 'wallet')
-parser.bind(:add, :a, 'Add')
-parser.bind(:interactive, :i, 'Add interactively')
-parser.bind(:list, :l, 'List')
-parser.bind(:categories, :lc, 'Categories')
-parser.bind(:html, :m, 'HTML')
-parser.bind(:csv, :csv, 'CSV')
 parser.bind(:title, :t, 'Title')
 parser.bind(:date, :d, 'Date', Date.today.to_s)
 parser.bind(:revenue, :r, 'Revenue', 0)
 parser.bind(:expense, :e, 'Expense', 0)
 parser.bind(:category, :c, 'Category')
 parser.bind(:comment, :o, 'Comment')
+parser.bind(:path, :p, 'Path')
 
-*, params = parser.parse(ARGV)
+command, params = parser.parse(ARGV)
+command = command.to_s
 
-if parser.has_option(:help) || ARGV.length == 0
-	script_name = File.basename(__FILE__)
-	padding = ' ' * (script_name.length + 8)
-	
-	puts 'Version: ' + ::Wallet::VERSION
-	puts 'Usage: ' + script_name + ' --help (-h)         Show this help'
-	puts padding + '--add (-a)          Add a new entry'
-	puts padding + '--interactive (-i)  Add a new entry interactively'
-	puts padding + '--list (-l)         List entries'
-	puts padding + '--categories (-lc)  List categories'
-	puts padding + '--html (-m)         Generate HTML files'
-	puts padding + '--csv PATH          Import CSV file'
-	puts
-	puts 'Options:'
-	puts padding + '-w|--wallet PATH    Optional'
-	puts padding + '-t|--title TITLE    Required for --add'
-	puts padding + '-d|--date           Optional. Default: today'
-	puts padding + '-r|--revenue        Optional. Default: 0'
-	puts padding + '-e|--expense        Optional. Default: 0'
-	puts padding + '-c|--category       Optional. Default: default'
-	puts padding + '-o|--comment        Optional'
-	
-	exit 3
-elsif params[:add] && !params[:title]
-	puts 'title: ' + params[:title].to_s + ' ' + parser.has_option(:title).to_s + ' ' + (!parser.has_option(:title)).to_s
-	puts 'ERROR: Option --title is required for Command --add'
-	exit 1
+# puts 'command: ' + command.to_s
+# puts 'params:  ' + params.to_s
+# puts
+
+# Command Aliases
+if command == 'i'
+	command = 'int'
+elsif command == 'l'
+	command = 'list'
+elsif command == 'lc'
+	command = 'cat'
 end
 
-puts 'wallet: ' + params[:wallet]
-
+wallet = params[:wallet].to_s
 title = params[:title].to_s
 date = params[:date].to_s
 revenue = params[:revenue].to_f.round(3).abs
 expense = -params[:expense].to_f.round(3).abs
-balance = (revenue + expense).to_f.round(3)
-category = params[:category]
+category = params[:category].to_s
 comment = params[:comment].to_s
+path = params[:path].to_s
 
-if params[:interactive]
-	params[:add] = true
+# puts 'argv len: ' + ARGV.length.to_s
+# puts 'command:    ' + '%-10s' % command.class.to_s + '     "' + command.to_s + '"'
+# puts 'wallet:     ' + '%-10s' % wallet.class.to_s + '     "' + wallet.to_s + '"'
+# puts 'title:      ' + '%-10s' % title.class.to_s + '     "' + title + '"'
+# puts 'date:       ' + '%-10s' % date.class.to_s + '     "' + date + '"'
+# puts 'revenue:    ' + '%-10s' % revenue.class.to_s + '     "' + revenue.to_s + '"'
+# puts 'expense:    ' + '%-10s' % expense.class.to_s + '     "' + expense.to_s + '"'
+# puts 'category:   ' + '%-10s' % category.class.to_s + '     "' + category + '"'
+# puts 'comment:    ' + '%-10s' % comment.class.to_s + '     "' + comment.to_s + '"'
+# puts 'path:       ' + '%-10s' % path.class.to_s + '     "' + path.to_s + '"'
+# puts
+
+if command == 'help' || command.length == 0
+	script_name = File.basename(__FILE__)
+	padding = ' ' * (script_name.length + 8)
+	
+	puts 'Version: ' + ::Wallet::VERSION
+	puts 'Usage: ' + script_name + ' COMMAND OPTIONS'
+	puts
+	puts 'Commands:'
+	puts padding + 'help                Show this help'
+	puts padding + 'add                 Add a new entry'
+	puts padding + 'i|int               Add a new entry interactively'
+	puts padding + 'l|list              List entries'
+	puts padding + 'lc|cat              List categories'
+	puts padding + 'html                Generate HTML files'
+	puts padding + 'csv                 Import CSV file'
+	puts
+	puts 'Options:'
+	puts padding + '-w|--wallet PATH    Optional'
+	puts padding + '-t|--title TITLE    Required for command "add"'
+	puts padding + '-d|--date           Optional'
+	puts padding + '-r|--revenue        Optional. Default: 0'
+	puts padding + '-e|--expense        Optional. Default: 0'
+	puts padding + '-c|--category       Optional. Default: default'
+	puts padding + '-o|--comment        Optional'
+	puts padding + '-p|--path PATH      Required for command "csv"'
+	
+	exit 3
+end
+
+if command == 'int'
+	command = 'add'
 	
 	print 'title: [' + title + '] '
 	title_t = STDIN.gets.strip
@@ -89,8 +108,6 @@ if params[:interactive]
 		expense = -expense_t.to_f.round(3).abs
 	end
 	
-	balance = (revenue + expense).to_f.round(3)
-	
 	if category.to_s.length == 0
 		category = 'default'
 	end
@@ -109,30 +126,34 @@ if params[:interactive]
 	puts '-' * 20
 end
 
-wallet = Wallet::Wallet.new(params[:wallet])
+wallet = Wallet::Wallet.new(wallet)
 
-if params[:add]
+if command == 'add'
 	if category.to_s.length == 0
 		category = 'default'
+	end
+	
+	if title == ''
+		puts 'ERROR: Option --title is required for command "' + command + '"'
+		exit 1
 	end
 	
 	puts 'title:    ' + title
 	puts 'date:     ' + date
 	puts 'revenue:  ' + revenue.to_s
 	puts 'expense:  ' + expense.to_s
-	puts 'balance:  ' + balance.to_s
+	puts 'balance:  ' + (revenue + expense).to_f.round(3).to_s
 	puts 'category: ' + category.to_s
 	puts 'comment:  ' + comment.to_s
 	
 	wallet.add Wallet::Entry.new(title, date, revenue, expense, category, comment)
-elsif params[:list]
+elsif command == 'list'
 	puts
 	
-	year = nil
-	month = nil
-	day = nil
-	
-	year, month, day = date.scan(/^(\d{2,4}).?(\d{0,2}).?(\d{0,2})/).shift.map{ |x| y = x.to_i; y == 0 ? nil : y }
+	year, month, day = date.scan(/^(\d{2,4}).?(\d{0,2}).?(\d{0,2})/).shift.map{ |x|
+		y = x.to_i
+		y == 0 ? nil : y
+	}
 	
 	entries = wallet.entries(year, month, day, category)
 	
@@ -170,8 +191,8 @@ elsif params[:list]
 	revenue_f = '%' + revenue_l.to_s + 's'
 	expense_f = '%' + expense_l.to_s + 's'
 	balance_f = '%' + balance_l.to_s + 's'
-	category_f = '%' + category_l.to_s + 's'
-	comment_f = '%' + comment_l.to_s + 's'
+	category_f = '%-' + category_l.to_s + 's'
+	comment_f = '%-' + comment_l.to_s + 's'
 	
 	header = ''
 	header += 'Date ' + ' ' * 7
@@ -188,6 +209,7 @@ elsif params[:list]
 	revenue_total = 0.0
 	expense_total = 0.0
 	balance_total = 0.0
+	previous_date = ''
 	entries.each do |day_name, day_items|
 		day_items.each do |entry|
 			revenue_total += entry['revenue']
@@ -195,14 +217,16 @@ elsif params[:list]
 			balance_total += entry['balance']
 			
 			out = ''
-			out += entry['date']
+			out += '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
 			out += '  ' + title_f % entry['title'][0, 25]
 			out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % entry['revenue'])
 			out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % entry['expense'])
 			out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % entry['balance'])
-			out += '  ' + category_f % entry['category']
+			out += '  ' + category_f % (entry['category'] == 'default' ? '' : entry['category'])
 			out += '  ' + comment_f % entry['comment'][0, 25]
 			puts out
+			
+			previous_date = entry['date']
 		end
 	end
 	
@@ -214,17 +238,22 @@ elsif params[:list]
 	out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % balance_total)
 	puts
 	puts out
-elsif params[:categories]
+elsif command == 'cat'
 	puts 'categories:'
 	wallet.categories.each do |category_item|
 		puts "\t" + category_item
 	end
-elsif params[:html]
-	puts 'generate html ...'
+elsif command == 'html'
+	puts 'generate html to ' + wallet.html_path + ' ...'
 	wallet.gen_html
-	puts 'generate html ... done'
-elsif params[:csv]
-	puts 'import csv ' + params[:csv] + ' ...'
-	wallet.import_csv_file params[:csv]
-	puts 'import csv ' + params[:csv] + ' ... done'
+	puts 'generate html done'
+elsif command == 'csv'
+	if path == ''
+		puts 'ERROR: Option --path is required for command "' + command + '"'
+		exit 1
+	end
+	
+	puts 'import csv ' + path + ' ...'
+	wallet.import_csv_file path
+	puts 'import csv ' + path + ' done'
 end
