@@ -609,6 +609,35 @@ module Wallet
 			end
 		end
 		
+		def export_csv_file(file_path)
+			csv_file = File.open(file_path, 'w')
+			csv_file.puts 'Date,Title,Revenue,Expense,Balance,Category,Comment'
+			
+			Dir[@data_path + '/month_*.yml'].each do |yaml_file_path|
+				puts 'export ' + File.basename(yaml_file_path)
+				
+				data = YAML.load_file(yaml_file_path)
+				
+				data['days'].each do |day_name, day_items|
+					day_items.each do |entry|
+						out = [
+							entry['date'],
+							'"'+entry['title']+'"',
+							::Wallet::NUMBER_FORMAT % entry['revenue'],
+							::Wallet::NUMBER_FORMAT % entry['expense'],
+							::Wallet::NUMBER_FORMAT % entry['balance'],
+							'"'+entry['category']+'"',
+							'"'+entry['comment']+'"',
+						].join(',')
+						
+						csv_file.puts out
+					end
+				end
+			end
+			
+			csv_file.close
+		end
+		
 		private
 		
 		def create_dirs
