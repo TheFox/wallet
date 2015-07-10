@@ -248,8 +248,9 @@ elsif command == 'list'
 	puts
 	puts out
 elsif command == 'cat'
-	puts 'categories:'
-	wallet.categories.each do |category_item|
+	categories = wallet.categories
+	puts 'categories(' + categories.count.to_s + '):'
+	categories.each do |category_item|
 		puts "\t" + category_item
 	end
 elsif command == 'html'
