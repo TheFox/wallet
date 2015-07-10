@@ -166,6 +166,7 @@ elsif command == 'list'
 	
 	entries = wallet.entries(year, month, day, category)
 	
+	entries_l = entries.map{ |day_name, day_items| day_items.count }.inject{ |sum, n| sum + n }.to_s.length
 	title_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['title'].length } }.flatten.max.to_i
 	revenue_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['revenue']).length } }.flatten.max.to_i
 	expense_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['expense']).length } }.flatten.max.to_i
@@ -196,6 +197,7 @@ elsif command == 'list'
 		comment_l = 25
 	end
 	
+	entries_f = '%' + entries_l.to_s + 's'
 	title_f = '%-' + title_l.to_s + 's'
 	revenue_f = '%' + revenue_l.to_s + 's'
 	expense_f = '%' + expense_l.to_s + 's'
@@ -204,6 +206,7 @@ elsif command == 'list'
 	comment_f = '%-' + comment_l.to_s + 's'
 	
 	header = ''
+	header += '#' * entries_l + '  '
 	header += 'Date ' + ' ' * 7
 	header += title_f % 'Title' + '  '
 	header += revenue_f % 'Revenue' + '  '
@@ -219,14 +222,17 @@ elsif command == 'list'
 	expense_total = 0.0
 	balance_total = 0.0
 	previous_date = ''
+	entry_no = 0
 	entries.each do |day_name, day_items|
 		day_items.each do |entry|
+			entry_no += 1
 			revenue_total += entry['revenue']
 			expense_total += entry['expense']
 			balance_total += entry['balance']
 			
 			out = ''
-			out += '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
+			out += entries_f % entry_no
+			out += '  ' + '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
 			out += '  ' + title_f % entry['title'][0, 25]
 			out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % entry['revenue'])
 			out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % entry['expense'])
@@ -240,7 +246,7 @@ elsif command == 'list'
 	end
 	
 	out = ''
-	out += ' ' * 10
+	out += ' ' * (12 + entries_l)
 	out += '  ' + title_f % 'TOTAL'
 	out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % revenue_total)
 	out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % expense_total)
