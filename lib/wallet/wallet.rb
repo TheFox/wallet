@@ -485,6 +485,7 @@ module Wallet
 								<th class="right red">' + ::Wallet::NUMBER_FORMAT % expense_month + '</th>
 								<th class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_month + '</th>
 								<th>&nbsp;</th>
+								<th>&nbsp;</th>
 							</tr>
 						</table>')
 					month_file.write('</body></html>')
