@@ -15,6 +15,9 @@ module Wallet
 			@dir_path = dir_path
 			@data_path = File.expand_path('data', @dir_path)
 			@html_path = File.expand_path('html', @dir_path)
+			
+			@has_transaction = false
+			@transaction_files = {}
 		end
 		
 		def add(entry)
@@ -22,13 +25,11 @@ module Wallet
 				raise ArgumentError, 'variable must be a Entry instance'
 			end
 			
-			create_dirs()
-			
 			date = entry.date
+			date_s = date.to_s
 			dbfile_basename = 'month_' + date.strftime('%Y_%m') + '.yml'
 			dbfile_path = File.expand_path(dbfile_basename, @data_path)
 			tmpfile_path = dbfile_path + '.tmp'
-			
 			file = {
 				'meta' => {
 					'version' => 1,
@@ -38,27 +39,90 @@ module Wallet
 				'days' => {}
 			}
 			
-			if File.exist? dbfile_path
-				file = YAML.load_file(dbfile_path)
-				file['meta']['updated_at'] = DateTime.now.to_s
+			# puts 'dbfile_basename: ' + dbfile_basename
+			# puts 'dbfile_path:     ' + dbfile_path
+			# puts 'tmpfile_path:    ' + tmpfile_path
+			# puts
+			
+			if @has_transaction
+				if @transaction_files.has_key? dbfile_basename
+					file = @transaction_files[dbfile_basename]['file']
+				else
+					if File.exist? dbfile_path
+						file = YAML.load_file(dbfile_path)
+						file['meta']['updated_at'] = DateTime.now.to_s
+					end
+					
+					@transaction_files[dbfile_basename] = {
+						'basename' => dbfile_basename,
+						'path' => dbfile_path,
+						'tmp_path' => tmpfile_path,
+						'file' => file,
+					}
+				end
+				
+				if !file['days'].has_key? date_s
+					file['days'][date_s] = []
+				end
+				
+				file['days'][date_s].push entry.to_h
+				
+				@transaction_files[dbfile_basename]['file'] = file
+			else
+				create_dirs()
+				
+				if File.exist? dbfile_path
+					file = YAML.load_file(dbfile_path)
+					file['meta']['updated_at'] = DateTime.now.to_s
+				end
+				
+				if !file['days'].has_key? date_s
+					file['days'][date_s] = []
+				end
+				
+				file['days'][date_s].push entry.to_h
+				
+				store = YAML::Store.new tmpfile_path
+				store.transaction do
+					store['meta'] = file['meta']
+					store['days'] = file['days']
+				end
+				
+				if File.exist? tmpfile_path
+					File.rename tmpfile_path, dbfile_path
+				end
+			end
+		end
+		
+		def transaction_start
+			@has_transaction = true
+			@transaction_files = {}
+			
+			create_dirs()
+		end
+		
+		def transaction_end
+			@transaction_files.each do |tr_file_key, tr_file_data|
+				# puts 'keys left: ' + @transaction_files.keys.count.to_s
+				# puts 'tr_file_key: ' + tr_file_key
+				# puts 'path:        ' + tr_file_data['path']
+				# puts 'tmp_path:    ' + tr_file_data['tmp_path']
+				# puts
+				
+				store = YAML::Store.new tr_file_data['tmp_path']
+				store.transaction do
+					store['meta'] = tr_file_data['file']['meta']
+					store['days'] = tr_file_data['file']['days']
+				end
+				@transaction_files.delete tr_file_key
+				
+				if File.exist? tr_file_data['tmp_path']
+					File.rename tr_file_data['tmp_path'], tr_file_data['path']
+				end
 			end
 			
-			date_key = date.to_s
-			if !file['days'].has_key? date_key
-				file['days'][date_key] = []
-			end
-			
-			file['days'][date_key].push entry.to_h
-			
-			store = YAML::Store.new tmpfile_path
-			store.transaction do
-				store['meta'] = file['meta']
-				store['days'] = file['days']
-			end
-			
-			if File.exist? tmpfile_path
-				File.rename tmpfile_path, dbfile_path
-			end
+			@has_transaction = false
+			@transaction_files = {}
 		end
 		
 		def sum(year = nil, month = nil, day = nil, category = nil)
@@ -581,6 +645,8 @@ module Wallet
 		end
 		
 		def import_csv_file(file_path)
+			transaction_start()
+			
 			row_n = 0
 			CSV.foreach(file_path) do |row|
 				row_n += 1
@@ -607,6 +673,10 @@ module Wallet
 				
 				add Entry.new(title, date, revenue, expense, category, comment)
 			end
+			
+			puts
+			puts 'save data ...'
+			transaction_end()
 		end
 		
 		def export_csv_file(file_path)
