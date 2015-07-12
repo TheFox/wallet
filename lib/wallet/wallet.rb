@@ -12,12 +12,19 @@ module Wallet
 		attr_reader :html_path
 		
 		def initialize(dir_path = 'wallet')
+			@exit = false
 			@dir_path = dir_path
 			@data_path = File.expand_path('data', @dir_path)
 			@html_path = File.expand_path('html', @dir_path)
 			
 			@has_transaction = false
 			@transaction_files = {}
+			
+			Signal.trap('SIGINT') do
+				puts
+				puts 'received SIGINT. break ...'
+				@exit = true
+			end
 		end
 		
 		def add(entry)
@@ -102,22 +109,25 @@ module Wallet
 		end
 		
 		def transaction_end
-			@transaction_files.each do |tr_file_key, tr_file_data|
-				# puts 'keys left: ' + @transaction_files.keys.count.to_s
-				# puts 'tr_file_key: ' + tr_file_key
-				# puts 'path:        ' + tr_file_data['path']
-				# puts 'tmp_path:    ' + tr_file_data['tmp_path']
-				# puts
-				
-				store = YAML::Store.new tr_file_data['tmp_path']
-				store.transaction do
-					store['meta'] = tr_file_data['file']['meta']
-					store['days'] = tr_file_data['file']['days']
-				end
-				@transaction_files.delete tr_file_key
-				
-				if File.exist? tr_file_data['tmp_path']
-					File.rename tr_file_data['tmp_path'], tr_file_data['path']
+			catch(:done) do
+				@transaction_files.each do |tr_file_key, tr_file_data|
+					throw :done if @exit
+					# puts 'keys left: ' + @transaction_files.keys.count.to_s
+					# puts 'tr_file_key: ' + tr_file_key
+					# puts 'path:        ' + tr_file_data['path']
+					# puts 'tmp_path:    ' + tr_file_data['tmp_path']
+					# puts
+					
+					store = YAML::Store.new tr_file_data['tmp_path']
+					store.transaction do
+						store['meta'] = tr_file_data['file']['meta']
+						store['days'] = tr_file_data['file']['days']
+					end
+					@transaction_files.delete tr_file_key
+					
+					if File.exist? tr_file_data['tmp_path']
+						File.rename tr_file_data['tmp_path'], tr_file_data['path']
+					end
 				end
 			end
 			
@@ -648,35 +658,40 @@ module Wallet
 		def import_csv_file(file_path)
 			transaction_start()
 			
-			row_n = 0
-			CSV.foreach(file_path) do |row|
-				row_n += 1
-				
-				date = ''
-				title = ''
-				revenue = 0.0
-				expense = 0.0
-				category = ''
-				comment = ''
-				
-				print 'import row ' + row_n.to_s + "\r"
-				
-				if row.count < 2
-					raise IndexError, 'invalid row ' + row_n.to_s + ': "' + row.join(',') + '"'
-				elsif row.count >= 2
-					date, title, revenue, expense, category, comment = row
-					revenue = revenue.to_f
-					if revenue < 0
-						expense = revenue
-						revenue = 0.0
+			catch(:done) do
+				row_n = 0
+				CSV.foreach(file_path) do |row|
+					throw :done if @exit
+					row_n += 1
+					
+					date = ''
+					title = ''
+					revenue = 0.0
+					expense = 0.0
+					category = ''
+					comment = ''
+					
+					print 'import row ' + row_n.to_s + "\r"
+					
+					if row.count < 2
+						raise IndexError, 'invalid row ' + row_n.to_s + ': "' + row.join(',') + '"'
+					elsif row.count >= 2
+						date, title, revenue, expense, category, comment = row
+						revenue = revenue.to_f
+						if revenue < 0
+							expense = revenue
+							revenue = 0.0
+						end
 					end
+					
+					add Entry.new(title, date, revenue, expense, category, comment)
+					
 				end
 				
-				add Entry.new(title, date, revenue, expense, category, comment)
+				puts
+				puts 'save data ...'
 			end
 			
-			puts
-			puts 'save data ...'
 			transaction_end()
 		end
 		
