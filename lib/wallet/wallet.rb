@@ -423,6 +423,7 @@ module Wallet
 								<h2>Month: ' + month_s + ' <a href="' + year_file_name + '">' + year_s + '</a></h2>
 								<table>
 									<tr>
+										<th class="left">#</th>
 										<th class="left">Date</th>
 										<th class="left first_column">Title</th>
 										<th class="right">Revenue</th>
@@ -439,10 +440,12 @@ module Wallet
 					categories_month_balance = {}
 					categories_available.map{ |item| categories_month_balance[item] = 0.0 }
 					
+					entry_n = 0
 					data = YAML.load_file(file_path)
 					data['days'].sort.each do |day_name, day_items|
 						puts "\t\t" + 'day: ' + day_name
 						day_items.each do |entry|
+							entry_n += 1
 							revenue_month += entry['revenue']
 							expense_month += entry['expense']
 							balance_month += entry['balance']
@@ -462,6 +465,7 @@ module Wallet
 							
 							month_file.write('
 								<tr>
+									<td class="left">' + entry_n.to_s + '</td>
 									<td class="left">' + Date.parse(entry['date']).strftime('%d.%m.%y') + '</td>
 									<td class="left">' + entry['title'][0, 50] + '</td>
 									<td class="right">' + revenue_out + '</td>
@@ -489,6 +493,7 @@ module Wallet
 					end
 					month_file.write('
 							<tr>
+								<th>&nbsp;</th>
 								<th>&nbsp;</th>
 								<th class="left"><b>TOTAL</b></th>
 								<th class="right">' + ::Wallet::NUMBER_FORMAT % revenue_month + '</th>
