@@ -1,9 +1,17 @@
 #!/usr/bin/env ruby -w
 
+require 'tempfile'
 require 'bundler/setup'
 require 'wallet'
 require 'ArgsParser'
 
+
+lib_base_path = File.expand_path(File.dirname(__FILE__) + '/..')
+tmp_base_path = lib_base_path + '/tmp'
+
+if !Dir.exist? tmp_base_path
+	Dir.mkdir tmp_base_path, 0700
+end
 
 parser = ArgsParser.parser
 parser.bind(:wallet, :w, 'Wallet', 'wallet')
@@ -40,6 +48,8 @@ comment = params[:comment].to_s
 path = params[:path].to_s
 import = params[:i]
 
+path_is_temp = false
+
 expense = 0.0
 export = false
 if params[:expense].is_a? TrueClass
@@ -75,6 +85,7 @@ if command == 'help' || command.length == 0
 	puts padding + 'lc|cat              List categories'
 	puts padding + 'html                Generate HTML files'
 	puts padding + 'csv                 Import/Export CSV file'
+	puts padding + 'vi                  Import per VIM editor'
 	puts
 	puts 'Options:'
 	puts padding + '-w|--wallet PATH    Optional'
@@ -133,6 +144,27 @@ if command == 'int'
 	end
 	
 	puts '-' * 20
+elsif command == 'vi'
+	vi_file = Tempfile.create('wallet-vi-import', tmp_base_path)
+	vi_file.puts('# This is a comment line.')
+	vi_file.puts('# Date,Title,Revenue,Expense,Category,Comment')
+	vi_file.puts('# Date,Title,Expense')
+	vi_file.close
+	
+	puts 'cwd:    ' + Dir.pwd
+	puts 'editor: ' + ENV['EDITOR']
+	puts 'file:   ' + vi_file.path
+	sleep 1
+	
+	system(ENV['EDITOR'] + ' ' + vi_file.path)
+	system('grep -v "#" ' + vi_file.path + ' | grep -v ^$ > ' + vi_file.path + '.ok')
+	
+	command = 'csv'
+	path = vi_file.path + '.ok'
+	path_is_temp = true
+	import = true
+	
+	File.unlink vi_file.path
 end
 
 wallet = Wallet::Wallet.new(wallet)
@@ -273,6 +305,11 @@ elsif command == 'csv'
 		puts 'import csv ' + path + ' ...'
 		wallet.import_csv_file path
 		puts 'import csv ' + path + ' done'
+		
+		if path_is_temp
+			puts 'delete ' + path
+			File.unlink(path)
+		end
 	elsif export
 		puts 'export csv ' + path + ' ...'
 		wallet.export_csv_file path
