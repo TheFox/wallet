@@ -10,8 +10,9 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 
 - Save revenues/expenses entries monthly.
 - List saved entries.
-- Export data to HTML.
 - Import CSV files.
+- Export data to CSV.
+- Generate HTML summary.
 
 ## Installation
 
