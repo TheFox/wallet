@@ -430,7 +430,7 @@ module Wallet
 										<th class="right">Expense</th>
 										<th class="right">Balance</th>
 										<th class="right">Category</th>
-										<th class="right">Comment</th>
+										<th class="left">Comment</th>
 									</tr>
 					')
 					
@@ -465,14 +465,14 @@ module Wallet
 							
 							month_file.write('
 								<tr>
-									<td class="left">' + entry_n.to_s + '</td>
-									<td class="left">' + Date.parse(entry['date']).strftime('%d.%m.%y') + '</td>
-									<td class="left">' + entry['title'][0, 50] + '</td>
-									<td class="right">' + revenue_out + '</td>
-									<td class="right red">' + expense_out + '</td>
-									<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
-									<td class="right">' + category_out + '</td>
-									<td class="right">' + comment_out + '</td>
+									<td valign="top" class="left">' + entry_n.to_s + '</td>
+									<td valign="top" class="left">' + Date.parse(entry['date']).strftime('%d.%m.%y') + '</td>
+									<td valign="top" class="left">' + entry['title'][0, 50] + '</td>
+									<td valign="top" class="right">' + revenue_out + '</td>
+									<td valign="top" class="right red">' + expense_out + '</td>
+									<td valign="top" class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
+									<td valign="top" class="right">' + category_out + '</td>
+									<td valign="top" class="left">' + comment_out + '</td>
 								</tr>')
 						end
 					end
