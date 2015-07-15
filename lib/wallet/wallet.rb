@@ -588,10 +588,6 @@ module Wallet
 				})
 			end
 			
-			revenue_total = 0.0
-			expense_total = 0.0
-			balance_total = 0.0
-			
 			index_file.write('
 					</ul>
 				<!--</td>	
@@ -604,10 +600,6 @@ module Wallet
 							<th class="right">Balance</th>
 						</tr>')
 			years_total.each do |year_name, year_data|
-				revenue_total += year_data['revenue']
-				expense_total += year_data['expense']
-				balance_total += year_data['balance']
-				
 				balance_class = ''
 				if year_data.balance < 0
 					balance_class = 'red'
@@ -623,6 +615,8 @@ module Wallet
 			
 			years_total_series_out = years_total.map{ |key, item| item.balance.round(3) }.take(5).reverse
 			
+			balance_total = years_total.inject(0.0){ |sum, item| sum + item[1].balance }
+			
 			balance_class = ''
 			if balance_total < 0
 				balance_class = 'red'
@@ -630,8 +624,8 @@ module Wallet
 			index_file.write('
 							<tr>
 								<th class="left"><b>TOTAL</b></th>
-								<th class="right">' + ::Wallet::NUMBER_FORMAT % revenue_total + '</th>
-								<th class="right red">' + ::Wallet::NUMBER_FORMAT % expense_total + '</th>
+								<th class="right">' + ::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } + '</th>
+								<th class="right red">' + ::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } + '</th>
 								<th class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_total + '</th>
 							</tr>
 						</table>
