@@ -344,11 +344,7 @@ module Wallet
 						<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::Wallet::HOMEPAGE + '">' + ::Wallet::NAME + '</a> ' + ::Wallet::VERSION + '</p>
 						
 						<h2>Years</h2>
-						
-						<!--<table>
-							<tr>
-								<td>//-->
-									<ul>
+						<ul>
 			')
 			
 			years_total = {}
@@ -590,8 +586,6 @@ module Wallet
 			
 			index_file.write('
 					</ul>
-				<!--</td>	
-				<td>//-->
 					<table>
 						<tr>
 							<th class="left">Year</th>
@@ -629,8 +623,6 @@ module Wallet
 								<th class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_total + '</th>
 							</tr>
 						</table>
-				<!--	</tr>
-				</table>//-->
 				
 				<p><div id="charts" style="width:' + (years_total_series_out.count * 100).to_s + 'px; height:400px;"></div></p>
 				<script type="text/javascript">
