@@ -4,6 +4,7 @@
 require 'yaml'
 require 'yaml/store'
 require 'csv'
+require 'ostruct'
 
 module Wallet
 	
@@ -579,11 +580,12 @@ module Wallet
 				year_file.write('</body></html>')
 				year_file.close
 				
-				years_total[year_s] = {
-					'revenue' => revenue_year,
-					'expense' => expense_year,
-					'balance' => balance_year,
-				}
+				years_total[year_s] = ::OpenStruct.new({
+					year: year_s,
+					revenue: revenue_year,
+					expense: expense_year,
+					balance: balance_year,
+				})
 			end
 			
 			revenue_total = 0.0
@@ -607,19 +609,19 @@ module Wallet
 				balance_total += year_data['balance']
 				
 				balance_class = ''
-				if year_data['balance'] < 0
+				if year_data.balance < 0
 					balance_class = 'red'
 				end
 				index_file.write('
 					<tr>
 						<td class="left">' + year_name + '</td>
-						<td class="right">' + ::Wallet::NUMBER_FORMAT % year_data['revenue'] + '</td>
-						<td class="right red">' + ::Wallet::NUMBER_FORMAT % year_data['expense'] + '</td>
-						<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % year_data['balance'] + '</td>
+						<td class="right">' + ::Wallet::NUMBER_FORMAT % year_data.revenue + '</td>
+						<td class="right red">' + ::Wallet::NUMBER_FORMAT % year_data.expense + '</td>
+						<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % year_data.balance + '</td>
 					</tr>')
 			end
 			
-			years_total_series_out = years_total.map{ |item| item[1]['balance'].round(3) }.take(5).reverse
+			years_total_series_out = years_total.map{ |key, item| item.balance.round(3) }.take(5).reverse
 			
 			balance_class = ''
 			if balance_total < 0
