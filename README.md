@@ -19,5 +19,5 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'wallet', :git => 'https://github.com/TheFox/wallet', :tag => 'v0.5.0'
+gem 'wallet', :git => 'https://github.com/TheFox/wallet', :tag => 'v0.5.1'
 ```
