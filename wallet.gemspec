@@ -24,4 +24,5 @@ Gem::Specification.new do |spec|
 	spec.add_development_dependency 'minitest', '5.7.0'
 	
 	spec.add_dependency 'ArgsParser', '1.0.0'
+	spec.add_dependency 'rubyvis', '0.6.1'
 end

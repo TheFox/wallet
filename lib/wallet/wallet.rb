@@ -4,6 +4,7 @@
 require 'yaml'
 require 'yaml/store'
 require 'csv'
+require 'rubyvis'
 require 'ostruct'
 
 module Wallet
@@ -282,16 +283,6 @@ module Wallet
 			
 			if !Dir.exist? @html_path
 				Dir.mkdir(@html_path)
-				
-				wallet_js_dir_path = @html_path + '/js'
-				Dir.mkdir(wallet_js_dir_path)
-				
-				lib_base_path = File.expand_path(File.dirname(__FILE__) + '/../..')
-				js_base_path = lib_base_path + '/js'
-				puts 'lib_base_path: ' + lib_base_path
-				puts 'js_base_path:  ' + js_base_path
-				
-				FileUtils.cp(['highcharts.js', 'jquery-1.8.2.js'].map{ |file_name| js_base_path + '/' + file_name }, wallet_js_dir_path)
 			end
 			
 			categories_available = categories()
@@ -309,7 +300,7 @@ module Wallet
 				html {
 					-webkit-text-size-adjust: none;
 				}
-				table, th, td {
+				table.list, table.list th, table.list td {
 					border: 1px solid black;
 				}
 				th.left, td.left {
@@ -336,24 +327,17 @@ module Wallet
 						<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 						<title>' + @dir_path + '</title>
 						<link rel="stylesheet" href="style.css" type="text/css" />
-						<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
-						<script type="text/javascript" src="js/highcharts.js"></script>
 					</head>
 					<body>
 						<h1>' + @dir_path + '</h1>
 						<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::Wallet::HOMEPAGE + '">' + ::Wallet::NAME + '</a> ' + ::Wallet::VERSION + '</p>
-						
-						<h2>Years</h2>
-						<ul>
 			')
 			
 			years_total = {}
-			years.reverse.each do |year|
+			years.each do |year|
 				year_s = year.to_s
 				year_file_name = 'year_' + year_s + '.html'
 				year_file_path = @html_path + '/' + year_file_name
-				
-				index_file.write('<li><a href="' + year_file_name + '">' + year_s + '</a><ul>')
 				
 				year_file = File.open(year_file_path, 'w')
 				year_file.write('
@@ -362,15 +346,13 @@ module Wallet
 							<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 							<title>' + year_s + ' - ' + @dir_path + '</title>
 							<link rel="stylesheet" href="style.css" type="text/css" />
-							<script type="text/javascript" src="js/jquery-1.8.2.js"></script>
-							<script type="text/javascript" src="js/highcharts.js"></script>
 						</head>
 						<body>
 							<h1><a href="index.html">' + @dir_path + '</a></h1>
 							<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::Wallet::HOMEPAGE + '">' + ::Wallet::NAME + '</a> ' + ::Wallet::VERSION + '</p>
 							
 							<h2>Year: ' + year_s + '</h2>
-							<table>
+							<table class="list">
 								<tr>
 									<th class="left">Month</th>
 									<th class="right">Revenue</th>
@@ -403,7 +385,6 @@ module Wallet
 					puts "\t" + 'file: ' + month_file_name + ' (from ' + file_name + ')'
 					
 					month_s = Date.parse('2015-' + month_n + '-15').strftime('%B')
-					index_file.write('<li><a href="' + month_file_name + '">' + month_s + '</a></li>')
 					
 					month_file = File.open(month_file_path, 'w')
 					month_file.write('
@@ -418,7 +399,7 @@ module Wallet
 								<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::Wallet::HOMEPAGE + '">' + ::Wallet::NAME + '</a> ' + ::Wallet::VERSION + ' from <code>' + file_name + '</code></p>
 								
 								<h2>Month: ' + month_s + ' <a href="' + year_file_name + '">' + year_s + '</a></h2>
-								<table>
+								<table class="list">
 									<tr>
 										<th class="left">#</th>
 										<th class="left">Date</th>
@@ -440,7 +421,7 @@ module Wallet
 					entry_n = 0
 					data = YAML.load_file(file_path)
 					data['days'].sort.each do |day_name, day_items|
-						puts "\t\t" + 'day: ' + day_name
+						#puts "\t\t" + 'day: ' + day_name
 						day_items.each do |entry|
 							entry_n += 1
 							revenue_month += entry['revenue']
@@ -449,11 +430,6 @@ module Wallet
 							
 							categories_year_balance[entry['category']] += entry['balance']
 							categories_month_balance[entry['category']] += entry['balance']
-							
-							balance_class = ''
-							if entry['balance'] < 0
-								balance_class = 'red'
-							end
 							
 							revenue_out = entry['revenue'] > 0 ? ::Wallet::NUMBER_FORMAT % entry['revenue'] : '&nbsp;'
 							expense_out = entry['expense'] < 0 ? ::Wallet::NUMBER_FORMAT % entry['expense'] : '&nbsp;'
@@ -467,22 +443,24 @@ module Wallet
 									<td valign="top" class="left">' + entry['title'][0, 50] + '</td>
 									<td valign="top" class="right">' + revenue_out + '</td>
 									<td valign="top" class="right red">' + expense_out + '</td>
-									<td valign="top" class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
+									<td valign="top" class="right ' + (entry['balance'] < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
 									<td valign="top" class="right">' + category_out + '</td>
 									<td valign="top" class="left">' + comment_out + '</td>
-								</tr>')
+								</tr>
+							')
 						end
 					end
 					
 					revenue_year += revenue_month
 					expense_year += expense_month
 					balance_year += balance_month
-					year_total[month_n] = {
-						'name' => month_s,
-						'revenue' => revenue_month,
-						'expense' => expense_month,
-						'balance' => balance_month,
-					}
+					
+					year_total[month_n] = ::OpenStruct.new({
+						month: month_n.to_i,
+						revenue: revenue_month.round(3),
+						expense: expense_month.round(3),
+						balance: balance_month.round(3),
+					})
 					
 					balance_class = ''
 					if balance_month < 0
@@ -511,140 +489,233 @@ module Wallet
 							<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_month + '</td>')
 					categories_available.each do |category|
 						category_balance = categories_month_balance[category]
-						balance_class = ''
-						if category_balance < 0
-							balance_class = 'red'
-						end
-						year_file.write('<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % category_balance + '</td>')
+						year_file.write('<td class="right ' + (category_balance < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % category_balance + '</td>')
 					end
 					year_file.write('</tr>')
 				end
 				
-				index_file.write('</ul></li>')
-				
-				balance_class = ''
-				if balance_year < 0
-					balance_class = 'red'
-				end
 				year_file.write('
 						<tr>
 							<th class="left"><b>TOTAL</b></th>
 							<th class="right">' + ::Wallet::NUMBER_FORMAT % revenue_year + '</th>
 							<th class="right red">' + ::Wallet::NUMBER_FORMAT % expense_year + '</th>
-							<th class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_year + '</th>')
+							<th class="right ' + (balance_year < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % balance_year + '</th>')
 				categories_available.each do |category|
 					category_balance = categories_year_balance[category]
-					balance_class = ''
-					if category_balance < 0
-						balance_class = 'red'
-					end
-					year_file.write('<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % category_balance + '</td>')
+					year_file.write('<td class="right ' + (category_balance < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % category_balance + '</td>')
 				end
 				
 				year_file.write('
 						</tr>
 					</table>
-					
-					<p><div id="charts" style="width:' + (year_total.keys.count * 100).to_s + 'px; height:400px;"></div></p>
-					<script type="text/javascript">
-						$(function(){
-							$(\'#charts\').highcharts({
-								chart: { type: \'line\' },
-								title: { text: \'Months\' },
-								xAxis: {
-									categories: [\'' + year_total.map{ |item| item[1]['name'] }.join("', '") + '\']
-								},
-								yAxis: { title: { text: \'Money\' } },
-								tooltip: { enabled: false },
-								legend: {
-									layout: \'vertical\',
-									align: \'right\',
-									verticalAlign: \'middle\',
-									borderWidth: 0,
-									enabled: false
-								},
-								series: [
-									{
-										name: \'Balance\',
-										data: [' + year_total.map{ |item| item[1]['balance'].round(3) }.join(', ') + ']
-									}
-								]
-							});
-						});
-					</script>
 				')
+				
+				year_total.sort.inject(0.0){ |sum, item| item[1].balance_total = sum + item[1].balance }
+				
+				width = 500
+				height = width.to_f / (16.0 / 9.0)
+				x_ticks_n = 12
+				y_ticks_n = 5
+				
+				year_total_take = year_total.sort.map{ |key, item| item }
+				y_min = year_total_take.map{ |item| [item.expense.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.min - 10
+				y_max = year_total_take.map{ |item| [item.revenue.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.max + 10
+				x_start = 1
+				x_end = 12
+
+				x_data = pv.Scale.linear(x_start, x_end).range(0, width)
+				y_data = pv.Scale.linear(y_min, y_max).range(0, height)
+				x_ticks = x_data.ticks(x_ticks_n)
+				y_ticks = y_data.ticks(y_ticks_n)
+				
+				vis = pv.Panel.new()
+				vis.left(30)
+				vis.width(width)
+				vis.height(height)
+				vis.margin(20)
+				vis.right(40)
+
+				panel = vis.add(pv.Panel)
+				panel.data(['revenue', 'expense', 'balance', 'balance_total'])
+
+				line = panel.add(pv.Line)
+				line.data(year_total_take)
+
+				line.left(lambda{ |d| x_data.scale(d.month.to_i) })
+				line.bottom(lambda{ |d, t| y_data.scale(d.send(t)) })
+				line.stroke_style(pv.colors('green', 'red', 'black', 'blue').by(pv.parent))
+				line.line_width(3)
+
+				label = vis.add(pv.Label)
+				label.data(x_ticks)
+				label.left(lambda{ |d| x_data.scale(d).to_i - (7 + (d.to_i >= 10 ? 3 : 0)) })
+				label.bottom(0)
+				label.text_baseline('top')
+				label.text_margin(5)
+				label.text(lambda{ |d| d.to_i.to_s })
+
+				rule = vis.add(pv.Rule)
+				rule.data(y_data.ticks(y_ticks_n))
+				rule.bottom(lambda{ |d| y_data.scale(d) })
+				rule.stroke_style(lambda{ |i| i != 0 ? pv.color('#cccccc') : pv.color('#000000') })
+
+				anchor = rule.anchor('right')
+				label = anchor.add(pv.Label)
+				#label.visible(lambda{ (self.index & 1) == 0 })
+				label.text_margin(7)
+				
+				rule = vis.add(pv.Rule)
+				rule.data(x_ticks)
+				rule.left(lambda{ |d| x_data.scale(d) })
+				rule.stroke_style(lambda{ |i| pv.color('#cccccc') })
+				
+				vis.render()
+				year_file.write('
+					<table>
+						<tr>
+							<td>' + vis.to_svg + '</td>
+							<td valign="top">
+								<table>
+									<tr><td colspan="2">Legend</td></tr>
+									<tr><td style="background: green; width: 20px;">&nbsp;</td><td>Revenue</td></tr>
+									<tr><td style="background: red;">&nbsp;</td><td>Expense</td></tr>
+									<tr><td style="background: black;">&nbsp;</td><td>Balance</td></tr>
+									<tr><td style="background: blue;">&nbsp;</td><td>Balance &#8721;</td></tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				')
+				
 				year_file.write('</body></html>')
 				year_file.close
 				
 				years_total[year_s] = ::OpenStruct.new({
 					year: year_s,
-					revenue: revenue_year,
-					expense: expense_year,
-					balance: balance_year,
+					revenue: revenue_year.round(3),
+					expense: expense_year.round(3),
+					balance: balance_year.round(3),
 				})
 			end
 			
+			years_total.sort.inject(0.0){ |sum, item| item[1].balance_total = sum + item[1].balance }
+			
 			index_file.write('
-					</ul>
-					<table>
+					<table class="list">
 						<tr>
 							<th class="left">Year</th>
 							<th class="right">Revenue</th>
 							<th class="right">Expense</th>
 							<th class="right">Balance</th>
+							<th class="right">Balance &#8721;</th>
 						</tr>')
 			years_total.each do |year_name, year_data|
-				balance_class = ''
-				if year_data.balance < 0
-					balance_class = 'red'
-				end
 				index_file.write('
 					<tr>
-						<td class="left">' + year_name + '</td>
+						<td class="left"><a href="year_' + year_name + '.html">' + year_name + '</a></td>
 						<td class="right">' + ::Wallet::NUMBER_FORMAT % year_data.revenue + '</td>
 						<td class="right red">' + ::Wallet::NUMBER_FORMAT % year_data.expense + '</td>
-						<td class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % year_data.balance + '</td>
+						<td class="right ' + (year_data.balance < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % year_data.balance + '</td>
+						<td class="right ' + (year_data.balance_total < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % year_data.balance_total + '</td>
 					</tr>')
 			end
 			
-			years_total_series_out = years_total.map{ |key, item| item.balance.round(3) }.take(5).reverse
-			
 			balance_total = years_total.inject(0.0){ |sum, item| sum + item[1].balance }
 			
-			balance_class = ''
-			if balance_total < 0
-				balance_class = 'red'
-			end
 			index_file.write('
-							<tr>
-								<th class="left"><b>TOTAL</b></th>
-								<th class="right">' + ::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } + '</th>
-								<th class="right red">' + ::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } + '</th>
-								<th class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_total + '</th>
-							</tr>
-						</table>
-				
-				<p><div id="charts" style="width:' + (years_total_series_out.count * 100).to_s + 'px; height:400px;"></div></p>
-				<script type="text/javascript">
-					$(function(){
-						$(\'#charts\').highcharts({
-							chart: { type: \'line\' },
-							title: { text: \'Years\' },
-							xAxis: { categories: [\'' + years_total.keys.take(5).reverse.join("', '") + '\'] },
-							yAxis: { title: { text: \'Money\' } },
-							tooltip: { enabled: false },
-							legend: { enabled: false },
-							series: [
-								{
-									name: \'Balance\',
-									data: [' + years_total_series_out.join(', ') + ']
-								}
-							]
-						});
-					});
-				</script>
+					<tr>
+						<th class="left"><b>TOTAL</b></th>
+						<th class="right">' + ::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } + '</th>
+						<th class="right red">' + ::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } + '</th>
+						<th class="right ' + (balance_total < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % balance_total + '</th>
+						<th>&nbsp;</th>
+					</tr>
+				</table>
 			')
-			index_file.write('</body></html>')
+			
+			width = 500
+			height = width.to_f / (16.0 / 9.0)
+			x_ticks_n = 6
+			y_ticks_n = 5
+			
+			years_total_take = years_total.sort.reverse.map{ |key, item| item }.take(6)
+			years_total_take_year_numbers = years_total_take.map{ |item| item.year.to_i }
+			y_min = years_total_take.map{ |item| [item.expense.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.min - 10
+			y_max = years_total_take.map{ |item| [item.revenue.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.max + 10
+			x_start = years_total_take_year_numbers.min
+			x_end = years_total_take_year_numbers.max
+
+			x_data = pv.Scale.linear(x_start, x_end).range(0, width)
+			y_data = pv.Scale.linear(y_min, y_max).range(0, height)
+			x_ticks = x_data.ticks(x_ticks_n)
+			y_ticks = y_data.ticks(y_ticks_n)
+			
+			if years_total_take_year_numbers.count >= 6
+				vis = pv.Panel.new()
+				vis.left(30)
+				vis.width(width)
+				vis.height(height)
+				vis.margin(20)
+				vis.right(40)
+
+				panel = vis.add(pv.Panel)
+				panel.data(['revenue', 'expense', 'balance', 'balance_total'])
+
+				line = panel.add(pv.Line)
+				line.data(years_total_take)
+
+				line.left(lambda{ |d| x_data.scale(d.year.to_i) })
+				line.bottom(lambda{ |d, t| y_data.scale(d.send(t)) })
+				line.stroke_style(pv.colors('green', 'red', 'black', 'blue').by(pv.parent))
+				line.line_width(3)
+
+				label = vis.add(pv.Label)
+				label.data(x_ticks)
+				label.left(lambda{ |d| x_data.scale(d).to_i - 17 })
+				label.bottom(0)
+				label.text_baseline('top')
+				label.text_margin(5)
+				label.text(lambda{ |d| d.to_i.to_s })
+
+				rule = vis.add(pv.Rule)
+				rule.data(y_data.ticks(y_ticks_n))
+				rule.bottom(lambda{ |d| y_data.scale(d) })
+				rule.stroke_style(lambda{ |i| i != 0 ? pv.color('#cccccc') : pv.color('#000000') })
+
+				anchor = rule.anchor('right')
+				label = anchor.add(pv.Label)
+				#label.visible(lambda{ (self.index & 1) == 0 })
+				label.text_margin(7)
+				
+				# rule = vis.add(pv.Rule)
+				# rule.data(x_ticks)
+				# rule.left(lambda{ |d| x_data.scale(d) })
+				# rule.stroke_style(lambda{ |i| pv.color('#cccccc') })
+				
+				vis.render()
+				index_file.write('
+					<table>
+						<tr>
+							<td>' + vis.to_svg + '</td>
+							<td valign="top">
+								<table>
+									<tr><td colspan="2">Legend</td></tr>
+									<tr><td style="background: green; width: 20px;">&nbsp;</td><td>Revenue</td></tr>
+									<tr><td style="background: red;">&nbsp;</td><td>Expense</td></tr>
+									<tr><td style="background: black;">&nbsp;</td><td>Balance</td></tr>
+									<tr><td style="background: blue;">&nbsp;</td><td>Balance &#8721;</td></tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				')
+			end
+			
+			index_file.write('
+					</body>
+				</html>
+			')
+			index_file.write('')
 			index_file.close
 		end
 		
