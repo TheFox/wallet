@@ -640,17 +640,18 @@ module Wallet
 			
 			years_total_take = years_total.sort.reverse.map{ |key, item| item }.take(6)
 			years_total_take_year_numbers = years_total_take.map{ |item| item.year.to_i }
-			y_min = years_total_take.map{ |item| [item.expense.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.min - 10
-			y_max = years_total_take.map{ |item| [item.revenue.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.max + 10
-			x_start = years_total_take_year_numbers.min
-			x_end = years_total_take_year_numbers.max
-
-			x_data = pv.Scale.linear(x_start, x_end).range(0, width)
-			y_data = pv.Scale.linear(y_min, y_max).range(0, height)
-			x_ticks = x_data.ticks(x_ticks_n)
-			y_ticks = y_data.ticks(y_ticks_n)
 			
 			if years_total_take_year_numbers.count >= 6
+				y_min = years_total_take.map{ |item| [item.expense.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.min - 10
+				y_max = years_total_take.map{ |item| [item.revenue.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.max + 10
+				x_start = years_total_take_year_numbers.min
+				x_end = years_total_take_year_numbers.max
+
+				x_data = pv.Scale.linear(x_start, x_end).range(0, width)
+				y_data = pv.Scale.linear(y_min, y_max).range(0, height)
+				x_ticks = x_data.ticks(x_ticks_n)
+				y_ticks = y_data.ticks(y_ticks_n)
+				
 				vis = pv.Panel.new()
 				vis.left(30)
 				vis.width(width)
