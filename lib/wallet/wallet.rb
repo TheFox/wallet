@@ -555,7 +555,7 @@ module Wallet
 				label.text(lambda{ |d| d.to_i.to_s })
 
 				rule = vis.add(pv.Rule)
-				rule.data(y_data.ticks(y_ticks_n))
+				rule.data(y_ticks)
 				rule.bottom(lambda{ |d| y_data.scale(d) })
 				rule.stroke_style(lambda{ |i| i != 0 ? pv.color('#cccccc') : pv.color('#000000') })
 
@@ -678,7 +678,7 @@ module Wallet
 				label.text(lambda{ |d| d.to_i.to_s })
 
 				rule = vis.add(pv.Rule)
-				rule.data(y_data.ticks(y_ticks_n))
+				rule.data(y_ticks)
 				rule.bottom(lambda{ |d| y_data.scale(d) })
 				rule.stroke_style(lambda{ |i| i != 0 ? pv.color('#cccccc') : pv.color('#000000') })
 
