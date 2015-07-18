@@ -13,6 +13,7 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 - Import CSV files.
 - Export data to CSV.
 - Generate HTML summary.
+- VI/editor import mode. (CSV)
 
 ## Installation
 
