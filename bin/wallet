@@ -180,7 +180,7 @@ if command == 'add'
 	end
 	
 	puts 'title:    ' + title
-	puts 'date:     ' + date
+	puts 'date:     ' + Date.parse(date).to_s
 	puts 'revenue:  ' + revenue.to_s
 	puts 'expense:  ' + expense.to_s
 	puts 'balance:  ' + (revenue + expense).to_f.round(3).to_s
