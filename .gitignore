@@ -1,4 +1,5 @@
 /.bundle/
+/bin/test
 /Gemfile.lock
 /vendor/
 /wallet/
