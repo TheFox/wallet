@@ -18,6 +18,7 @@ module Wallet
 			@dir_path = dir_path
 			@data_path = File.expand_path('data', @dir_path)
 			@html_path = File.expand_path('html', @dir_path)
+			@tmp_path = File.expand_path('tmp', @dir_path)
 			
 			@has_transaction = false
 			@transaction_files = {}
@@ -798,6 +799,10 @@ module Wallet
 			
 			if !Dir.exist? @data_path
 				Dir.mkdir(@data_path)
+			end
+			
+			if !Dir.exist? @tmp_path
+				Dir.mkdir(@tmp_path)
 			end
 		end
 		
