@@ -291,7 +291,7 @@ module Wallet
 			categories_available.map{ |item| categories_total_balance[item] = 0.0 }
 			
 			gitignore_file = File.open(@html_path + '/.gitignore', 'w')
-			gitignore_file.write '*'
+			gitignore_file.write('*')
 			gitignore_file.close
 			
 			css_file_path = @html_path + '/style.css'
@@ -752,6 +752,13 @@ module Wallet
 			
 			if !Dir.exist? @tmp_path
 				Dir.mkdir(@tmp_path)
+			end
+			
+			tmp_gitignore_path = @tmp_path + '/.gitignore'
+			if File.exist? tmp_gitignore_path
+				gitignore_file = File.open(tmp_gitignore_path, 'w')
+				gitignore_file.write('*')
+				gitignore_file.close
 			end
 		end
 		
