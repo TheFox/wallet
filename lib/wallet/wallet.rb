@@ -4,7 +4,6 @@
 require 'yaml'
 require 'yaml/store'
 require 'csv'
-require 'rubyvis'
 require 'ostruct'
 
 module Wallet
@@ -456,11 +455,16 @@ module Wallet
 					expense_year += expense_month
 					balance_year += balance_month
 					
+					revenue_month_r = revenue_month.round(3)
+					expense_month_r = expense_month.round(3)
+					balance_month_r = balance_month.round(3)
+					
 					year_total[month_n] = ::OpenStruct.new({
 						month: month_n.to_i,
-						revenue: revenue_month.round(3),
-						expense: expense_month.round(3),
-						balance: balance_month.round(3),
+						month_s: '%02d' % month_n.to_i,
+						revenue: revenue_month_r,
+						expense: expense_month_r,
+						balance: balance_month_r,
 					})
 					
 					balance_class = ''
@@ -495,6 +499,8 @@ module Wallet
 					year_file.write('</tr>')
 				end
 				
+				year_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(3) }
+				
 				year_file.write('
 						<tr>
 							<th class="left"><b>TOTAL</b></th>
@@ -511,85 +517,75 @@ module Wallet
 					</table>
 				')
 				
-				year_total.sort.inject(0.0){ |sum, item| item[1].balance_total = sum + item[1].balance }
-				
-				width = 500
-				height = width.to_f / (16.0 / 9.0)
-				x_ticks_n = 12
-				y_ticks_n = 5
-				
-				year_total_take = year_total.sort.map{ |key, item| item }
-				y_min = year_total_take.map{ |item| [item.expense.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.min - 10
-				y_max = year_total_take.map{ |item| [item.revenue.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.max + 10
-				x_start = 1
-				x_end = 12
-
-				x_data = pv.Scale.linear(x_start, x_end).range(0, width)
-				y_data = pv.Scale.linear(y_min, y_max).range(0, height)
-				x_ticks = x_data.ticks(x_ticks_n)
-				y_ticks = y_data.ticks(y_ticks_n)
-				
-				vis = pv.Panel.new()
-				vis.left(30)
-				vis.width(width)
-				vis.height(height)
-				vis.margin(20)
-				vis.right(40)
-
-				panel = vis.add(pv.Panel)
-				panel.data(['revenue', 'expense', 'balance', 'balance_total'])
-
-				line = panel.add(pv.Line)
-				line.data(year_total_take)
-
-				line.left(lambda{ |d| x_data.scale(d.month.to_i) })
-				line.bottom(lambda{ |d, t| y_data.scale(d.send(t)) })
-				line.stroke_style(pv.colors('green', 'red', 'black', 'blue').by(pv.parent))
-				line.line_width(3)
-
-				label = vis.add(pv.Label)
-				label.data(x_ticks)
-				label.left(lambda{ |d| x_data.scale(d).to_i - (7 + (d.to_i >= 10 ? 3 : 0)) })
-				label.bottom(0)
-				label.text_baseline('top')
-				label.text_margin(5)
-				label.text(lambda{ |d| d.to_i.to_s })
-
-				rule = vis.add(pv.Rule)
-				rule.data(y_ticks)
-				rule.bottom(lambda{ |d| y_data.scale(d) })
-				rule.stroke_style(lambda{ |i| i != 0 ? pv.color('#cccccc') : pv.color('#000000') })
-
-				anchor = rule.anchor('right')
-				label = anchor.add(pv.Label)
-				#label.visible(lambda{ (self.index & 1) == 0 })
-				label.text_margin(7)
-				
-				rule = vis.add(pv.Rule)
-				rule.data(x_ticks)
-				rule.left(lambda{ |d| x_data.scale(d) })
-				rule.stroke_style(lambda{ |i| pv.color('#cccccc') })
-				
-				vis.render()
-				year_file.write('
-					<table>
-						<tr>
-							<td>' + vis.to_svg + '</td>
-							<td valign="top">
-								<table>
-									<tr><td colspan="2">Legend</td></tr>
-									<tr><td style="background: green; width: 20px;">&nbsp;</td><td>Revenue</td></tr>
-									<tr><td style="background: red;">&nbsp;</td><td>Expense</td></tr>
-									<tr><td style="background: black;">&nbsp;</td><td>Balance</td></tr>
-									<tr><td style="background: blue;">&nbsp;</td><td>Balance &#8721;</td></tr>
-								</table>
-							</td>
-						</tr>
-					</table>
-				')
-				
+				year_file.write("<p><img src=\"year_#{year_s}.png\"></p>")
 				year_file.write('</body></html>')
 				year_file.close
+				
+				yeardat_file_path = "#{@tmp_path}/year_#{year_s}.dat"
+				yeardat_file = File.new(yeardat_file_path, 'w')
+				yeardat_file.write(year_total
+					.map{ |k, m| "#{year_s}-#{m.month_s} #{m.revenue} #{m.expense} #{m.balance} #{m.balance_total} #{m.balance_total}" }
+					.join("\n"))
+				yeardat_file.close
+				
+				# year_max = year_total
+				# 	.map{ |k, m| [m.revenue, m.balance, m.balance_total] }
+				# 	.flatten
+				# 	.max
+				# 	.to_i
+				
+				# year_min = year_total
+				# 	.map{ |k, m| [m.expense, m.balance, m.balance_total] }
+				# 	.flatten
+				# 	.min
+				# 	.to_i
+				# 	.abs
+				
+				# year_max_rl = year_max.to_s.length - 2
+				# year_max_r = year_max.round(-year_max_rl)
+				# year_max_d = year_max_r - year_max
+				# year_max_r = year_max_r + 5 * 10 ** (year_max_rl - 1) if year_max_r < year_max
+				# year_max_r += 100
+				
+				# year_min_rl = year_min.to_s.length - 2
+				# year_min_r = year_min.round(-year_min_rl)
+				# year_min_d = year_min_r - year_min
+				# year_min_r = year_min_r + 5 * 10 ** (year_min_rl - 1) if year_min_r < year_min
+				# year_min_r += 100
+				
+				# puts "#{year_max} #{year_max.to_s.length} #{year_max_r} #{year_max_rl}"
+				# puts "#{year_min} #{year_min.to_s.length} #{year_min_r} #{year_min_rl}"
+				
+				gnuplot_file = File.new("#{@tmp_path}/year_#{year_s}.gp", 'w')
+				gnuplot_file.puts("set title 'Year #{year_s}'")
+				gnuplot_file.puts("set xlabel 'Months'")
+				gnuplot_file.puts("set ylabel 'Euro'")
+				gnuplot_file.puts("set grid")
+				gnuplot_file.puts("set key below")
+				gnuplot_file.puts("set tics out")
+				
+				gnuplot_file.puts("set timefmt '%Y-%m'")
+				gnuplot_file.puts("set xdata time")
+				gnuplot_file.puts("set format x '%b'")
+				gnuplot_file.puts("set xrange ['#{year_s}-01-01':'#{year_s}-12-31']")
+				gnuplot_file.puts("set xtics '#{year_s}-01-01', 2592000, '#{year_s}-12-31'")
+				# gnuplot_file.puts("set yrange [-#{year_min_r}:#{year_max_r}]")
+				gnuplot_file.puts("set autoscale y")
+				
+				gnuplot_file.puts("set style line 1 linecolor rgb '#00ff00' linewidth 2 linetype 1 pointtype 2")
+				gnuplot_file.puts("set style line 2 linecolor rgb '#ff0000' linewidth 2 linetype 1 pointtype 2")
+				gnuplot_file.puts("set style line 3 linecolor rgb '#000000' linewidth 2 linetype 1 pointtype 2")
+				gnuplot_file.puts("set style line 4 linecolor rgb '#0000ff' linewidth 2 linetype 1 pointtype 2")
+				gnuplot_file.puts("set style data linespoints")
+				gnuplot_file.puts("set terminal png enhanced")
+				gnuplot_file.puts("set output '#{@html_path}/year_#{year_s}.png'")
+				gnuplot_file.puts("plot sum = 0, \\")
+				gnuplot_file.puts("\t'#{yeardat_file_path}' using 1:2 linestyle 1 title 'Revenue', \\")
+				gnuplot_file.puts("\t'' using 1:3 linestyle 2 title 'Expense', \\")
+				gnuplot_file.puts("\t'' using 1:4 linestyle 3 title 'Balance', \\")
+				gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
+				gnuplot_file.close
+				system("gnuplot #{@tmp_path}/year_#{year_s}.gp")
 				
 				years_total[year_s] = ::OpenStruct.new({
 					year: year_s,
@@ -599,7 +595,7 @@ module Wallet
 				})
 			end
 			
-			years_total.sort.inject(0.0){ |sum, item| item[1].balance_total = sum + item[1].balance }
+			years_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(3) }
 			
 			index_file.write('
 					<table class="list">
@@ -632,93 +628,46 @@ module Wallet
 						<th>&nbsp;</th>
 					</tr>
 				</table>
+				
+				<p><img src="total.png"></p>
 			')
-			
-			width = 500
-			height = width.to_f / (16.0 / 9.0)
-			x_ticks_n = 6
-			y_ticks_n = 5
-			
-			years_total_take = years_total.sort.reverse.map{ |key, item| item }.take(6)
-			years_total_take_year_numbers = years_total_take.map{ |item| item.year.to_i }
-			
-			if years_total_take_year_numbers.count >= 6
-				y_min = years_total_take.map{ |item| [item.expense.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.min - 10
-				y_max = years_total_take.map{ |item| [item.revenue.to_i, item.balance.to_i, item.balance_total.to_i] }.flatten.max + 10
-				x_start = years_total_take_year_numbers.min
-				x_end = years_total_take_year_numbers.max
-
-				x_data = pv.Scale.linear(x_start, x_end).range(0, width)
-				y_data = pv.Scale.linear(y_min, y_max).range(0, height)
-				x_ticks = x_data.ticks(x_ticks_n)
-				y_ticks = y_data.ticks(y_ticks_n)
-				
-				vis = pv.Panel.new()
-				vis.left(30)
-				vis.width(width)
-				vis.height(height)
-				vis.margin(20)
-				vis.right(40)
-
-				panel = vis.add(pv.Panel)
-				panel.data(['revenue', 'expense', 'balance', 'balance_total'])
-
-				line = panel.add(pv.Line)
-				line.data(years_total_take)
-
-				line.left(lambda{ |d| x_data.scale(d.year.to_i) })
-				line.bottom(lambda{ |d, t| y_data.scale(d.send(t)) })
-				line.stroke_style(pv.colors('green', 'red', 'black', 'blue').by(pv.parent))
-				line.line_width(3)
-
-				label = vis.add(pv.Label)
-				label.data(x_ticks)
-				label.left(lambda{ |d| x_data.scale(d).to_i - 17 })
-				label.bottom(0)
-				label.text_baseline('top')
-				label.text_margin(5)
-				label.text(lambda{ |d| d.to_i.to_s })
-
-				rule = vis.add(pv.Rule)
-				rule.data(y_ticks)
-				rule.bottom(lambda{ |d| y_data.scale(d) })
-				rule.stroke_style(lambda{ |i| i != 0 ? pv.color('#cccccc') : pv.color('#000000') })
-
-				anchor = rule.anchor('right')
-				label = anchor.add(pv.Label)
-				#label.visible(lambda{ (self.index & 1) == 0 })
-				label.text_margin(7)
-				
-				# rule = vis.add(pv.Rule)
-				# rule.data(x_ticks)
-				# rule.left(lambda{ |d| x_data.scale(d) })
-				# rule.stroke_style(lambda{ |i| pv.color('#cccccc') })
-				
-				vis.render()
-				index_file.write('
-					<table>
-						<tr>
-							<td>' + vis.to_svg + '</td>
-							<td valign="top">
-								<table>
-									<tr><td colspan="2">Legend</td></tr>
-									<tr><td style="background: green; width: 20px;">&nbsp;</td><td>Revenue</td></tr>
-									<tr><td style="background: red;">&nbsp;</td><td>Expense</td></tr>
-									<tr><td style="background: black;">&nbsp;</td><td>Balance</td></tr>
-									<tr><td style="background: blue;">&nbsp;</td><td>Balance &#8721;</td></tr>
-								</table>
-							</td>
-						</tr>
-					</table>
-				')
-			end
-			
 			index_file.write('
 					</body>
 				</html>
 			')
-			index_file.write('')
 			index_file.close
+			
+			take_n = 6
+			totaldat_file_path = "#{@tmp_path}/total.dat"
+			totaldat_file = File.new(totaldat_file_path, 'w')
+			totaldat_file.write(years_total
+				.map{ |k, y| "#{y.year} #{y.revenue} #{y.expense} #{y.balance} #{y.balance_total}" }
+				.slice(-take_n, take_n)
+				.join("\n"))
+			totaldat_file.close
+			
+			gnuplot_file = File.new("#{@tmp_path}/total.gp", 'w')
+			gnuplot_file.puts("set title 'Total'")
+			gnuplot_file.puts("set xlabel 'Years'")
+			gnuplot_file.puts("set ylabel 'Euro'")
+			gnuplot_file.puts("set grid")
+			gnuplot_file.puts("set key below")
+			gnuplot_file.puts("set tics out")
+			gnuplot_file.puts("set xtics 1")
+			gnuplot_file.puts("set style line 1 linecolor rgb '#00ff00' linewidth 2 linetype 1 pointtype 2")
+			gnuplot_file.puts("set style line 2 linecolor rgb '#ff0000' linewidth 2 linetype 1 pointtype 2")
+			gnuplot_file.puts("set style line 3 linecolor rgb '#000000' linewidth 2 linetype 1 pointtype 2")
+			gnuplot_file.puts("set style line 4 linecolor rgb '#0000ff' linewidth 2 linetype 1 pointtype 2")
+			gnuplot_file.puts("set style data linespoints")
+			gnuplot_file.puts("set terminal png enhanced")
+			gnuplot_file.puts("set output '#{@html_path}/total.png'")
+			gnuplot_file.puts("plot sum = 0, \\")
+			gnuplot_file.puts("\t'#{totaldat_file_path}' using 1:2 linestyle 1 title 'Revenue', \\")
+			gnuplot_file.puts("\t'' using 1:3 linestyle 2 title 'Expense', \\")
+			gnuplot_file.puts("\t'' using 1:4 linestyle 3 title 'Balance', \\")
+			gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
+			gnuplot_file.close
+			system("gnuplot #{@tmp_path}/total.gp")
 		end
 		
 		def import_csv_file(file_path)
