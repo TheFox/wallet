@@ -637,13 +637,13 @@ module Wallet
 			')
 			index_file.close
 			
-			take_n = 6
+			totaldat_file_c = years_total.map{ |k, y| "#{y.year} #{y.revenue} #{y.expense} #{y.balance} #{y.balance_total}" }
+			totaldat_file_c = totaldat_file_c.slice(-6, 6) if totaldat_file_c.count > 6
+			totaldat_file_c = totaldat_file_c.join("\n")
+			
 			totaldat_file_path = "#{@tmp_path}/total.dat"
 			totaldat_file = File.new(totaldat_file_path, 'w')
-			totaldat_file.write(years_total
-				.map{ |k, y| "#{y.year} #{y.revenue} #{y.expense} #{y.balance} #{y.balance_total}" }
-				.slice(-take_n, take_n)
-				.join("\n"))
+			totaldat_file.write(totaldat_file_c)
 			totaldat_file.close
 			
 			gnuplot_file = File.new("#{@tmp_path}/total.gp", 'w')
