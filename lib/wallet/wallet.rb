@@ -755,7 +755,7 @@ module Wallet
 			end
 			
 			tmp_gitignore_path = @tmp_path + '/.gitignore'
-			if File.exist? tmp_gitignore_path
+			if !File.exist?(tmp_gitignore_path)
 				gitignore_file = File.open(tmp_gitignore_path, 'w')
 				gitignore_file.write('*')
 				gitignore_file.close
