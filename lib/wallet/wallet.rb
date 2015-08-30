@@ -281,7 +281,21 @@ module Wallet
 		def gen_html
 			create_dirs()
 			
-			if !Dir.exist? @html_path
+			html_options_path = "#{@html_path}/options.yml"
+			html_options = {
+				'meta' => {
+					'version' => 1,
+					'created_at' => DateTime.now.to_s,
+					'updated_at' => DateTime.now.to_s,
+				},
+				'changes' => {},
+			}
+			if Dir.exist? @html_path
+				if File.exist? html_options_path
+					html_options = YAML.load_file(html_options_path)
+					html_options['meta']['updated_at'] = DateTime.now.to_s
+				end
+			else
 				Dir.mkdir(@html_path)
 			end
 			
@@ -382,35 +396,7 @@ module Wallet
 					month_file_name = 'month_' + year_s + '_' + month_n + '.html'
 					month_file_path = @html_path + '/' + month_file_name
 					
-					puts "\t" + 'file: ' + month_file_name + ' (from ' + file_name + ')'
-					
 					month_s = Date.parse('2015-' + month_n + '-15').strftime('%B')
-					
-					month_file = File.open(month_file_path, 'w')
-					month_file.write('
-						<html>
-							<head>
-								<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-								<title>' + month_s + ' ' + year_s + ' - ' + @dir_path + '</title>
-								<link rel="stylesheet" href="style.css" type="text/css" />
-							</head>
-							<body>
-								<h1><a href="index.html">' + @dir_path + '</a></h1>
-								<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::Wallet::HOMEPAGE + '">' + ::Wallet::NAME + '</a> ' + ::Wallet::VERSION + ' from <code>' + file_name + '</code></p>
-								
-								<h2>Month: ' + month_s + ' <a href="' + year_file_name + '">' + year_s + '</a></h2>
-								<table class="list">
-									<tr>
-										<th class="left">#</th>
-										<th class="left">Date</th>
-										<th class="left first_column">Title</th>
-										<th class="right">Revenue</th>
-										<th class="right">Expense</th>
-										<th class="right">Balance</th>
-										<th class="right">Category</th>
-										<th class="left">Comment</th>
-									</tr>
-					')
 					
 					revenue_month = 0.0
 					expense_month = 0.0
@@ -420,6 +406,53 @@ module Wallet
 					
 					entry_n = 0
 					data = YAML.load_file(file_path)
+					
+					generate_html = false
+					if html_options['changes'].has_key? file_name
+						if html_options['changes'][file_name]['updated_at'] != data['meta']['updated_at']
+							html_options['changes'][file_name]['updated_at'] = data['meta']['updated_at']
+							generate_html = true
+						end
+					else
+						html_options['changes'][file_name] = {
+							'updated_at' => data['meta']['updated_at'],
+						}
+						generate_html = true
+					end
+					if !File.exist?(month_file_path)
+						generate_html = true
+					end
+					
+					if generate_html
+						puts "\t" + 'file: ' + month_file_name + ' (from ' + file_name + ')'
+						
+						month_file = File.open(month_file_path, 'w')
+						month_file.write('
+							<html>
+								<head>
+									<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+									<title>' + month_s + ' ' + year_s + ' - ' + @dir_path + '</title>
+									<link rel="stylesheet" href="style.css" type="text/css" />
+								</head>
+								<body>
+									<h1><a href="index.html">' + @dir_path + '</a></h1>
+									<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::Wallet::HOMEPAGE + '">' + ::Wallet::NAME + '</a> ' + ::Wallet::VERSION + ' from <code>' + file_name + '</code></p>
+									
+									<h2>Month: ' + month_s + ' <a href="' + year_file_name + '">' + year_s + '</a></h2>
+									<table class="list">
+										<tr>
+											<th class="left">#</th>
+											<th class="left">Date</th>
+											<th class="left first_column">Title</th>
+											<th class="right">Revenue</th>
+											<th class="right">Expense</th>
+											<th class="right">Balance</th>
+											<th class="right">Category</th>
+											<th class="left">Comment</th>
+										</tr>
+						')
+					end
+					
 					data['days'].sort.each do |day_name, day_items|
 						#puts "\t\t" + 'day: ' + day_name
 						day_items.each do |entry|
@@ -436,18 +469,20 @@ module Wallet
 							category_out = entry['category'] == 'default' ? '&nbsp;' : entry['category']
 							comment_out = entry['comment'] == '' ? '&nbsp;' : entry['comment']
 							
-							month_file.write('
-								<tr>
-									<td valign="top" class="left">' + entry_n.to_s + '</td>
-									<td valign="top" class="left">' + Date.parse(entry['date']).strftime('%d.%m.%y') + '</td>
-									<td valign="top" class="left">' + entry['title'][0, 50] + '</td>
-									<td valign="top" class="right">' + revenue_out + '</td>
-									<td valign="top" class="right red">' + expense_out + '</td>
-									<td valign="top" class="right ' + (entry['balance'] < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
-									<td valign="top" class="right">' + category_out + '</td>
-									<td valign="top" class="left">' + comment_out + '</td>
-								</tr>
-							')
+							if generate_html
+								month_file.write('
+									<tr>
+										<td valign="top" class="left">' + entry_n.to_s + '</td>
+										<td valign="top" class="left">' + Date.parse(entry['date']).strftime('%d.%m.%y') + '</td>
+										<td valign="top" class="left">' + entry['title'][0, 50] + '</td>
+										<td valign="top" class="right">' + revenue_out + '</td>
+										<td valign="top" class="right red">' + expense_out + '</td>
+										<td valign="top" class="right ' + (entry['balance'] < 0 ? 'red' : '') + '">' + ::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
+										<td valign="top" class="right">' + category_out + '</td>
+										<td valign="top" class="left">' + comment_out + '</td>
+									</tr>
+								')
+							end
 						end
 					end
 					
@@ -471,20 +506,22 @@ module Wallet
 					if balance_month < 0
 						balance_class = 'red'
 					end
-					month_file.write('
-							<tr>
-								<th>&nbsp;</th>
-								<th>&nbsp;</th>
-								<th class="left"><b>TOTAL</b></th>
-								<th class="right">' + ::Wallet::NUMBER_FORMAT % revenue_month + '</th>
-								<th class="right red">' + ::Wallet::NUMBER_FORMAT % expense_month + '</th>
-								<th class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_month + '</th>
-								<th>&nbsp;</th>
-								<th>&nbsp;</th>
-							</tr>
-						</table>')
-					month_file.write('</body></html>')
-					month_file.close
+					if generate_html
+						month_file.write('
+								<tr>
+									<th>&nbsp;</th>
+									<th>&nbsp;</th>
+									<th class="left"><b>TOTAL</b></th>
+									<th class="right">' + ::Wallet::NUMBER_FORMAT % revenue_month + '</th>
+									<th class="right red">' + ::Wallet::NUMBER_FORMAT % expense_month + '</th>
+									<th class="right ' + balance_class + '">' + ::Wallet::NUMBER_FORMAT % balance_month + '</th>
+									<th>&nbsp;</th>
+									<th>&nbsp;</th>
+								</tr>
+							</table>')
+						month_file.write('</body></html>')
+						month_file.close
+					end
 					
 					year_file.write('
 						<tr>
@@ -637,6 +674,12 @@ module Wallet
 				</html>
 			')
 			index_file.close
+			
+			store = YAML::Store.new html_options_path
+			store.transaction do
+				store['meta'] = html_options['meta']
+				store['changes'] = html_options['changes']
+			end
 			
 			totaldat_file_c = years_total.map{ |k, y| "#{y.year} #{y.revenue} #{y.expense} #{y.balance} #{y.balance_total}" }
 			totaldat_file_c = totaldat_file_c.slice(-6, 6) if totaldat_file_c.count > 6
