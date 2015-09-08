@@ -206,6 +206,9 @@ elsif command == 'list'
 	category_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['category'].length } }.flatten.max.to_i
 	comment_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'].length } }.flatten.max.to_i
 	
+	has_category_col = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['category'] } }.flatten.select{ |i| i != 'default' }.count > 0
+	has_comment_col = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'] } }.flatten.select{ |i| i != '' }.count > 0
+	
 	if title_l < 6
 		title_l = 6
 	end
@@ -243,12 +246,14 @@ elsif command == 'list'
 	header += title_f % 'Title' + '  '
 	header += revenue_f % 'Revenue' + '  '
 	header += expense_f % 'Expense' + '  '
-	header += balance_f % 'Balance' + '  '
-	header += category_f % 'Category' + '  '
-	header += comment_f % 'Comment'
+	header += balance_f % 'Balance'
+	header += '  ' + category_f % 'Category' if has_category_col
+	header += '  ' + comment_f % 'Comment' if has_comment_col
 	
+	header_l = header.length
+	header.sub!(/ +$/, '')
 	puts header
-	puts '-' * header.length
+	puts '-' * header_l
 	
 	revenue_total = 0.0
 	expense_total = 0.0
@@ -258,24 +263,37 @@ elsif command == 'list'
 	entries.sort.each do |day_name, day_items|
 		day_items.each do |entry|
 			entry_no += 1
+			
+			title = entry['title']
+			title = title[0, 22] + '...' if title.length >= 25
+			
 			revenue_total += entry['revenue']
 			expense_total += entry['expense']
 			balance_total += entry['balance']
 			
+			category = entry['category'] == 'default' ? '' : entry['category']
+			has_category = category != ''
+			
+			comment = entry['comment']
+			comment = comment[0, 22] + '...' if comment.length >= 25
+			
 			out = ''
 			out += entries_f % entry_no
 			out += '  ' + '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
-			out += '  ' + title_f % entry['title'][0, 25]
+			out += '  ' + title_f % title
 			out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % entry['revenue'])
 			out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % entry['expense'])
 			out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % entry['balance'])
-			out += '  ' + category_f % (entry['category'] == 'default' ? '' : entry['category'])
-			out += '  ' + comment_f % entry['comment'][0, 25]
+			out += '  ' + category_f % category if has_category_col
+			out += '  ' + comment_f % comment if has_comment_col
+			
+			out.sub!(/ +$/, '')
 			puts out
 			
 			previous_date = entry['date']
 		end
 	end
+	puts
 	
 	out = ''
 	out += ' ' * (12 + entries_l)
@@ -283,7 +301,6 @@ elsif command == 'list'
 	out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % revenue_total)
 	out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % expense_total)
 	out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % balance_total)
-	puts
 	puts out
 elsif command == 'cat'
 	categories = wallet.categories
