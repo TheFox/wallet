@@ -255,7 +255,7 @@ elsif command == 'list'
 	balance_total = 0.0
 	previous_date = ''
 	entry_no = 0
-	entries.each do |day_name, day_items|
+	entries.sort.each do |day_name, day_items|
 		day_items.each do |entry|
 			entry_no += 1
 			revenue_total += entry['revenue']
