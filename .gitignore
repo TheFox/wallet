@@ -5,5 +5,6 @@
 /wallet/
 /wallet_test/
 *.csv
+*.txt
 *.yml
 CHANGELOG-*.txt
