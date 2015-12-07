@@ -29,7 +29,6 @@ or via `Gemfile`:
 Use it in your sources:
 
 	require 'thefox-wallet'
-```
 
 ## License
 Copyright (C) 2015 Christian Mayer <http://fox21.at>
