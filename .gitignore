@@ -1,10 +1,8 @@
-/.bundle/
+.setup
+CHANGELOG-*.txt
 /bin/test
-/Gemfile.lock
-/vendor/
 /wallet/
 /wallet_test/
 *.csv
 *.txt
 *.yml
-CHANGELOG-*.txt

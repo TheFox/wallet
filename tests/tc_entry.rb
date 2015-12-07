@@ -6,13 +6,13 @@ require 'wallet'
 
 class TestEntry < MiniTest::Test
 	def test_base
-		entry = Wallet::Entry.new
+		entry = TheFox::Wallet::Entry.new
 		
-		assert_equal('Wallet::Entry', entry.class.to_s)
+		assert_equal('TheFox::Wallet::Entry', entry.class.to_s)
 	end
 	
 	def test_set_title
-		entry = Wallet::Entry.new('test1')
+		entry = TheFox::Wallet::Entry.new('test1')
 		assert_equal('test1', entry.title)
 		
 		entry.title = 'test2'
@@ -22,27 +22,27 @@ class TestEntry < MiniTest::Test
 	def test_set_date
 		now = Date.today
 		
-		entry = Wallet::Entry.new
+		entry = TheFox::Wallet::Entry.new
 		assert_equal('Date', entry.date.class.to_s)
 		assert_equal(now.to_s, entry.date.to_s)
 		
-		entry = Wallet::Entry.new('test', '2015-02-21')
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21')
 		assert_equal('Date', entry.date.class.to_s)
 		assert_equal('2015-02-21', entry.date.to_s)
 		
 		entry.date = '2015-01-01'
 		assert_equal('2015-01-01', entry.date.to_s)
 		
-		entry = Wallet::Entry.new('test', '2014-2-21')
+		entry = TheFox::Wallet::Entry.new('test', '2014-2-21')
 		assert_equal('2014-02-21', entry.date.to_s)
 		
 		entry.date = '2013-1-1'
 		assert_equal('2013-01-01', entry.date.to_s)
 		
-		entry = Wallet::Entry.new('test', Date.parse('2015-01-02'))
+		entry = TheFox::Wallet::Entry.new('test', Date.parse('2015-01-02'))
 		assert_equal('2015-01-02', entry.date.to_s)
 		
-		entry = Wallet::Entry.new
+		entry = TheFox::Wallet::Entry.new
 		entry.date = Date.today
 		assert_equal(now.to_s, entry.date.to_s)
 		
@@ -51,16 +51,16 @@ class TestEntry < MiniTest::Test
 	end
 	
 	def test_set_revenue_expense
-		entry = Wallet::Entry.new
+		entry = TheFox::Wallet::Entry.new
 		assert_equal(0, entry.revenue)
 		assert_equal(0, entry.expense)
 		
-		entry = Wallet::Entry.new('test', '2015-02-21', 20)
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21', 20)
 		assert_equal(20, entry.revenue)
 		assert_equal(0, entry.expense)
 		assert_equal(20, entry.balance)
 		
-		entry = Wallet::Entry.new('test', '2015-02-21', '20', '-21')
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21', '20', '-21')
 		assert_equal(20, entry.revenue)
 		assert_equal(-21, entry.expense)
 		assert_equal(-1, entry.balance)
@@ -83,12 +83,12 @@ class TestEntry < MiniTest::Test
 		assert_equal(-2.02, entry.expense)
 		assert_equal(-1.02, entry.balance)
 		
-		entry = Wallet::Entry.new('test', '2015-02-21', -42)
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21', -42)
 		assert_equal(0, entry.revenue)
 		assert_equal(-42, entry.expense)
 		assert_equal(-42, entry.balance)
 		
-		entry = Wallet::Entry.new('test', '2015-02-21', -30.03)
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21', -30.03)
 		assert_equal(0, entry.revenue)
 		assert_equal(-30.03, entry.expense)
 		assert_equal(-30.03, entry.balance)
@@ -104,7 +104,7 @@ class TestEntry < MiniTest::Test
 	end
 	
 	def test_set_category
-		entry = Wallet::Entry.new('test', '2015-02-21', 20, 0, 'c1')
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21', 20, 0, 'c1')
 		assert_equal('c1', entry.category)
 		
 		entry.category = 'c2'
@@ -115,7 +115,7 @@ class TestEntry < MiniTest::Test
 	end
 	
 	def test_set_comment
-		entry = Wallet::Entry.new('test', '2015-02-21', 20, 0, 'c1', 'co1')
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21', 20, 0, 'c1', 'co1')
 		assert_equal('co1', entry.comment)
 		
 		entry.comment = 'co2'
@@ -126,7 +126,7 @@ class TestEntry < MiniTest::Test
 	end
 	
 	def test_to_hash
-		entry = Wallet::Entry.new('test', '2015-02-21', 20, -12.34, 'c3')
+		entry = TheFox::Wallet::Entry.new('test', '2015-02-21', 20, -12.34, 'c3')
 		
 		assert_equal('2015-02-21', entry.to_h['date'].to_s)
 		assert_equal(20, entry.to_h['revenue'])

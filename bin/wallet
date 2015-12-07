@@ -6,13 +6,6 @@ require 'wallet'
 require 'ArgsParser'
 
 
-lib_base_path = File.expand_path(File.dirname(__FILE__) + '/..')
-tmp_base_path = lib_base_path + '/tmp'
-
-if !Dir.exist? tmp_base_path
-	Dir.mkdir tmp_base_path, 0700
-end
-
 parser = ArgsParser.parser
 parser.bind(:wallet, :w, 'Wallet', 'wallet')
 parser.bind(:title, :t, 'Title')
@@ -74,7 +67,7 @@ if command == 'help' || command.length == 0
 	script_name = File.basename(__FILE__)
 	padding = ' ' * (script_name.length + 8)
 	
-	puts 'Version: ' + ::Wallet::VERSION
+	puts "#{::TheFox::Wallet::NAME} #{::TheFox::Wallet::VERSION} (#{::TheFox::Wallet::DATE})"
 	puts 'Usage: ' + script_name + ' COMMAND OPTIONS'
 	puts
 	puts 'Commands:'
@@ -145,7 +138,7 @@ if command == 'int'
 	
 	puts '-' * 20
 elsif command == 'vi'
-	vi_file = Tempfile.create('wallet-vi-import', tmp_base_path)
+	vi_file = Tempfile.create('wallet-vi-import', '/tmp')
 	vi_file.puts('# This is a comment line.')
 	vi_file.puts('# Date,Title,Revenue,Expense,Category,Comment')
 	vi_file.puts('# Date,Title,Expense')
@@ -167,7 +160,7 @@ elsif command == 'vi'
 	File.unlink vi_file.path
 end
 
-wallet = Wallet::Wallet.new(wallet)
+wallet = TheFox::Wallet::Wallet.new(wallet)
 
 if command == 'add'
 	if category.to_s.length == 0
@@ -187,7 +180,7 @@ if command == 'add'
 	puts 'category: ' + category.to_s
 	puts 'comment:  ' + comment.to_s
 	
-	wallet.add Wallet::Entry.new(title, date, revenue, expense, category, comment)
+	wallet.add TheFox::Wallet::Entry.new(title, date, revenue, expense, category, comment)
 elsif command == 'list'
 	puts
 	
@@ -200,9 +193,9 @@ elsif command == 'list'
 	
 	entries_l = entries.map{ |day_name, day_items| day_items.count }.inject{ |sum, n| sum + n }.to_s.length
 	title_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['title'].length } }.flatten.max.to_i
-	revenue_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['revenue']).length } }.flatten.max.to_i
-	expense_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['expense']).length } }.flatten.max.to_i
-	balance_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::Wallet::NUMBER_FORMAT % day_item['balance']).length } }.flatten.max.to_i
+	revenue_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::TheFox::Wallet::NUMBER_FORMAT % day_item['revenue']).length } }.flatten.max.to_i
+	expense_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::TheFox::Wallet::NUMBER_FORMAT % day_item['expense']).length } }.flatten.max.to_i
+	balance_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::TheFox::Wallet::NUMBER_FORMAT % day_item['balance']).length } }.flatten.max.to_i
 	category_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['category'].length } }.flatten.max.to_i
 	comment_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'].length } }.flatten.max.to_i
 	
@@ -281,9 +274,9 @@ elsif command == 'list'
 			out += entries_f % entry_no
 			out += '  ' + '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
 			out += '  ' + title_f % title
-			out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % entry['revenue'])
-			out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % entry['expense'])
-			out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % entry['balance'])
+			out += '  ' + revenue_f % (::TheFox::Wallet::NUMBER_FORMAT % entry['revenue'])
+			out += '  ' + expense_f % (::TheFox::Wallet::NUMBER_FORMAT % entry['expense'])
+			out += '  ' + balance_f % (::TheFox::Wallet::NUMBER_FORMAT % entry['balance'])
 			out += '  ' + category_f % category if has_category_col
 			out += '  ' + comment_f % comment if has_comment_col
 			
@@ -298,9 +291,9 @@ elsif command == 'list'
 	out = ''
 	out += ' ' * (12 + entries_l)
 	out += '  ' + title_f % 'TOTAL'
-	out += '  ' + revenue_f % (::Wallet::NUMBER_FORMAT % revenue_total)
-	out += '  ' + expense_f % (::Wallet::NUMBER_FORMAT % expense_total)
-	out += '  ' + balance_f % (::Wallet::NUMBER_FORMAT % balance_total)
+	out += '  ' + revenue_f % (::TheFox::Wallet::NUMBER_FORMAT % revenue_total)
+	out += '  ' + expense_f % (::TheFox::Wallet::NUMBER_FORMAT % expense_total)
+	out += '  ' + balance_f % (::TheFox::Wallet::NUMBER_FORMAT % balance_total)
 	puts out
 elsif command == 'cat'
 	categories = wallet.categories

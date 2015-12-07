@@ -15,12 +15,20 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 - Generate HTML summary.
 - VI/editor import mode. (CSV)
 
-## Installation
+## Install
 
-Add this line to your application's Gemfile:
+The preferred method of installation is via RubyGems.org:  
+<https://rubygems.org/gems/thefox-wallet>
 
-```ruby
-gem 'wallet', :git => 'https://github.com/TheFox/wallet', :tag => 'v0.7.0'
+	gem install thefox-wallet
+
+or via `Gemfile`:
+
+	gem 'thefox-wallet', '~>0.8'
+
+Use it in your sources:
+
+	require 'thefox-wallet'
 ```
 
 ## License

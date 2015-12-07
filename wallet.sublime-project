@@ -6,13 +6,5 @@
 			"folder_exclude_patterns": [ ],
 			"file_exclude_patterns": [ ]
 		}
-	],
-	"build_systems":[
-		{
-			"name": "Echo Hi",
-			"cmd": [ "echo hello world" ],
-			"working_dir": "${project_path:${folder}}",
-			"shell": true
-		}
 	]
 }
