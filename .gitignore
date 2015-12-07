@@ -1,6 +1,7 @@
 .setup
 CHANGELOG-*.txt
 /bin/test
+/releases/
 /wallet/
 /wallet_test/
 *.csv
