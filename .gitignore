@@ -1,6 +1,8 @@
+/.bundle/
 .setup
 CHANGELOG-*.txt
 /bin/test
+Gemfile.lock
 /releases/
 /wallet/
 /wallet_test/

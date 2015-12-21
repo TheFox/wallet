@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby -w
 
-require 'bundler/setup'
 require 'minitest/autorun'
 require 'wallet'
+
 
 class TestEntry < MiniTest::Test
 	def test_base
