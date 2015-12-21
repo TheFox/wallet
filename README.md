@@ -30,6 +30,11 @@ Use it in your sources:
 
 	require 'thefox-wallet'
 
+## Project Links
+
+- [Gem](https://rubygems.org/gems/thefox-wallet)
+- [Travis CI Repository](https://travis-ci.org/TheFox/wallet)
+
 ## License
 Copyright (C) 2015 Christian Mayer <http://fox21.at>
 
