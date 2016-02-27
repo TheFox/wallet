@@ -40,9 +40,9 @@ module TheFox
 			end
 			
 			def date=(date)
-				if date.is_a? String
+				if date.is_a?(String)
 					@date = Date.parse(date)
-				elsif date.is_a? Date
+				elsif date.is_a?(Date)
 					@date = date
 				else
 					raise ArgumentError, 'date must be a String or a Date instance'
