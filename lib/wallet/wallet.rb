@@ -198,57 +198,63 @@ module TheFox
 				sum(nil, nil, nil, category)
 			end
 			
-			def entries(year = nil, month = nil, day = nil, category = nil)
-				year_s = year.to_i.to_s
-				month_f = '%02d' % month.to_i
-				day_f = '%02d' % day.to_i
+			def entries(begin_date, category = nil)
+			#def entries(year = nil, month = nil, day = nil, category = nil)
+				begin_year, begin_month, begin_day = begin_date.split('-').map{ |n| n.to_i }
 				
-				glob = @data_path + '/month_'
-				if year == nil && month == nil
+				begin_year_s = begin_year.to_i.to_s
+				begin_month_f = '%02d' % begin_month.to_i
+				begin_day_f = '%02d' % begin_day.to_i
+				
+				glob = "#{@data_path}/month_"
+				if begin_year == nil && begin_month == nil
 					glob += '*.yml'
-				elsif year && month == nil
-					glob += year_s + '_*.yml'
-				elsif year && month
-					glob += year_s + '_' + month_f + '.yml'
+				elsif begin_year && begin_month == nil
+					glob += "#{begin_year_s}_*.yml"
+				elsif begin_year && begin_month
+					glob += "#{begin_year_s}_#{begin_month_f}.yml"
 				end
 				
+				category = category.to_s.downcase
+				
 				# puts 'glob:     ' + glob
-				# puts 'year:     ' + '%-10s' % year.class.to_s + '   = "' + year.to_s + '"'
-				# puts 'month:    ' + '%-10s' % month.class.to_s + '   = "' + month.to_s + '"'
-				# puts 'day:      ' + '%-10s' % day.class.to_s + '   = "' + day.to_s + '"'
-				# puts 'category: ' + '%-10s' % category.class.to_s + '   = "' + category.to_s + '"'
+				# puts 'begin_year:     ' + '%-10s' % begin_year.class.to_s + '   = "' + begin_year.to_s + '"'
+				# puts 'begin_month:    ' + '%-10s' % begin_month.class.to_s + '   = "' + begin_month.to_s + '"'
+				# puts 'begin_day:      ' + '%-10s' % begin_day.class.to_s + '   = "' + begin_day.to_s + '"'
+				# puts 'category:       ' + '%-10s' % category.class.to_s + '   = "' + category.to_s + '"'
 				# puts
 				
 				entries_a = {}
 				Dir[glob].each do |file_path|
+					#puts "path: #{file_path}"
+					
 					data = YAML.load_file(file_path)
-					if category.nil? || category.to_s.length == 0
-						if day
-							day_key = year_s + '-' + month_f + '-' + day_f
+					if category.length == 0
+						if begin_day
+							day_key = begin_year_s + '-' + begin_month_f + '-' + begin_day_f
 							if data['days'].has_key?(day_key)
 								entries_a[day_key] = data['days'][day_key]
 							end
 						else
-							entries_a.merge! data['days']
+							entries_a.merge!(data['days'])
 						end
 					else
-						category = category.to_s.downcase
-						if day
-							day_key = year_s + '-' + month_f + '-' + day_f
+						if begin_day
+							day_key = begin_year_s + '-' + begin_month_f + '-' + begin_day_f
 							if data['days'].has_key?(day_key)
 								entries_a[day_key] = data['days'][day_key].keep_if{ |day_item|
 									day_item['category'].downcase == category
 								}
 							end
 						else
-							entries_a.merge! data['days'].map{ |day_name, day_items|
+							entries_a.merge!(data['days'].map{ |day_name, day_items|
 								day_items.keep_if{ |day_item|
 									day_item['category'].downcase == category
 								}
 								[day_name, day_items]
 							}.to_h.keep_if{ |day_name, day_items|
 								day_items.count > 0
-							}
+							})
 						end
 					end
 					

@@ -9,6 +9,7 @@ options = {
 	
 	:entry_title => nil,
 	:entry_date => Date.today.to_s,
+	#:entry_end_date => nil,
 	:entry_revenue => 0.0,
 	:entry_expense => 0.0,
 	:entry_category => nil,
@@ -42,8 +43,13 @@ opts = OptionParser.new do |o|
 	end
 	
 	o.on('-d', '--date <date>', 'Date used for the entry.') do |date|
+	#o.on('-d', '--date <date>', 'Start date or date used for the entry.') do |date|
 		options[:entry_date] = date
 	end
+	
+	#o.on('-z', '--end <date>', 'End date.') do |date|
+	#	options[:entry_end_date] = date
+	#end
 	
 	o.on('-r', '--revenue <revenue>', 'Revenue used for the entry.') do |revenue|
 		options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
@@ -162,13 +168,9 @@ when 'add'
 when 'list'
 	puts
 	
-	year, month, day = options[:entry_date].scan(/^(\d{2,4}).?(\d{0,2}).?(\d{0,2})/).shift.map{ |x|
-		y = x.to_i
-		y == 0 ? nil : y
-	}
-	
 	wallet = TheFox::Wallet::Wallet.new(options[:wallet_path])
-	entries = wallet.entries(year, month, day, options[:entry_category].to_s)
+	entries = wallet.entries(options[:entry_date], options[:entry_category].to_s)
+	#entries = wallet.entries(options[:entry_date], options[:entry_end_date], options[:entry_category].to_s)
 	
 	entries_l = entries
 		.map{ |day_name, day_items| day_items.count }
