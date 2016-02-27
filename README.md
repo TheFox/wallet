@@ -24,7 +24,7 @@ The preferred method of installation is via RubyGems.org:
 
 or via `Gemfile`:
 
-	gem 'thefox-wallet', '~>0.8'
+	gem 'thefox-wallet', '~>0.9'
 
 Use it in your sources:
 
