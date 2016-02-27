@@ -94,7 +94,7 @@ module TheFox
 			private
 			
 			def calc_balance
-				@balance = (@revenue.round(3) + @expense.round(3)).to_f.round(3)
+				@balance = (@revenue.round(NUMBER_ROUND) + @expense.round(NUMBER_ROUND)).to_f.round(NUMBER_ROUND)
 			end
 		end
 		

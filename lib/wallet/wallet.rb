@@ -178,9 +178,9 @@ module TheFox
 					end
 				end
 				
-				revenue = revenue.to_f.round(3)
-				expense = expense.to_f.round(3)
-				balance = (revenue + expense).round(3)
+				revenue = revenue.to_f.round(NUMBER_ROUND)
+				expense = expense.to_f.round(NUMBER_ROUND)
+				balance = (revenue + expense).round(NUMBER_ROUND)
 				
 				diff = revenue + expense - balance
 				if diff != 0
@@ -492,9 +492,9 @@ module TheFox
 						expense_year += expense_month
 						balance_year += balance_month
 						
-						revenue_month_r = revenue_month.round(3)
-						expense_month_r = expense_month.round(3)
-						balance_month_r = balance_month.round(3)
+						revenue_month_r = revenue_month.round(NUMBER_ROUND)
+						expense_month_r = expense_month.round(NUMBER_ROUND)
+						balance_month_r = balance_month.round(NUMBER_ROUND)
 						
 						year_total[month_n] = ::OpenStruct.new({
 							month: month_n.to_i,
@@ -538,7 +538,7 @@ module TheFox
 						year_file.write('</tr>')
 					end
 					
-					year_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(3) }
+					year_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(NUMBER_ROUND) }
 					
 					year_file.write('
 							<tr>
@@ -629,13 +629,13 @@ module TheFox
 					
 					years_total[year_s] = ::OpenStruct.new({
 						year: year_s,
-						revenue: revenue_year.round(3),
-						expense: expense_year.round(3),
-						balance: balance_year.round(3),
+						revenue: revenue_year.round(NUMBER_ROUND),
+						expense: expense_year.round(NUMBER_ROUND),
+						balance: balance_year.round(NUMBER_ROUND),
 					})
 				end
 				
-				years_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(3) }
+				years_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(NUMBER_ROUND) }
 				
 				index_file.write('
 						<table class="list">
