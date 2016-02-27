@@ -3,6 +3,7 @@
 require 'pp'
 require 'optparse'
 require 'wallet'
+require 'tempfile'
 
 options = {
 	:wallet_path => 'wallet',
