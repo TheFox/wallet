@@ -1,205 +1,217 @@
 #!/usr/bin/env ruby
 
-require 'tempfile'
+require 'pp'
+require 'optparse'
 require 'wallet'
-require 'ArgsParser'
 
-
-parser = ArgsParser.parser
-parser.bind(:wallet, :w, 'Wallet', 'wallet')
-parser.bind(:title, :t, 'Title')
-parser.bind(:date, :d, 'Date', Date.today.to_s)
-parser.bind(:revenue, :r, 'Revenue', 0)
-parser.bind(:expense, :e, 'Expense', 0)
-parser.bind(:category, :c, 'Category')
-parser.bind(:comment, :o, 'Comment')
-parser.bind(:path, :p, 'Path')
-
-command, params = parser.parse(ARGV)
-command = command.to_s
-
-# puts 'command: ' + command.to_s
-# puts 'params:  ' + params.to_s
-# puts
-
-# Command Aliases
-if command == 'i'
-	command = 'int'
-elsif command == 'l'
-	command = 'list'
-elsif command == 'lc'
-	command = 'cat'
+options = {
+	:wallet_path => 'wallet',
+	
+	:entry_title => nil,
+	:entry_date => Date.today.to_s,
+	:entry_revenue => 0.0,
+	:entry_expense => 0.0,
+	:entry_category => nil,
+	:entry_comment => nil,
+	
+	:is_import => false,
+	:is_export => false,
+	:path => nil,
+	:is_interactively => false,
+}
+balance = 0.0
+opts = OptionParser.new do |o|
+	o.banner = 'Usage: wallet <command> [options]'
+	o.separator('')
+	o.separator('Commands:')
+	o.separator('')
+	o.separator('    add          Add a new entry')
+	o.separator('    list         List entries')
+	o.separator('    categories   List categories')
+	o.separator('    html         Generate HTML files')
+	o.separator('    csv          Import/Export CSV file')
+	o.separator('    vi           Import per VIM editor')
+	o.separator('')
+	
+	o.on('-w', '--wallet <path>', 'Path to wallet directory.') do |path|
+		options[:wallet_path] = path
+	end
+	
+	o.on('-t', '--title <title>', 'Title used for the entry.') do |title|
+		options[:entry_title] = title
+	end
+	
+	o.on('-d', '--date <date>', 'Date used for the entry.') do |date|
+		options[:entry_date] = date
+	end
+	
+	o.on('-r', '--revenue <revenue>', 'Revenue used for the entry.') do |revenue|
+		options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
+		balance += options[:entry_revenue]
+	end
+	
+	o.on('-e', '--expense <expense>', 'Expense used for the entry.') do |expense|
+		options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
+		balance += options[:entry_expense]
+	end
+	
+	o.on('-c', '--category <category>', 'Category used for the entry.') do |category|
+		options[:entry_category] = category
+	end
+	
+	o.on('-o', '--comment <comment>', 'Comment used for the entry.') do |comment|
+		options[:entry_comment] = comment
+	end
+	
+	o.on('--import', 'Import') do
+		options[:is_import] = true
+	end
+	
+	o.on('--export', 'Export') do
+		options[:is_export] = true
+	end
+	
+	o.on('-p', '--path <path>', 'Path used for csv import/export.') do |path|
+		options[:path] = path
+	end
+	
+	o.on('-i', 'Use some commands interactively.') do
+		options[:is_interactively] = true
+	end
+	
+	o.on_tail('-V', '--version', 'Show version.') do
+		puts "#{::TheFox::Wallet::NAME} #{::TheFox::Wallet::VERSION} (#{::TheFox::Wallet::DATE})"
+		puts TheFox::Wallet::HOMEPAGE
+		exit
+	end
+	
+	o.on_tail('-h', '--help', 'Show this message.') do
+		puts o
+		puts
+		exit 3
+	end
 end
+ARGV << '-h' if ARGV.count == 0
+commands = opts.parse(ARGV)
+command = commands.shift
 
-wallet = params[:wallet].to_s
-title = params[:title].to_s
-date = params[:date].to_s
-revenue = params[:revenue].to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
-category = params[:category].to_s
-comment = params[:comment].to_s
-path = params[:path].to_s
-import = params[:i]
+#pp commands
+#pp command
 
-path_is_temp = false
-
-expense = 0.0
-export = false
-if params[:expense].is_a? TrueClass
-	export = true
-else
-	expense = -params[:expense].to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
-end
-
-# puts 'argv len: ' + ARGV.length.to_s
-# puts 'command:    ' + '%-10s' % command.class.to_s + '     "' + command.to_s + '"'
-# puts 'wallet:     ' + '%-10s' % wallet.class.to_s + '     "' + wallet.to_s + '"'
-# puts 'title:      ' + '%-10s' % title.class.to_s + '     "' + title + '"'
-# puts 'date:       ' + '%-10s' % date.class.to_s + '     "' + date + '"'
-# puts 'revenue:    ' + '%-10s' % revenue.class.to_s + '     "' + revenue.to_s + '"'
-# puts 'expense:    ' + '%-10s' % expense.class.to_s + '     "' + expense.to_s + '"'
-# puts 'category:   ' + '%-10s' % category.class.to_s + '     "' + category + '"'
-# puts 'comment:    ' + '%-10s' % comment.class.to_s + '     "' + comment.to_s + '"'
-# puts 'path:       ' + '%-10s' % path.class.to_s + '     "' + path.to_s + '"'
-# puts
-
-if command == 'help' || command.length == 0
-	script_name = File.basename(__FILE__)
-	padding = ' ' * (script_name.length + 8)
-	
-	puts "#{::TheFox::Wallet::NAME} #{::TheFox::Wallet::VERSION} (#{::TheFox::Wallet::DATE})"
-	puts 'Usage: ' + script_name + ' COMMAND OPTIONS'
-	puts
-	puts 'Commands:'
-	puts padding + 'help                Show this help'
-	puts padding + 'add                 Add a new entry'
-	puts padding + 'i|int               Add a new entry interactively'
-	puts padding + 'l|list              List entries'
-	puts padding + 'lc|cat              List categories'
-	puts padding + 'html                Generate HTML files'
-	puts padding + 'csv                 Import/Export CSV file'
-	puts padding + 'vi                  Import per VIM editor'
-	puts
-	puts 'Options:'
-	puts padding + '-w|--wallet PATH    Optional'
-	puts padding + '-t|--title TITLE    Required for command "add"'
-	puts padding + '-d|--date           Optional'
-	puts padding + '-r|--revenue        Optional. Default: 0'
-	puts padding + '-e|--expense        Optional. Default: 0'
-	puts padding + '-c|--category       Optional. Default: default'
-	puts padding + '-o|--comment        Optional'
-	puts padding + '-i|-e               Import or Export. Default: -i'
-	puts padding + '-p|--path PATH      Required for command "csv"'
-	
-	exit 3
-end
-
-if command == 'int'
-	command = 'add'
-	
-	print 'title: [' + title + '] '
-	title_t = STDIN.gets.strip
-	if title_t.length > 0
-		title = title_t
+case command
+when 'add'
+	if options[:entry_category].nil?
+		options[:entry_category] = 'default'
+	end
+	if options[:is_interactively]
+		print "title: [#{options[:entry_title]}] "
+		title_t = STDIN.gets.strip
+		if title_t.length > 0
+			options[:entry_title] = title_t
+		end
+		
+		print "date: [#{options[:entry_date]}] "
+		date_t = STDIN.gets.strip
+		if date_t.length > 0
+			options[:entry_date] = date_t
+		end
+		
+		print "revenue: [#{options[:entry_revenue]}] "
+		revenue_t = STDIN.gets.strip
+		if revenue_t.length > 0
+			options[:entry_revenue] = revenue_t.to_s.sub(/,/, '.').to_f.round(3).abs
+		end
+		
+		print "expense: [#{options[:entry_expense]}] "
+		expense_t = STDIN.gets.strip
+		if expense_t.length > 0
+			options[:entry_expense] = -expense_t.to_s.sub(/,/, '.').to_f.round(3).abs
+		end
+		
+		print "category: [#{options[:entry_category]}] "
+		category_t = STDIN.gets.strip
+		if category_t.length > 0
+			options[:entry_category] = category_t
+		end
+		
+		print "comment: [#{options[:entry_comment]}] "
+		comment_t = STDIN.gets.strip
+		if comment_t.length > 0
+			options[:entry_comment] = comment_t
+		end
+		
+		puts '-' * 20
 	end
 	
-	print 'date: [' + date + '] '
-	date_t = STDIN.gets.strip
-	if date_t.length > 0
-		date = date_t
-	end
-	
-	print 'revenue: [' + revenue.to_s + '] '
-	revenue_t = STDIN.gets.strip
-	if revenue_t.length > 0
-		revenue = revenue_t.to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
-	end
-	
-	print 'expense: [' + expense.to_s + '] '
-	expense_t = STDIN.gets.strip
-	if expense_t.length > 0
-		expense = -expense_t.to_s.gsub('.', '').sub(/,/, '.').to_f.round(3).abs
-	end
-	
-	if category.to_s.length == 0
-		category = 'default'
-	end
-	print 'category: [' + category + '] '
-	category_t = STDIN.gets.strip
-	if category_t.length > 0
-		category = category_t
-	end
-	
-	print 'comment: [' + comment + '] '
-	comment_t = STDIN.gets.strip
-	if comment_t.length > 0
-		comment = comment_t
-	end
-	
-	puts '-' * 20
-elsif command == 'vi'
-	vi_file = Tempfile.create('wallet-vi-import', '/tmp')
-	vi_file.puts('# This is a comment line.')
-	vi_file.puts('# Date,Title,Revenue,Expense,Category,Comment')
-	vi_file.puts('# Date,Title,Expense')
-	vi_file.close
-	
-	puts 'cwd:    ' + Dir.pwd
-	puts 'editor: ' + ENV['EDITOR']
-	puts 'file:   ' + vi_file.path
-	sleep 1
-	
-	system(ENV['EDITOR'] + ' ' + vi_file.path)
-	system('grep -v "#" ' + vi_file.path + ' | grep -v ^$ > ' + vi_file.path + '.ok')
-	
-	command = 'csv'
-	path = vi_file.path + '.ok'
-	path_is_temp = true
-	import = true
-	
-	File.unlink vi_file.path
-end
-
-wallet = TheFox::Wallet::Wallet.new(wallet)
-
-if command == 'add'
-	if category.to_s.length == 0
-		category = 'default'
-	end
-	
-	if title == ''
-		puts 'ERROR: Option --title is required for command "' + command + '"'
+	if options[:entry_title].nil?
+		puts "ERROR: Option --title is required for command '#{command}'"
 		exit 1
 	end
 	
-	puts 'title:    ' + title
-	puts 'date:     ' + Date.parse(date).to_s
-	puts 'revenue:  ' + revenue.to_s
-	puts 'expense:  ' + expense.to_s
-	puts 'balance:  ' + (revenue + expense).to_f.round(3).to_s
-	puts 'category: ' + category.to_s
-	puts 'comment:  ' + comment.to_s
+	puts "title:    '#{options[:entry_title]}'"
+	puts "date:      " + Date.parse(options[:entry_date]).to_s
+	puts "revenue:   " + TheFox::Wallet::NUMBER_FORMAT % options[:entry_revenue]
+	puts "expense:   " + TheFox::Wallet::NUMBER_FORMAT % options[:entry_expense]
+	puts "balance:   " + TheFox::Wallet::NUMBER_FORMAT % balance
+	puts "category:  #{options[:entry_category]}"
+	puts "comment:  '#{options[:entry_comment]}'"
 	
-	wallet.add TheFox::Wallet::Entry.new(title, date, revenue, expense, category, comment)
-elsif command == 'list'
+	entry = TheFox::Wallet::Entry.new(options[:entry_title], options[:entry_date], options[:entry_revenue], options[:entry_expense], options[:entry_category], options[:entry_comment])
+	wallet = TheFox::Wallet::Wallet.new(options[:wallet_path])
+	wallet.add(entry)
+when 'list'
 	puts
 	
-	year, month, day = date.scan(/^(\d{2,4}).?(\d{0,2}).?(\d{0,2})/).shift.map{ |x|
+	year, month, day = options[:entry_date].scan(/^(\d{2,4}).?(\d{0,2}).?(\d{0,2})/).shift.map{ |x|
 		y = x.to_i
 		y == 0 ? nil : y
 	}
 	
-	entries = wallet.entries(year, month, day, category)
+	wallet = TheFox::Wallet::Wallet.new(options[:wallet_path])
+	entries = wallet.entries(year, month, day, options[:entry_category].to_s)
 	
-	entries_l = entries.map{ |day_name, day_items| day_items.count }.inject{ |sum, n| sum + n }.to_s.length
-	title_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['title'].length } }.flatten.max.to_i
-	revenue_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::TheFox::Wallet::NUMBER_FORMAT % day_item['revenue']).length } }.flatten.max.to_i
-	expense_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::TheFox::Wallet::NUMBER_FORMAT % day_item['expense']).length } }.flatten.max.to_i
-	balance_l = entries.map{ |month_item| month_item[1].map{ |day_item| (::TheFox::Wallet::NUMBER_FORMAT % day_item['balance']).length } }.flatten.max.to_i
-	category_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['category'].length } }.flatten.max.to_i
-	comment_l = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'].length } }.flatten.max.to_i
+	entries_l = entries
+		.map{ |day_name, day_items| day_items.count }
+		.inject{ |sum, n| sum + n }
+		.to_s
+		.length
+	title_l = entries
+		.map{ |month_item| month_item[1].map{ |day_item| day_item['title'].length }}
+		.flatten
+		.max
+		.to_i
+	revenue_l = entries
+		.map{ |month_item| month_item[1].map{ |day_item| (TheFox::Wallet::NUMBER_FORMAT % day_item['revenue']).length } }
+		.flatten
+		.max
+		.to_i
+	expense_l = entries
+		.map{ |month_item| month_item[1].map{ |day_item| (TheFox::Wallet::NUMBER_FORMAT % day_item['expense']).length } }
+		.flatten
+		.max
+		.to_i
+	balance_l = entries
+		.map{ |month_item| month_item[1].map{ |day_item| (TheFox::Wallet::NUMBER_FORMAT % day_item['balance']).length } }
+		.flatten
+		.max
+		.to_i
+	category_l = entries
+		.map{ |month_item| month_item[1].map{ |day_item| day_item['category'].length } }
+		.flatten
+		.max
+		.to_i
+	comment_l = entries
+		.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'].length } }
+		.flatten
+		.max
+		.to_i
 	
 	has_category_col = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['category'] } }.flatten.select{ |i| i != 'default' }.count > 0
-	has_comment_col = entries.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'] } }.flatten.select{ |i| i != '' }.count > 0
+	has_comment_col = entries
+		.map{ |month_item| month_item[1].map{ |day_item| day_item['comment'] } }
+		.flatten
+		.select{ |i| i != '' }
+		.count > 0
 	
 	if title_l < 6
 		title_l = 6
@@ -273,9 +285,9 @@ elsif command == 'list'
 			out += entries_f % entry_no
 			out += '  ' + '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
 			out += '  ' + title_f % title
-			out += '  ' + revenue_f % (::TheFox::Wallet::NUMBER_FORMAT % entry['revenue'])
-			out += '  ' + expense_f % (::TheFox::Wallet::NUMBER_FORMAT % entry['expense'])
-			out += '  ' + balance_f % (::TheFox::Wallet::NUMBER_FORMAT % entry['balance'])
+			out += '  ' + revenue_f % (TheFox::Wallet::NUMBER_FORMAT % entry['revenue'])
+			out += '  ' + expense_f % (TheFox::Wallet::NUMBER_FORMAT % entry['expense'])
+			out += '  ' + balance_f % (TheFox::Wallet::NUMBER_FORMAT % entry['balance'])
 			out += '  ' + category_f % category if has_category_col
 			out += '  ' + comment_f % comment if has_comment_col
 			
@@ -290,38 +302,60 @@ elsif command == 'list'
 	out = ''
 	out += ' ' * (12 + entries_l)
 	out += '  ' + title_f % 'TOTAL'
-	out += '  ' + revenue_f % (::TheFox::Wallet::NUMBER_FORMAT % revenue_total)
-	out += '  ' + expense_f % (::TheFox::Wallet::NUMBER_FORMAT % expense_total)
-	out += '  ' + balance_f % (::TheFox::Wallet::NUMBER_FORMAT % balance_total)
+	out += '  ' + revenue_f % (TheFox::Wallet::NUMBER_FORMAT % revenue_total)
+	out += '  ' + expense_f % (TheFox::Wallet::NUMBER_FORMAT % expense_total)
+	out += '  ' + balance_f % (TheFox::Wallet::NUMBER_FORMAT % balance_total)
 	puts out
-elsif command == 'cat'
+when 'categories'
+	wallet = TheFox::Wallet::Wallet.new(options[:wallet_path])
 	categories = wallet.categories
-	puts 'categories(' + categories.count.to_s + '):'
-	categories.each do |category_item|
-		puts "\t" + category_item
-	end
-elsif command == 'html'
+	puts "categories: #{categories.count}"
+	puts "\t" + categories.join("\n\t")
+when 'html'
+	wallet = TheFox::Wallet::Wallet.new(options[:wallet_path])
 	puts 'generate html to ' + wallet.html_path + ' ...'
 	wallet.gen_html
 	puts 'generate html done'
-elsif command == 'csv'
-	if path == ''
-		puts 'ERROR: Option --path is required for command "' + command + '"'
+when 'csv'
+	if options[:is_interactively]
+		vi_file = Tempfile.create('wallet-vi-import', '/tmp')
+		vi_file.puts('# This is a comment line.')
+		vi_file.puts('# Date,Title,Revenue,Expense,Category,Comment')
+		vi_file.puts('# Date,Title,Expense')
+		vi_file.puts
+		vi_file.puts
+		vi_file.close
+		
+		puts 'cwd:    ' + Dir.pwd
+		puts 'editor: ' + ENV['EDITOR']
+		puts 'file:   ' + vi_file.path
+		
+		system("#{ENV['EDITOR']} #{vi_file.path}")
+		system("grep -v '#' #{vi_file.path} | grep -v ^$ > #{vi_file.path}.ok")
+		
+		options[:path] = "#{vi_file.path}.ok"
+		File.unlink(vi_file.path)
+	end
+	
+	if options[:path].nil?
+		puts "ERROR: Option --path is required for command '#{command}'"
 		exit 1
 	end
 	
-	if import || !export
-		puts 'import csv ' + path + ' ...'
-		wallet.import_csv_file path
-		puts 'import csv ' + path + ' done'
+	wallet = TheFox::Wallet::Wallet.new(options[:wallet_path])
+	
+	if options[:is_import] || !options[:is_export]
+		puts "import csv #{options[:path]} ..."
+		wallet.import_csv_file(options[:path])
+		puts "import csv #{options[:path]} done"
 		
-		if path_is_temp
-			puts 'delete ' + path
-			File.unlink(path)
+		if options[:is_interactively]
+			puts "delete #{options[:path]}"
+			File.unlink(options[:path])
 		end
-	elsif export
-		puts 'export csv ' + path + ' ...'
-		wallet.export_csv_file path
-		puts 'export csv ' + path + ' done'
+	elsif options[:is_export]
+		puts "export csv #{options[:path]} ..."
+		wallet.export_csv_file(options[:path])
+		puts "export csv #{options[:path]} done"
 	end
 end
