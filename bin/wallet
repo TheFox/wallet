@@ -21,7 +21,6 @@ options = {
 	:path => nil,
 	:is_interactively => false,
 }
-balance = 0.0
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: wallet <command> [options]'
 	o.separator('')
@@ -54,12 +53,10 @@ opts = OptionParser.new do |o|
 	
 	o.on('-r', '--revenue <revenue>', 'Revenue used for the entry.') do |revenue|
 		options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
-		balance += options[:entry_revenue]
 	end
 	
 	o.on('-e', '--expense <expense>', 'Expense used for the entry.') do |expense|
 		options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
-		balance += options[:entry_expense]
 	end
 	
 	o.on('-c', '--category <category>', 'Category used for the entry.') do |category|
@@ -159,7 +156,7 @@ when 'add'
 	puts "date:      " + Date.parse(options[:entry_date]).to_s
 	puts "revenue:   " + TheFox::Wallet::NUMBER_FORMAT % options[:entry_revenue]
 	puts "expense:   " + TheFox::Wallet::NUMBER_FORMAT % options[:entry_expense]
-	puts "balance:   " + TheFox::Wallet::NUMBER_FORMAT % balance
+	puts "balance:   " + TheFox::Wallet::NUMBER_FORMAT % [options[:entry_revenue] + options[:entry_expense]]
 	puts "category:  #{options[:entry_category]}"
 	puts "comment:  '#{options[:entry_comment]}'"
 	
