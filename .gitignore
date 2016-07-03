@@ -4,6 +4,7 @@ CHANGELOG-*.txt
 /bin/test
 Gemfile.lock
 /releases/
+/tmp/
 /wallet/
 /wallet_test/
 *.csv
