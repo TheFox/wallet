@@ -24,13 +24,13 @@ module TheFox::Wallet
 				print "revenue: [#{@options[:entry_revenue]}] "
 				revenue_t = STDIN.gets.strip
 				if revenue_t.length > 0
-					@options[:entry_revenue] = eval(revenue_t).to_s.sub(/,/, '.').to_f.round(NUMBER_ROUND).abs
+					@options[:entry_revenue] = eval(revenue_t.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
 				end
 				
 				print "expense: [#{@options[:entry_expense]}] "
 				expense_t = STDIN.gets.strip
 				if expense_t.length > 0
-					@options[:entry_expense] = -eval(expense_t).to_s.sub(/,/, '.').to_f.round(NUMBER_ROUND).abs
+					@options[:entry_expense] = -eval(expense_t.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
 				end
 				
 				print "category: [#{@options[:entry_category]}] "
