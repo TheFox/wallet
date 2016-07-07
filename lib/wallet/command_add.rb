@@ -22,10 +22,16 @@ module TheFox::Wallet
 				end
 				
 				print "revenue: [#{@options[:entry_revenue]}] "
-				@options[:entry_revenue] = revenue(STDIN.gets.strip)
+				revenue_t = revenue(STDIN.gets.strip)
+				if !revenue_t.nil?
+					@options[:entry_revenue] = revenue_t
+				end
 				
 				print "expense: [#{@options[:entry_expense]}] "
-				@options[:entry_expense] = expense(STDIN.gets.strip)
+				expense_t = expense(STDIN.gets.strip)
+				if !expense_t.nil?
+					@options[:entry_expense] = expense_t
+				end
 				
 				print "category: [#{@options[:entry_category]}] "
 				category_t = STDIN.gets.strip
@@ -60,7 +66,7 @@ module TheFox::Wallet
 		end
 		
 		def revenue(revenue_s)
-			rv = 0.0
+			rv = nil
 			if !revenue_s.nil? && revenue_s.length > 0
 				rv = eval(revenue_s.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
 			end
@@ -68,7 +74,7 @@ module TheFox::Wallet
 		end
 		
 		def expense(expense_s)
-			rv = 0.0
+			rv = nil
 			if !expense_s.nil? && expense_s.length > 0
 				rv = -eval(expense_s.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
 			end

@@ -9,8 +9,8 @@ class TestAddCommand < MiniTest::Test
 		cmd = TheFox::Wallet::AddCommand.new
 		
 		# String
-		assert_equal(0.0, cmd.revenue(nil))
-		assert_equal(0.0, cmd.revenue(''))
+		assert_equal(nil, cmd.revenue(nil))
+		assert_equal(nil, cmd.revenue(''))
 		assert_equal(21.0, cmd.revenue('21'))
 		assert_equal(21.0, cmd.revenue(' 21 '))
 		
@@ -35,8 +35,8 @@ class TestAddCommand < MiniTest::Test
 		cmd = TheFox::Wallet::AddCommand.new
 		
 		# String
-		assert_equal(0.0, cmd.expense(nil))
-		assert_equal(0.0, cmd.expense(''))
+		assert_equal(nil, cmd.expense(nil))
+		assert_equal(nil, cmd.expense(''))
 		assert_equal(-21.0, cmd.expense('21'))
 		assert_equal(-21.0, cmd.expense(' 21 '))
 		
