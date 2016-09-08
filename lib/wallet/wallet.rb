@@ -31,7 +31,7 @@ module TheFox
 				end
 			end
 			
-			def add(entry)
+			def add(entry, is_unique = false)
 				if !entry.is_a?(Entry)
 					raise ArgumentError, 'variable must be a Entry instance'
 				end
@@ -76,7 +76,7 @@ module TheFox
 						file['days'][date_s] = []
 					end
 					
-					file['days'][date_s].push entry.to_h
+					file['days'][date_s].push(entry.to_h)
 					
 					@transaction_files[dbfile_basename]['file'] = file
 				else
@@ -91,7 +91,7 @@ module TheFox
 						file['days'][date_s] = []
 					end
 					
-					file['days'][date_s].push entry.to_h
+					file['days'][date_s].push(entry.to_h)
 					
 					store = YAML::Store.new(tmpfile_path)
 					store.transaction do

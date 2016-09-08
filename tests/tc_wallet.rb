@@ -5,30 +5,33 @@ require 'wallet'
 
 
 class TestWallet < MiniTest::Test
+	
+	include TheFox::Wallet
+	
 	def test_that_it_has_a_version_number
 		refute_nil(::TheFox::Wallet::VERSION)
 	end
 	
 	def test_base
-		wallet = TheFox::Wallet::Wallet.new('wallet_test')
+		wallet = Wallet.new('wallet_test')
 		
 		assert_equal('TheFox::Wallet::Wallet', wallet.class.to_s)
 		assert_equal(true, !Dir.exist?('wallet_test'))
 	end
 	
 	def test_add
-		wallet = TheFox::Wallet::Wallet.new('wallet_test')
+		wallet = Wallet.new('wallet_test')
 		
-		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-01', 100))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-01', 50))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-01', -10))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-02', -10))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2015-01-01', 100, 0, 'c1'))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2015-01-02', 0, -10, 'c2'))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-21', 20))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-21', 0, -5, 'c1'))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-21', 0, -1.5, 'c2'))
-		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-22', 10))
+		wallet.add(Entry.new(nil, 'test', '2014-01-01', 100))
+		wallet.add(Entry.new(nil, 'test', '2014-01-01', 50))
+		wallet.add(Entry.new(nil, 'test', '2014-01-01', -10))
+		wallet.add(Entry.new(nil, 'test', '2014-01-02', -10))
+		wallet.add(Entry.new(nil, 'test', '2015-01-01', 100, 0, 'c1'))
+		wallet.add(Entry.new(nil, 'test', '2015-01-02', 0, -10, 'c2'))
+		wallet.add(Entry.new(nil, 'test', '2015-02-21', 20))
+		wallet.add(Entry.new(nil, 'test', '2015-02-21', 0, -5, 'c1'))
+		wallet.add(Entry.new(nil, 'test', '2015-02-21', 0, -1.5, 'c2'))
+		wallet.add(Entry.new(nil, 'test', '2015-02-22', 10))
 		
 		sum = wallet.sum
 		assert_equal(280, sum[:revenue])
@@ -191,7 +194,7 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_exceptions
-		wallet = TheFox::Wallet::Wallet.new('wallet_test')
+		wallet = Wallet.new('wallet_test')
 		
 		assert_raises(ArgumentError) do
 			wallet.add(12)

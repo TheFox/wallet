@@ -1,4 +1,6 @@
 
+require 'uuid'
+
 module TheFox
 	module Wallet
 		
@@ -12,7 +14,11 @@ module TheFox
 			attr_reader :category
 			attr_reader :comment
 			
-			def initialize(title = nil, date = nil, revenue = nil, expense = nil, category = nil, comment = nil)
+			def initialize(id = nil, title = nil, date = nil, revenue = nil, expense = nil, category = nil, comment = nil)
+				if !id
+					uuid = UUID.new
+					id = uuid.generate
+				end
 				date ||= Date.today
 				revenue ||= 0.0
 				expense ||= 0.0
