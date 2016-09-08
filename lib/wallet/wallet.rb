@@ -32,7 +32,7 @@ module TheFox
 			end
 			
 			def add(entry)
-				if !entry.is_a? Entry
+				if !entry.is_a?(Entry)
 					raise ArgumentError, 'variable must be a Entry instance'
 				end
 				
@@ -56,10 +56,10 @@ module TheFox
 				# puts
 				
 				if @has_transaction
-					if @transaction_files.has_key? dbfile_basename
+					if @transaction_files.has_key?(dbfile_basename)
 						file = @transaction_files[dbfile_basename]['file']
 					else
-						if File.exist? dbfile_path
+						if File.exist?(dbfile_path)
 							file = YAML.load_file(dbfile_path)
 							file['meta']['updated_at'] = DateTime.now.to_s
 						end
@@ -72,7 +72,7 @@ module TheFox
 						}
 					end
 					
-					if !file['days'].has_key? date_s
+					if !file['days'].has_key?(date_s)
 						file['days'][date_s] = []
 					end
 					
@@ -80,27 +80,27 @@ module TheFox
 					
 					@transaction_files[dbfile_basename]['file'] = file
 				else
-					create_dirs()
+					create_dirs
 					
-					if File.exist? dbfile_path
+					if File.exist?(dbfile_path)
 						file = YAML.load_file(dbfile_path)
 						file['meta']['updated_at'] = DateTime.now.to_s
 					end
 					
-					if !file['days'].has_key? date_s
+					if !file['days'].has_key?(date_s)
 						file['days'][date_s] = []
 					end
 					
 					file['days'][date_s].push entry.to_h
 					
-					store = YAML::Store.new tmpfile_path
+					store = YAML::Store.new(tmpfile_path)
 					store.transaction do
 						store['meta'] = file['meta']
 						store['days'] = file['days']
 					end
 					
-					if File.exist? tmpfile_path
-						File.rename tmpfile_path, dbfile_path
+					if File.exist?(tmpfile_path)
+						File.rename(tmpfile_path, dbfile_path)
 					end
 				end
 			end
@@ -109,28 +109,30 @@ module TheFox
 				@has_transaction = true
 				@transaction_files = {}
 				
-				create_dirs()
+				create_dirs
 			end
 			
 			def transaction_end
 				catch(:done) do
 					@transaction_files.each do |tr_file_key, tr_file_data|
-						throw :done if @exit
+						if @exit
+							throw :done
+						end
 						# puts 'keys left: ' + @transaction_files.keys.count.to_s
 						# puts 'tr_file_key: ' + tr_file_key
 						# puts 'path:        ' + tr_file_data['path']
 						# puts 'tmp_path:    ' + tr_file_data['tmp_path']
 						# puts
 						
-						store = YAML::Store.new tr_file_data['tmp_path']
+						store = YAML::Store.new(tr_file_data['tmp_path'])
 						store.transaction do
 							store['meta'] = tr_file_data['file']['meta']
 							store['days'] = tr_file_data['file']['days']
 						end
-						@transaction_files.delete tr_file_key
+						@transaction_files.delete(tr_file_key)
 						
-						if File.exist? tr_file_data['tmp_path']
-							File.rename tr_file_data['tmp_path'], tr_file_data['path']
+						if File.exist?(tr_file_data['tmp_path'])
+							File.rename(tr_file_data['tmp_path'], tr_file_data['path'])
 						end
 					end
 				end
@@ -287,7 +289,7 @@ module TheFox
 			end
 			
 			def gen_html
-				create_dirs()
+				create_dirs
 				
 				html_options_path = "#{@html_path}/options.yml"
 				html_options = {
@@ -298,8 +300,8 @@ module TheFox
 					},
 					'changes' => {},
 				}
-				if Dir.exist? @html_path
-					if File.exist? html_options_path
+				if Dir.exist?(@html_path)
+					if File.exist?(html_options_path)
 						html_options = YAML.load_file(html_options_path)
 						html_options['meta']['updated_at'] = DateTime.now.to_s
 					end
@@ -416,7 +418,7 @@ module TheFox
 						data = YAML.load_file(file_path)
 						
 						generate_html = false
-						if html_options['changes'].has_key? file_name
+						if html_options['changes'].has_key?(file_name)
 							if html_options['changes'][file_name]['updated_at'] != data['meta']['updated_at']
 								html_options['changes'][file_name]['updated_at'] = data['meta']['updated_at']
 								generate_html = true
@@ -683,14 +685,16 @@ module TheFox
 				')
 				index_file.close
 				
-				store = YAML::Store.new html_options_path
+				store = YAML::Store.new(html_options_path)
 				store.transaction do
 					store['meta'] = html_options['meta']
 					store['changes'] = html_options['changes']
 				end
 				
 				totaldat_file_c = years_total.map{ |k, y| "#{y.year} #{y.revenue} #{y.expense} #{y.balance} #{y.balance_total}" }
-				totaldat_file_c = totaldat_file_c.slice(-6, 6) if totaldat_file_c.count > 6
+				if totaldat_file_c.count > 6
+					totaldat_file_c = totaldat_file_c.slice(-6, 6)
+				end
 				totaldat_file_c = totaldat_file_c.join("\n")
 				
 				totaldat_file_path = "#{@tmp_path}/total.dat"
@@ -729,7 +733,9 @@ module TheFox
 				catch(:done) do
 					row_n = 0
 					CSV.foreach(file_path) do |row|
-						throw :done if @exit
+						if @exit
+							throw :done
+						end
 						row_n += 1
 						
 						date = ''
@@ -752,15 +758,14 @@ module TheFox
 							end
 						end
 						
-						add Entry.new(title, date, revenue, expense, category, comment)
-						
+						add(Entry.new(title, date, revenue, expense, category, comment))
 					end
 					
 					puts
 					puts 'save data ...'
 				end
 				
-				transaction_end()
+				transaction_end
 			end
 			
 			def export_csv_file(file_path)
@@ -784,7 +789,7 @@ module TheFox
 								'"'+entry['comment']+'"',
 							].join(',')
 							
-							csv_file.puts out
+							csv_file.puts(out)
 						end
 					end
 				end
@@ -795,15 +800,15 @@ module TheFox
 			private
 			
 			def create_dirs
-				if !Dir.exist? @dir_path
+				if !Dir.exist?(@dir_path)
 					Dir.mkdir(@dir_path)
 				end
 				
-				if !Dir.exist? @data_path
+				if !Dir.exist?(@data_path)
 					Dir.mkdir(@data_path)
 				end
 				
-				if !Dir.exist? @tmp_path
+				if !Dir.exist?(@tmp_path)
 					Dir.mkdir(@tmp_path)
 				end
 				

@@ -6,7 +6,7 @@ require 'wallet'
 
 class TestWallet < MiniTest::Test
 	def test_that_it_has_a_version_number
-		refute_nil ::TheFox::Wallet::VERSION
+		refute_nil(::TheFox::Wallet::VERSION)
 	end
 	
 	def test_base
@@ -19,18 +19,18 @@ class TestWallet < MiniTest::Test
 	def test_add
 		wallet = TheFox::Wallet::Wallet.new('wallet_test')
 		
-		wallet.add TheFox::Wallet::Entry.new('test', '2014-01-01', 100)
-		wallet.add TheFox::Wallet::Entry.new('test', '2014-01-01', 50)
-		wallet.add TheFox::Wallet::Entry.new('test', '2014-01-01', -10)
-		wallet.add TheFox::Wallet::Entry.new('test', '2014-01-02', -10)
-		wallet.add TheFox::Wallet::Entry.new('test', '2015-01-01', 100, 0, 'c1')
-		wallet.add TheFox::Wallet::Entry.new('test', '2015-01-02', 0, -10, 'c2')
-		wallet.add TheFox::Wallet::Entry.new('test', '2015-02-21', 20)
-		wallet.add TheFox::Wallet::Entry.new('test', '2015-02-21', 0, -5, 'c1')
-		wallet.add TheFox::Wallet::Entry.new('test', '2015-02-21', 0, -1.5, 'c2')
-		wallet.add TheFox::Wallet::Entry.new('test', '2015-02-22', 10)
+		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-01', 100))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-01', 50))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-01', -10))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2014-01-02', -10))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2015-01-01', 100, 0, 'c1'))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2015-01-02', 0, -10, 'c2'))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-21', 20))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-21', 0, -5, 'c1'))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-21', 0, -1.5, 'c2'))
+		wallet.add(TheFox::Wallet::Entry.new('test', '2015-02-22', 10))
 		
-		sum = wallet.sum()
+		sum = wallet.sum
 		assert_equal(280, sum[:revenue])
 		assert_equal(-36.5, sum[:expense])
 		assert_equal(243.5, sum[:balance])
@@ -181,18 +181,20 @@ class TestWallet < MiniTest::Test
 		assert_equal(true, File.exist?('wallet_test/data/month_2015_01.yml'))
 		assert_equal(true, File.exist?('wallet_test/data/month_2015_02.yml'))
 		
-		File.unlink 'wallet_test/data/month_2014_01.yml'
-		File.unlink 'wallet_test/data/month_2015_01.yml'
-		File.unlink 'wallet_test/data/month_2015_02.yml'
-		Dir.unlink 'wallet_test/data'
-		File.unlink 'wallet_test/tmp/.gitignore'
-		Dir.unlink 'wallet_test/tmp'
-		Dir.unlink 'wallet_test'
+		File.unlink('wallet_test/data/month_2014_01.yml')
+		File.unlink('wallet_test/data/month_2015_01.yml')
+		File.unlink('wallet_test/data/month_2015_02.yml')
+		Dir.unlink('wallet_test/data')
+		File.unlink('wallet_test/tmp/.gitignore')
+		Dir.unlink('wallet_test/tmp')
+		Dir.unlink('wallet_test')
 	end
 	
 	def test_exceptions
 		wallet = TheFox::Wallet::Wallet.new('wallet_test')
 		
-		assert_raises(ArgumentError){ wallet.add 12 }
+		assert_raises(ArgumentError) do
+			wallet.add(12)
+		end
 	end
 end

@@ -5,8 +5,11 @@ require 'wallet'
 
 
 class TestAddCommand < MiniTest::Test
+	
+	include TheFox::Wallet
+	
 	def test_revenue
-		cmd = TheFox::Wallet::AddCommand.new
+		cmd = AddCommand.new
 		
 		# String
 		assert_equal(nil, cmd.revenue(nil))
@@ -32,7 +35,7 @@ class TestAddCommand < MiniTest::Test
 	end
 	
 	def test_expense
-		cmd = TheFox::Wallet::AddCommand.new
+		cmd = AddCommand.new
 		
 		# String
 		assert_equal(nil, cmd.expense(nil))

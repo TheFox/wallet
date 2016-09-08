@@ -12,7 +12,12 @@ module TheFox
 			attr_reader :category
 			attr_reader :comment
 			
-			def initialize(title = '', date = Date.today, revenue = 0.0, expense = 0.0, category = 'default', comment = '')
+			def initialize(title = nil, date = nil, revenue = nil, expense = nil, category = nil, comment = nil)
+				date ||= Date.today
+				revenue ||= 0.0
+				expense ||= 0.0
+				category ||= 'default'
+				
 				revenue_t = revenue.to_f
 				expense_t = expense.to_f
 				
@@ -57,7 +62,7 @@ module TheFox
 				end
 				
 				@revenue = revenue_t
-				calc_balance()
+				calc_balance
 			end
 			
 			def expense=(expense)
@@ -68,7 +73,7 @@ module TheFox
 				end
 				
 				@expense = expense_t
-				calc_balance()
+				calc_balance
 			end
 			
 			def category=(category)
