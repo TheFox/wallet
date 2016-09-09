@@ -797,6 +797,10 @@ module TheFox
 				csv_file.close
 			end
 			
+			def find_entry_by_id(id)
+				
+			end
+			
 			private
 			
 			def create_dirs

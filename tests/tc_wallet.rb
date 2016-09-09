@@ -200,4 +200,27 @@ class TestWallet < MiniTest::Test
 			wallet.add(12)
 		end
 	end
+	
+	def test_find_entry_by_id
+		wallet = Wallet.new('wallet_test')
+		
+		wallet.add(Entry.new(1, 'test', '2014-01-01', 100))
+		wallet.add(Entry.new(2, 'test', '2014-01-01', 50))
+		wallet.add(Entry.new(3, 'test', '2014-01-01', -10))
+		
+		# @TODO Tests here
+		
+		assert_equal(true, File.exist?('wallet_test/data/month_2014_01.yml'))
+		assert_equal(true, File.exist?('wallet_test/data/month_2015_01.yml'))
+		assert_equal(true, File.exist?('wallet_test/data/month_2015_02.yml'))
+		
+		File.unlink('wallet_test/data/month_2014_01.yml')
+		File.unlink('wallet_test/data/month_2015_01.yml')
+		File.unlink('wallet_test/data/month_2015_02.yml')
+		Dir.unlink('wallet_test/data')
+		File.unlink('wallet_test/tmp/.gitignore')
+		Dir.unlink('wallet_test/tmp')
+		Dir.unlink('wallet_test')
+	end
+	
 end
