@@ -22,6 +22,10 @@ opts = OptionParser.new do |o|
 		options[:wallet_path] = path
 	end
 	
+	o.on('--id <id>', 'ID used for the entry.') do |id|
+		options[:entry_id] = id
+	end
+	
 	o.on('-t', '--title <title>', 'Title used for the entry.') do |title|
 		options[:entry_title] = title
 	end
@@ -63,8 +67,12 @@ opts = OptionParser.new do |o|
 		options[:path] = path
 	end
 	
-	o.on('-i', 'Use some commands interactively.') do
+	o.on('-i', '--interactive', 'Use some commands interactively.') do
 		options[:is_interactively] = true
+	end
+	
+	o.on('-f', '--force', 'Force add command.') do
+		options[:force] = true
 	end
 	
 	o.on_tail('-V', '--version', 'Show version.') do
@@ -83,10 +91,14 @@ ARGV << '-h' if ARGV.count == 0
 commands = opts.parse(ARGV)
 command_name = commands.shift
 
-begin
-	command = TheFox::Wallet::Command.create_by_name(command_name, options)
-	command.run
-rescue Exception => e
-	puts "ERROR: #{e}"
-	exit 1
+if command_name
+	begin
+		command = TheFox::Wallet::Command.create_by_name(command_name, options)
+		command.run
+	rescue Exception => e
+		puts "ERROR: #{e}"
+		exit 1
+	end
+else
+	opts.parse(['-h'])
 end

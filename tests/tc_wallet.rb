@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'minitest/autorun'
+require 'fileutils'
 require 'wallet'
 
 
@@ -19,7 +20,7 @@ class TestWallet < MiniTest::Test
 		assert_equal(true, !Dir.exist?('wallet_test'))
 	end
 	
-	def test_add
+	def test_add1
 		wallet = Wallet.new('wallet_test')
 		
 		wallet.add(Entry.new(nil, 'test', '2014-01-01', 100))
@@ -179,18 +180,20 @@ class TestWallet < MiniTest::Test
 		assert_equal(-1.5, sum[:balance])
 		
 		assert_equal(['default', 'c1', 'c2'], wallet.categories)
+	end
+	
+	def test_add2
+		wallet = Wallet.new('wallet_test')
 		
-		assert_equal(true, File.exist?('wallet_test/data/month_2014_01.yml'))
-		assert_equal(true, File.exist?('wallet_test/data/month_2015_01.yml'))
-		assert_equal(true, File.exist?('wallet_test/data/month_2015_02.yml'))
+		assert_equal(true, wallet.add(Entry.new(nil, 'test', '2014-01-01', 1)))
+		assert_equal(true, wallet.add(Entry.new(nil, 'test', '2014-01-01', 1), true))
 		
-		File.unlink('wallet_test/data/month_2014_01.yml')
-		File.unlink('wallet_test/data/month_2015_01.yml')
-		File.unlink('wallet_test/data/month_2015_02.yml')
-		Dir.unlink('wallet_test/data')
-		File.unlink('wallet_test/tmp/.gitignore')
-		Dir.unlink('wallet_test/tmp')
-		Dir.unlink('wallet_test')
+		assert_equal(true, wallet.add(Entry.new(1, 'test', '2014-01-01', 1), true))
+		assert_equal(false, wallet.add(Entry.new(1, 'test', '2014-01-01', 1), true))
+		
+		assert_equal(true, wallet.add(Entry.new('my_id', 'test', '2014-01-01', 1), true))
+		assert_equal(false, wallet.add(Entry.new('my_id', 'test', '2014-01-01', 1), true))
+		assert_equal(true, wallet.add(Entry.new('my_id', 'test', '2014-01-01', 1), false))
 	end
 	
 	def test_exceptions
@@ -204,23 +207,30 @@ class TestWallet < MiniTest::Test
 	def test_find_entry_by_id
 		wallet = Wallet.new('wallet_test')
 		
-		wallet.add(Entry.new(1, 'test', '2014-01-01', 100))
-		wallet.add(Entry.new(2, 'test', '2014-01-01', 50))
-		wallet.add(Entry.new(3, 'test', '2014-01-01', -10))
+		wallet.add(Entry.new(nil, 'test', '2014-01-01', -1))
+		wallet.add(Entry.new(1, 'test', '2014-01-01', 1))
+		wallet.add(Entry.new(2, 'test', '2014-01-02', 2))
+		wallet.add(Entry.new(3, 'test', '2015-03-04', 3))
 		
-		# @TODO Tests here
+		found_entry = wallet.find_entry_by_id(1)
+		assert_instance_of(Entry, found_entry)
+		assert_equal(1, found_entry.id)
 		
-		assert_equal(true, File.exist?('wallet_test/data/month_2014_01.yml'))
-		assert_equal(true, File.exist?('wallet_test/data/month_2015_01.yml'))
-		assert_equal(true, File.exist?('wallet_test/data/month_2015_02.yml'))
+		found_entry = wallet.find_entry_by_id(2)
+		assert_instance_of(Entry, found_entry)
+		assert_equal(2, found_entry.id)
 		
-		File.unlink('wallet_test/data/month_2014_01.yml')
-		File.unlink('wallet_test/data/month_2015_01.yml')
-		File.unlink('wallet_test/data/month_2015_02.yml')
-		Dir.unlink('wallet_test/data')
-		File.unlink('wallet_test/tmp/.gitignore')
-		Dir.unlink('wallet_test/tmp')
-		Dir.unlink('wallet_test')
+		found_entry = wallet.find_entry_by_id(3)
+		assert_instance_of(Entry, found_entry)
+		assert_equal(3, found_entry.id)
+		
+		assert_nil(wallet.find_entry_by_id(4))
+		assert_nil(wallet.find_entry_by_id(5))
+		assert_nil(wallet.find_entry_by_id(6))
+	end
+	
+	def teardown
+		FileUtils.rm_r('wallet_test', {:force => true})
 	end
 	
 end

@@ -6,6 +6,7 @@ module TheFox
 		
 		class Entry
 			
+			attr_reader :id
 			attr_reader :title
 			attr_reader :date
 			attr_reader :revenue
@@ -24,9 +25,7 @@ module TheFox
 				expense ||= 0.0
 				category ||= 'default'
 				
-				revenue_t = revenue.to_f
-				expense_t = expense.to_f
-				
+				self.id = id
 				self.title = title
 				self.date = date
 				
@@ -34,6 +33,8 @@ module TheFox
 				@expense = 0.0
 				@balance = 0.0
 				
+				revenue_t = revenue.to_f
+				expense_t = expense.to_f
 				if revenue_t < 0 && expense_t == 0
 					self.revenue = 0.0
 					self.expense = revenue_t
@@ -46,12 +47,17 @@ module TheFox
 				self.comment = comment
 			end
 			
+			def id=(id)
+				@id = id
+			end
+			
 			def title=(title)
 				@title = title.to_s
 			end
 			
 			def date=(date)
 				if date.is_a?(String)
+					# puts "date parse: '#{date}'"
 					@date = Date.parse(date)
 				elsif date.is_a?(Date)
 					@date = date
@@ -92,6 +98,7 @@ module TheFox
 			
 			def to_h
 				{
+					'id' => @id,
 					'title' => @title,
 					'date' => @date.to_s,
 					'revenue' => @revenue,
@@ -102,11 +109,25 @@ module TheFox
 				}
 			end
 			
+			def self.from_h(h)
+				id = h['id']
+				title = h['title']
+				date = h['date']
+				revenue = h['revenue']
+				expense = h['expense']
+				# balance = h['balance']
+				category = h['category']
+				comment = h['comment']
+				
+				self.new(id, title, date, revenue, expense, category, comment)
+			end
+			
 			private
 			
 			def calc_balance
 				@balance = (@revenue.round(NUMBER_ROUND) + @expense.round(NUMBER_ROUND)).to_f.round(NUMBER_ROUND)
 			end
+			
 		end
 		
 	end

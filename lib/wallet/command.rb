@@ -11,6 +11,7 @@ module TheFox::Wallet
 		def initialize(options = {})
 			@options = options || {}
 			@options[:wallet_path] ||= 'wallet'
+			@options[:entry_id] ||= nil
 			@options[:entry_title] ||= nil
 			@options[:entry_date] ||= Date.today.to_s
 			@options[:entry_revenue] ||= 0.0
@@ -21,6 +22,7 @@ module TheFox::Wallet
 			@options[:is_export] ||= false
 			@options[:path] ||= nil
 			@options[:is_interactively] ||= false
+			@options[:force] ||= false
 		end
 		
 		def run

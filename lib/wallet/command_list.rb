@@ -118,7 +118,7 @@ module TheFox::Wallet
 					balance_total += entry['balance']
 					
 					category = entry['category'] == 'default' ? '' : entry['category']
-					has_category = category != ''
+					# has_category = category != ''
 					
 					comment = entry['comment']
 					comment = comment[0, 22] + '...' if comment.length >= 25

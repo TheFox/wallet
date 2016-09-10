@@ -4,7 +4,8 @@
 require 'yaml'
 require 'yaml/store'
 require 'csv'
-require 'ostruct'
+# require 'ostruct'
+# require 'pp'
 
 
 module TheFox
@@ -24,6 +25,8 @@ module TheFox
 				@has_transaction = false
 				@transaction_files = {}
 				
+				@entries_by_ids = nil
+				
 				Signal.trap('SIGINT') do
 					puts
 					puts 'received SIGINT. break ...'
@@ -34,6 +37,14 @@ module TheFox
 			def add(entry, is_unique = false)
 				if !entry.is_a?(Entry)
 					raise ArgumentError, 'variable must be a Entry instance'
+				end
+				
+				# puts "add, id #{entry.id}"
+				# puts "add, is_unique    #{is_unique}"
+				# puts "add, entry_exist? #{entry_exist?(entry)}"
+				# puts
+				if is_unique && entry_exist?(entry)
+					return false
 				end
 				
 				date = entry.date
@@ -103,6 +114,13 @@ module TheFox
 						File.rename(tmpfile_path, dbfile_path)
 					end
 				end
+				
+				if @entries_by_ids.nil?
+					@entries_by_ids = {}
+				end
+				@entries_by_ids[entry.id] = entry
+				
+				true
 			end
 			
 			def transaction_start
@@ -201,7 +219,6 @@ module TheFox
 			end
 			
 			def entries(begin_date, category = nil)
-			#def entries(year = nil, month = nil, day = nil, category = nil)
 				begin_year, begin_month, begin_day = begin_date.split('-').map{ |n| n.to_i }
 				
 				begin_year_s = begin_year.to_i.to_s
@@ -728,77 +745,104 @@ module TheFox
 			end
 			
 			def import_csv_file(file_path)
-				transaction_start()
+				transaction_start
 				
-				catch(:done) do
-					row_n = 0
-					CSV.foreach(file_path) do |row|
-						if @exit
-							throw :done
-						end
-						row_n += 1
-						
-						date = ''
-						title = ''
-						revenue = 0.0
-						expense = 0.0
-						category = ''
-						comment = ''
-						
-						print 'import row ' + row_n.to_s + "\r"
-						
-						if row.count < 2
-							raise IndexError, 'invalid row ' + row_n.to_s + ': "' + row.join(',') + '"'
-						elsif row.count >= 2
-							date, title, revenue, expense, category, comment = row
-							revenue = revenue.to_f
-							if revenue < 0
-								expense = revenue
-								revenue = 0.0
-							end
-						end
-						
-						add(Entry.new(title, date, revenue, expense, category, comment))
+				row_n = 0
+				csv_options = {
+					:col_sep => ',',
+					#:row_sep => "\n",
+					:headers => true,
+					:return_headers => false,
+					:skip_blanks => true,
+					# :encoding => 'UTF-8',
+				}
+				CSV.foreach(file_path, csv_options) do |row|
+					if @exit
+						break
 					end
+					row_n += 1
 					
-					puts
-					puts 'save data ...'
+					id = row.field('id')
+					date = row.field('date')
+					title = row.field('title')
+					revenue = row.field('revenue')
+					expense = row.field('expense')
+					# balance = row.field('balance')
+					category = row.field('category')
+					comment = row.field('comment')
+					
+					added = add(Entry.new(id, title, date, revenue, expense, category, comment), true)
+					
+					puts "import row '#{id}' -- #{added ? 'YES' : 'NO'}"
 				end
+				
+				puts
+				puts 'save data ...'
 				
 				transaction_end
 			end
 			
 			def export_csv_file(file_path)
-				csv_file = File.open(file_path, 'w')
-				csv_file.puts 'Date,Title,Revenue,Expense,Balance,Category,Comment'
-				
-				Dir[@data_path + '/month_*.yml'].each do |yaml_file_path|
-					puts 'export ' + File.basename(yaml_file_path)
-					
-					data = YAML.load_file(yaml_file_path)
-					
-					data['days'].each do |day_name, day_items|
-						day_items.each do |entry|
-							out = [
-								entry['date'],
-								'"'+entry['title']+'"',
-								::TheFox::Wallet::NUMBER_FORMAT % entry['revenue'],
-								::TheFox::Wallet::NUMBER_FORMAT % entry['expense'],
-								::TheFox::Wallet::NUMBER_FORMAT % entry['balance'],
-								'"'+entry['category']+'"',
-								'"'+entry['comment']+'"',
-							].join(',')
-							
-							csv_file.puts(out)
+				csv_options = {
+					:col_sep => ',',
+					:row_sep => "\n",
+					:headers => [
+						'id', 'date', 'title', 'revenue', 'expense', 'balance', 'category', 'comment',
+					],
+					:write_headers => true,
+					# :encoding => 'ISO-8859-1',
+				}
+				CSV.open(file_path, 'wb', csv_options) do |csv|
+					Dir[@data_path + '/month_*.yml'].each do |yaml_file_path|
+						puts 'export ' + File.basename(yaml_file_path)
+						
+						data = YAML.load_file(yaml_file_path)
+						
+						data['days'].each do |day_name, day_items|
+							day_items.each do |entry|
+								csv << [
+									entry['id'],
+									entry['date'],
+									entry['title'],
+									::TheFox::Wallet::NUMBER_FORMAT % entry['revenue'],
+									::TheFox::Wallet::NUMBER_FORMAT % entry['expense'],
+									::TheFox::Wallet::NUMBER_FORMAT % entry['balance'],
+									entry['category'],
+									entry['comment'],
+								]
+							end
 						end
 					end
 				end
+			end
+			
+			def entry_exist?(entry)
+				if !entry.is_a?(Entry)
+					raise ArgumentError, 'variable must be a Entry instance'
+				end
 				
-				csv_file.close
+				!find_entry_by_id(entry.id).nil?
 			end
 			
 			def find_entry_by_id(id)
+				if @entries_by_ids.nil?
+					glob = File.expand_path('month_*.yml', @data_path)
+					
+					@entries_by_ids = Dir[glob].map { |file_path|
+						data = YAML.load_file(file_path)
+						data['days'].map{ |day_name, day_items|
+							day_items.map{ |entry|
+								Entry.from_h(entry)
+							}
+						}
+					}.flatten.map{ |entry|
+						[entry.id, entry]
+					}.to_h
+					
+					# pp @entries_by_ids
+				end
 				
+				@entries_by_ids[id]
 			end
 			
 			private
@@ -824,14 +868,14 @@ module TheFox
 				end
 			end
 			
-			def calc_day(day_a, category = nil)
+			def calc_day(day, category = nil)
 				revenue = 0
 				expense = 0
 				balance = 0
 				if category
 					category.to_s.downcase!
 					
-					day_a.each do |entry|
+					day.each do |entry|
 						if entry['category'] == category
 							revenue += entry['revenue']
 							expense += entry['expense']
@@ -839,7 +883,7 @@ module TheFox
 						end
 					end
 				else
-					day_a.each do |entry|
+					day.each do |entry|
 						revenue += entry['revenue']
 						expense += entry['expense']
 						balance += entry['balance']
