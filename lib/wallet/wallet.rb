@@ -4,7 +4,10 @@
 require 'yaml'
 require 'yaml/store'
 require 'csv'
-# require 'ostruct'
+
+# OpenStruct use to generate HTML.
+require 'ostruct'
+
 # require 'pp'
 
 
