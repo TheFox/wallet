@@ -2,7 +2,6 @@
 
 require 'minitest/autorun'
 require 'wallet'
-require 'pp'
 
 
 class TestAddCommand < MiniTest::Test
