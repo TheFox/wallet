@@ -1,0 +1,7 @@
+
+--type=ruby
+--type=yaml
+
+--ignore-dir=coverage
+--ignore-dir=tmp
+
