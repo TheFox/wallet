@@ -28,7 +28,7 @@ module TheFox::Wallet
 		def run
 		end
 		
-		def self.create_by_name(name, options)
+		def self.create_by_name(name, options = nil)
 			classes = [
 				AddCommand,
 				ListCommand,

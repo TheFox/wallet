@@ -52,8 +52,14 @@ class TestEntry < MiniTest::Test
 		entry = Entry.new
 		entry.date = 1473660305
 		assert_equal('2016-09-12', entry.date.to_s)
+	end
+	
+	def test_set_date_exception
+		entry = Entry.new
 		
-		# assert_raises(ArgumentError){ entry.date = 12 }
+		assert_raises(ArgumentError){ entry.date = nil }
+		
+		# yyyy-04-31 does not exist
 		assert_raises(ArgumentError){ entry.date = '2014-4-31' }
 	end
 	
@@ -141,4 +147,17 @@ class TestEntry < MiniTest::Test
 		assert_equal(7.66, entry.to_h['balance'])
 		assert_equal('c3', entry.to_h['category'])
 	end
+	
+	def test_from_hash
+		h = {
+			'id' => 'id_foo_bar',
+			'comment' => 'comment_foo_bar',
+		}
+		
+		entry = Entry.from_h(h)
+		
+		assert_equal('id_foo_bar', entry.id)
+		assert_equal('comment_foo_bar', entry.comment)
+	end
+	
 end

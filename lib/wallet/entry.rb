@@ -57,14 +57,19 @@ module TheFox
 			end
 			
 			def date=(date)
+				# puts "class: #{date.class}"
 				case date
 				when String
+					# puts 'String'
 					@date = Date.parse(date)
 				when Fixnum
+					# puts 'Fixnum'
 					@date = Time.at(date).to_date
 				when Date
+					# puts 'Date'
 					@date = date
 				else
+					# puts 'RAISE'
 					raise ArgumentError, "Wrong class: #{date.class}"
 				end
 			end

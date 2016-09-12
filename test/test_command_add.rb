@@ -2,11 +2,36 @@
 
 require 'minitest/autorun'
 require 'wallet'
+require 'pp'
 
 
 class TestAddCommand < MiniTest::Test
 	
 	include TheFox::Wallet
+	
+	def test_command
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_id => 'id1',
+			:entry_title => 'Test1',
+			:entry_date => '2014-01-01'
+		}
+		cmd = AddCommand.new(options)
+		cmd.run
+		
+		wallet = Wallet.new('wallet_test')
+		entries = wallet.entries('2014-01-01')
+		
+		assert_equal(1, entries['2014-01-01'].count)
+	end
+	
+	def test_command_exception
+		options = {
+			:wallet_path => 'wallet_test',
+		}
+		cmd = AddCommand.new(options)
+		assert_raises(RuntimeError){ cmd.run }
+	end
 	
 	def test_revenue
 		cmd = AddCommand.new
@@ -60,4 +85,9 @@ class TestAddCommand < MiniTest::Test
 		assert_equal(-0.1, cmd.expense('0,1-0,2'))
 		assert_equal(0.0, cmd.expense('0,1-0,1'))
 	end
+	
+	def teardown
+		FileUtils.rm_r('wallet_test', {:force => true})
+	end
+	
 end

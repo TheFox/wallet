@@ -8,6 +8,7 @@ module TheFox::Wallet
 			if @options[:entry_category].nil?
 				@options[:entry_category] = 'default'
 			end
+			
 			if @options[:is_interactively]
 				print "title: [#{@options[:entry_title]}] "
 				title_t = STDIN.gets.strip
