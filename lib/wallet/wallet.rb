@@ -1,6 +1,7 @@
 
 # Schmeisst die Fuffies durch den Club und schreit Boah Boah!
 
+require 'logger'
 require 'yaml'
 require 'yaml/store'
 require 'csv'
@@ -20,6 +21,7 @@ module TheFox
 			
 			def initialize(dir_path = 'wallet')
 				@exit = false
+				@log = nil
 				@dir_path = dir_path
 				@data_path = File.expand_path('data', @dir_path)
 				@html_path = File.expand_path('html', @dir_path)
@@ -35,6 +37,10 @@ module TheFox
 					puts 'received SIGINT. break ...'
 					@exit = true
 				end
+			end
+			
+			def log=(log)
+				@log = log
 			end
 			
 			def add(entry, is_unique = false)
@@ -835,6 +841,8 @@ module TheFox
 			
 			def find_entry_by_id(id)
 				if @entries_by_ids.nil?
+					@log.debug('build entry-by-id index') if @log
+					
 					glob = File.expand_path('month_*.yml', @data_path)
 					
 					@entries_by_ids = Dir[glob].map { |file_path|
