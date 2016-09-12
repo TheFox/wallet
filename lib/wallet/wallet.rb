@@ -17,11 +17,12 @@ module TheFox
 		
 		class Wallet
 			
+			attr_writer :logger
 			attr_reader :html_path
 			
 			def initialize(dir_path = 'wallet')
 				@exit = false
-				@log = nil
+				@logger = nil
 				@dir_path = dir_path
 				@data_path = File.expand_path('data', @dir_path)
 				@html_path = File.expand_path('html', @dir_path)
@@ -37,10 +38,6 @@ module TheFox
 					puts 'received SIGINT. break ...'
 					@exit = true
 				end
-			end
-			
-			def log=(log)
-				@log = log
 			end
 			
 			def add(entry, is_unique = false)
@@ -841,7 +838,7 @@ module TheFox
 			
 			def build_entry_by_id_index(force = false)
 				if @entries_by_ids.nil? || force
-					@log.debug('build entry-by-id index') if @log
+					@logger.debug('build entry-by-id index') if @logger
 					
 					glob = File.expand_path('month_*.yml', @data_path)
 					
