@@ -86,6 +86,9 @@ module TheFox
 						}
 					end
 					
+					if file['days'].is_a?(Array)
+						file['days'] = {}
+					end
 					if !file['days'].has_key?(date_s)
 						file['days'][date_s] = []
 					end
@@ -101,6 +104,9 @@ module TheFox
 						file['meta']['updated_at'] = DateTime.now.to_s
 					end
 					
+					if file['days'].is_a?(Array)
+						file['days'] = {}
+					end
 					if !file['days'].has_key?(date_s)
 						file['days'][date_s] = []
 					end
