@@ -3,7 +3,7 @@
 		{
 			"path": ".",
 			"name": "Wallet",
-			"folder_exclude_patterns": [ ],
+			"folder_exclude_patterns": [ "coverage", "releases" ],
 			"file_exclude_patterns": [ ]
 		}
 	]
