@@ -839,8 +839,8 @@ module TheFox
 				!find_entry_by_id(entry.id).nil?
 			end
 			
-			def find_entry_by_id(id)
-				if @entries_by_ids.nil?
+			def build_entry_by_id_index(force = false)
+				if @entries_by_ids.nil? || force
 					@log.debug('build entry-by-id index') if @log
 					
 					glob = File.expand_path('month_*.yml', @data_path)
@@ -858,6 +858,10 @@ module TheFox
 					
 					# pp @entries_by_ids
 				end
+			end
+			
+			def find_entry_by_id(id)
+				build_entry_by_id_index
 				
 				@entries_by_ids[id]
 			end
