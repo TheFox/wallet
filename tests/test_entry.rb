@@ -49,7 +49,11 @@ class TestEntry < MiniTest::Test
 		entry.date = Date.today
 		assert_equal(now.to_s, entry.date.to_s)
 		
-		assert_raises(ArgumentError){ entry.date = 12 }
+		entry = Entry.new
+		entry.date = 1473660305
+		assert_equal('2016-09-12', entry.date.to_s)
+		
+		# assert_raises(ArgumentError){ entry.date = 12 }
 		assert_raises(ArgumentError){ entry.date = '2014-4-31' }
 	end
 	

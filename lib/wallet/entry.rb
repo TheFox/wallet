@@ -1,5 +1,6 @@
 
 require 'uuid'
+require 'date'
 
 module TheFox
 	module Wallet
@@ -56,13 +57,15 @@ module TheFox
 			end
 			
 			def date=(date)
-				if date.is_a?(String)
-					# puts "date parse: '#{date}'"
+				case date
+				when String
 					@date = Date.parse(date)
-				elsif date.is_a?(Date)
+				when Fixnum
+					@date = Time.at(date).to_date
+				when Date
 					@date = date
 				else
-					raise ArgumentError, 'date must be a String or a Date instance'
+					raise ArgumentError, "Wrong class: #{date.class}"
 				end
 			end
 			
