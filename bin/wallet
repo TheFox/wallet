@@ -75,6 +75,10 @@ opts = OptionParser.new do |o|
 		options[:force] = true
 	end
 	
+	o.on('--no-force', 'Do not force add command.') do
+		options[:force] = false
+	end
+	
 	o.on_tail('-V', '--version', 'Show version.') do
 		puts "#{::TheFox::Wallet::NAME} #{::TheFox::Wallet::VERSION} (#{::TheFox::Wallet::DATE})"
 		puts TheFox::Wallet::HOMEPAGE

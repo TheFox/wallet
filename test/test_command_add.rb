@@ -8,20 +8,133 @@ class TestAddCommand < MiniTest::Test
 	
 	include TheFox::Wallet
 	
-	def test_command
+	def test_add_command1
 		options = {
 			:wallet_path => 'wallet_test',
-			:entry_id => 'id1',
 			:entry_title => 'Test1',
-			:entry_date => '2014-01-01'
+			:entry_date => '2014-01-01',
 		}
 		cmd = AddCommand.new(options)
-		cmd.run
+		assert_equal(true, cmd.run)
 		
 		wallet = Wallet.new('wallet_test')
 		entries = wallet.entries('2014-01-01')
-		
 		assert_equal(1, entries['2014-01-01'].count)
+	end
+	
+	def test_add_command2
+		wallet = Wallet.new('wallet_test')
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test1',
+			:entry_date => '2014-01-01',
+			# :entry_id => ,
+			# :force => ,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(true, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(1, entries['2014-01-01'].count)
+		
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test2',
+			:entry_date => '2014-01-01',
+			# :entry_id => ,
+			# :force => ,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(true, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(2, entries['2014-01-01'].count)
+		
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test3',
+			:entry_date => '2014-01-01',
+			:entry_id => 'test1',
+			# :force => ,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(true, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(3, entries['2014-01-01'].count)
+		
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test4',
+			:entry_date => '2014-01-01',
+			:entry_id => 'test1',
+			# :force => ,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(false, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(3, entries['2014-01-01'].count)
+		
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test4',
+			:entry_date => '2014-01-01',
+			:entry_id => 'test1',
+			:force => false,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(false, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(3, entries['2014-01-01'].count)
+		
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test4',
+			:entry_date => '2014-01-01',
+			:entry_id => 'test1',
+			:force => true,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(true, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(4, entries['2014-01-01'].count)
+		
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test5',
+			:entry_date => '2014-01-01',
+			# :entry_id => 'test1',
+			:force => false,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(true, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(5, entries['2014-01-01'].count)
+		
+		
+		options = {
+			:wallet_path => 'wallet_test',
+			:entry_title => 'Test6',
+			:entry_date => '2014-01-01',
+			# :entry_id => 'test1',
+			:force => true,
+		}
+		cmd = AddCommand.new(options)
+		assert_equal(true, cmd.run)
+		
+		entries = wallet.entries('2014-01-01')
+		assert_equal(6, entries['2014-01-01'].count)
 	end
 	
 	def test_command_exception

@@ -53,6 +53,8 @@ module TheFox::Wallet
 				raise "Option --title is required for command '#{NAME}'"
 			end
 			
+			is_unique = !@options[:force] && @options[:entry_id]
+			
 			puts "id:       '#{@options[:entry_id]}'"
 			puts "title:    '#{@options[:entry_title]}'"
 			puts "date:      " + Date.parse(@options[:entry_date]).to_s
@@ -62,12 +64,15 @@ module TheFox::Wallet
 			puts "category:  #{@options[:entry_category]}"
 			puts "comment:  '#{@options[:entry_comment]}'"
 			puts "force:    #{@options[:force] ? 'YES' : 'NO'}"
+			puts "unique:   #{is_unique ? 'YES' : 'NO'}"
 			
 			entry = Entry.new(@options[:entry_id], @options[:entry_title], @options[:entry_date], @options[:entry_revenue], @options[:entry_expense], @options[:entry_category], @options[:entry_comment])
 			wallet = Wallet.new(@options[:wallet_path])
-			added = wallet.add(entry, !@options[:force])
+			added = wallet.add(entry, is_unique)
 			
 			puts "added:    #{added ? 'YES' : 'NO'}"
+			
+			added
 		end
 		
 		def revenue(revenue_s)
