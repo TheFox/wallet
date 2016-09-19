@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
 	
 	spec.add_development_dependency 'minitest', '~>5.7'
 	spec.add_development_dependency 'simplecov', '~>0.12'
-	spec.add_development_dependency 'simplecov-phpunit', '~>0.2'
+	spec.add_development_dependency 'simplecov-phpunit', '~>0.3'
 	
 	spec.add_dependency 'uuid', '~>2.3'
 end
