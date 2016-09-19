@@ -11,7 +11,7 @@ class TestEntry < MiniTest::Test
 	def test_base
 		entry = Entry.new
 		
-		assert_equal('TheFox::Wallet::Entry', entry.class.to_s)
+		assert_instance_of(Entry, entry)
 	end
 	
 	def test_set_title

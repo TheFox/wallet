@@ -16,7 +16,7 @@ class TestWallet < MiniTest::Test
 	def test_base
 		wallet = Wallet.new('wallet_test')
 		
-		assert_equal('TheFox::Wallet::Wallet', wallet.class.to_s)
+		assert_instance_of(Wallet, wallet)
 		assert_equal(true, !Dir.exist?('wallet_test'))
 	end
 	
