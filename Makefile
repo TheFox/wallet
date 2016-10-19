@@ -12,4 +12,4 @@ cov:
 	RUBYOPT=-w TZ=Europe/Vienna COVERAGE=1 $(BUNDLER) exec ./test/suite_all.rb -v
 
 dev:
-	RUBYOPT=-rbundler/setup ruby ./bin/wallet
+	bundler exec ./bin/wallet -w test_wallet add -t 'test' -e 5 -c 'test'

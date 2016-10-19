@@ -4,7 +4,7 @@ require 'optparse'
 require 'wallet'
 require 'tempfile'
 
-options = {}
+options = Hash.new
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: wallet <command> [options]'
 	o.separator('')

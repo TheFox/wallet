@@ -29,7 +29,7 @@ module TheFox
 				@tmp_path = File.expand_path('tmp', @dir_path)
 				
 				@has_transaction = false
-				@transaction_files = {}
+				@transaction_files = Hash.new
 				
 				@entries_by_ids = nil
 				
@@ -64,7 +64,7 @@ module TheFox
 						'created_at' => DateTime.now.to_s,
 						'updated_at' => DateTime.now.to_s,
 					},
-					'days' => {}
+					'days' => Hash.new,
 				}
 				
 				# puts 'dbfile_basename: ' + dbfile_basename
@@ -90,10 +90,10 @@ module TheFox
 					end
 					
 					if file['days'].is_a?(Array)
-						file['days'] = {}
+						file['days'] = Hash.new
 					end
 					if !file['days'].has_key?(date_s)
-						file['days'][date_s] = []
+						file['days'][date_s] = Array.new
 					end
 					
 					file['days'][date_s].push(entry.to_h)
@@ -108,10 +108,10 @@ module TheFox
 					end
 					
 					if file['days'].is_a?(Array)
-						file['days'] = {}
+						file['days'] = Hash.new
 					end
 					if !file['days'].has_key?(date_s)
-						file['days'][date_s] = []
+						file['days'][date_s] = Array.new
 					end
 					
 					file['days'][date_s].push(entry.to_h)
@@ -128,7 +128,7 @@ module TheFox
 				end
 				
 				if @entries_by_ids.nil?
-					@entries_by_ids = {}
+					@entries_by_ids = Hash.new
 				end
 				@entries_by_ids[entry.id] = entry
 				
@@ -137,7 +137,7 @@ module TheFox
 			
 			def transaction_start
 				@has_transaction = true
-				@transaction_files = {}
+				@transaction_files = Hash.new
 				
 				create_dirs
 			end
@@ -168,7 +168,7 @@ module TheFox
 				end
 				
 				@has_transaction = false
-				@transaction_files = {}
+				@transaction_files = Hash.new
 			end
 			
 			def sum(year = nil, month = nil, day = nil, category = nil)
@@ -255,7 +255,7 @@ module TheFox
 				# puts 'category:       ' + '%-10s' % category.class.to_s + '   = "' + category.to_s + '"'
 				# puts
 				
-				entries_a = {}
+				entries_a = Hash.new
 				Dir[glob].each do |file_path|
 					#puts "path: #{file_path}"
 					
@@ -294,7 +294,7 @@ module TheFox
 			end
 			
 			def categories
-				categories_h = {}
+				categories_h = Hash.new
 				Dir[@data_path + '/month_*.yml'].each do |file_path|
 					data = YAML.load_file(file_path)
 					
@@ -327,7 +327,7 @@ module TheFox
 						'created_at' => DateTime.now.to_s,
 						'updated_at' => DateTime.now.to_s,
 					},
-					'changes' => {},
+					'changes' => Hash.new,
 				}
 				if Dir.exist?(@html_path)
 					if File.exist?(html_options_path)
@@ -338,9 +338,9 @@ module TheFox
 					Dir.mkdir(@html_path)
 				end
 				
-				categories_available = categories()
+				categories_available = categories
 				
-				categories_total_balance = {}
+				categories_total_balance = Hash.new
 				categories_available.map{ |item| categories_total_balance[item] = 0.0 }
 				
 				gitignore_file = File.open(@html_path + '/.gitignore', 'w')
@@ -386,7 +386,7 @@ module TheFox
 							<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::TheFox::Wallet::HOMEPAGE + '">' + ::TheFox::Wallet::NAME + '</a> ' + ::TheFox::Wallet::VERSION + '</p>
 				')
 				
-				years_total = {}
+				years_total = Hash.new
 				years.each do |year|
 					year_s = year.to_s
 					year_file_name = 'year_' + year_s + '.html'
@@ -424,9 +424,9 @@ module TheFox
 					revenue_year = 0.0
 					expense_year = 0.0
 					balance_year = 0.0
-					categories_year_balance = {}
+					categories_year_balance = Hash.new
 					categories_available.map{ |item| categories_year_balance[item] = 0.0 }
-					year_total = {}
+					year_total = Hash.new
 					
 					puts 'generate year ' + year_s
 					Dir[@data_path + '/month_' + year_s + '_*.yml'].each do |file_path|
@@ -440,7 +440,7 @@ module TheFox
 						revenue_month = 0.0
 						expense_month = 0.0
 						balance_month = 0.0
-						categories_month_balance = {}
+						categories_month_balance = Hash.new
 						categories_available.map{ |item| categories_month_balance[item] = 0.0 }
 						
 						entry_n = 0

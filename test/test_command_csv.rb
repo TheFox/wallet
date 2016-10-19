@@ -40,7 +40,7 @@ class TestCsvCommand < MiniTest::Test
 	end
 	
 	def test_command_exception
-		cmd = CsvCommand.new({})
+		cmd = CsvCommand.new(Hash.new)
 		assert_raises(RuntimeError){ cmd.run }
 	end
 	
