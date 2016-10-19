@@ -55,9 +55,9 @@ module TheFox
 				
 				date = entry.date
 				date_s = date.to_s
-				dbfile_basename = 'month_' + date.strftime('%Y_%m') + '.yml'
+				dbfile_basename = "month_#{date.strftime('%Y_%m')}.yml"
 				dbfile_path = File.expand_path(dbfile_basename, @data_path)
-				tmpfile_path = dbfile_path + '.tmp'
+				tmpfile_path = "#{dbfile_path}.tmp"
 				file = {
 					'meta' => {
 						'version' => 1,
@@ -182,18 +182,18 @@ module TheFox
 				
 				glob = File.expand_path('month_', @data_path)
 				if year == nil && month == nil
-					glob += '*.yml'
+					glob << '*.yml'
 				elsif year && month == nil
-					glob += year_s + '_*.yml'
+					glob << "#{year_s}_*.yml"
 				elsif year && month
-					glob += year_s + '_' + month_f + '.yml'
+					glob << "#{year_s}_#{month_f}.yml"
 				end
 				
 				Dir[glob].each do |file_path|
 					data = YAML.load_file(file_path)
 					
 					if day
-						day_key = year_s + '-' + month_f + '-' + day_f
+						day_key = "#{year_s}-#{month_f}-#{day_f}"
 						if data['days'].has_key?(day_key)
 							day_sum = calc_day(data['days'][day_key], category)
 							revenue += day_sum[:revenue]
@@ -216,7 +216,7 @@ module TheFox
 				
 				diff = revenue + expense - balance
 				if diff != 0
-					raise RuntimeError, 'diff between revenue and expense to balance is ' + diff.to_s
+					raise RuntimeError, "diff between revenue and expense to balance is #{diff}"
 				end
 				
 				{
@@ -239,11 +239,11 @@ module TheFox
 				
 				glob = File.expand_path('month_', @data_path)
 				if begin_year == nil && begin_month == nil
-					glob += '*.yml'
+					glob << '*.yml'
 				elsif begin_year && begin_month == nil
-					glob += "#{begin_year_s}_*.yml"
+					glob << "#{begin_year_s}_*.yml"
 				elsif begin_year && begin_month
-					glob += "#{begin_year_s}_#{begin_month_f}.yml"
+					glob << "#{begin_year_s}_#{begin_month_f}.yml"
 				end
 				
 				category = category.to_s.downcase
@@ -262,7 +262,7 @@ module TheFox
 					data = YAML.load_file(file_path)
 					if category.length == 0
 						if begin_day
-							day_key = begin_year_s + '-' + begin_month_f + '-' + begin_day_f
+							day_key = "#{begin_year_s}-#{begin_month_f}-#{begin_day_f}"
 							if data['days'].has_key?(day_key)
 								entries_a[day_key] = data['days'][day_key]
 							end
@@ -271,7 +271,7 @@ module TheFox
 						end
 					else
 						if begin_day
-							day_key = begin_year_s + '-' + begin_month_f + '-' + begin_day_f
+							day_key = "#{begin_year_s}-#{begin_month_f}-#{begin_day_f}"
 							if data['days'].has_key?(day_key)
 								entries_a[day_key] = data['days'][day_key].keep_if{ |day_item|
 									day_item['category'].downcase == category
@@ -378,18 +378,18 @@ module TheFox
 					<html>
 						<head>
 							<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-							<title>' + @dir_path + '</title>
+							<title>' << @dir_path << '</title>
 							<link rel="stylesheet" href="style.css" type="text/css" />
 						</head>
 						<body>
-							<h1>' + @dir_path + '</h1>
-							<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::TheFox::Wallet::HOMEPAGE + '">' + ::TheFox::Wallet::NAME + '</a> ' + ::TheFox::Wallet::VERSION + '</p>
+							<h1>' << @dir_path << '</h1>
+							<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> ' << ::TheFox::Wallet::VERSION << '</p>
 				')
 				
 				years_total = Hash.new
 				years.each do |year|
 					year_s = year.to_s
-					year_file_name = 'year_' + year_s + '.html'
+					year_file_name = "year_#{year}.html"
 					year_file_path = File.expand_path(year_file_name, @html_path)
 					
 					year_file = File.open(year_file_path, 'w')
@@ -397,27 +397,27 @@ module TheFox
 						<html>
 							<head>
 								<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-								<title>' + year_s + ' - ' + @dir_path + '</title>
+								<title>' << year_s << ' - ' << @dir_path << '</title>
 								<link rel="stylesheet" href="style.css" type="text/css" />
 							</head>
 							<body>
-								<h1><a href="index.html">' + @dir_path + '</a></h1>
-								<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::TheFox::Wallet::HOMEPAGE + '">' + ::TheFox::Wallet::NAME + '</a> ' + ::TheFox::Wallet::VERSION + '</p>
+								<h1><a href="index.html">' << @dir_path << '</a></h1>
+								<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> ' << ::TheFox::Wallet::VERSION << '</p>
 								
-								<h2>Year: ' + year_s + '</h2>
+								<h2>Year: ' << year_s << '</h2>
 								<table class="list">
 									<tr>
 										<th class="left">Month</th>
 										<th class="right">Revenue</th>
 										<th class="right">Expense</th>
 										<th class="right">Balance</th>
-										<th colspan="' + categories_available.count.to_s + '">' + categories_available.count.to_s + ' Categories</th>
+										<th colspan="' << categories_available.count.to_s << '">' << categories_available.count.to_s << ' Categories</th>
 									</tr>
 									<tr>
 										<th colspan="4">&nbsp;</th>
 					')
 					categories_available.each do |category|
-						year_file.write('<th class="right">' + category + '</th>')
+						year_file.write('<th class="right">' << category << '</th>')
 					end
 					year_file.write('</tr>')
 					
@@ -428,14 +428,14 @@ module TheFox
 					categories_available.map{ |item| categories_year_balance[item] = 0.0 }
 					year_total = Hash.new
 					
-					puts 'generate year ' + year_s
-					Dir[File.expand_path('month_' + year_s + '_*.yml', @data_path)].each do |file_path|
+					puts "generate year #{year}"
+					Dir[File.expand_path("month_#{year}_*.yml", @data_path)].each do |file_path|
 						file_name = File.basename(file_path)
 						month_n = file_name[11, 2]
-						month_file_name = 'month_' + year_s + '_' + month_n + '.html'
+						month_file_name = "month_#{year}_#{month_n}.html"
 						month_file_path = File.expand_path(month_file_name, @html_path)
 						
-						month_s = Date.parse('2015-' + month_n + '-15').strftime('%B')
+						month_s = Date.parse("2015-#{month_n}-15").strftime('%B')
 						
 						revenue_month = 0.0
 						expense_month = 0.0
@@ -463,21 +463,21 @@ module TheFox
 						end
 						
 						if generate_html
-							puts "\t" + 'file: ' + month_file_name + ' (from ' + file_name + ')'
+							puts "\tfile: #{month_file_name} (from #{file_name})"
 							
 							month_file = File.open(month_file_path, 'w')
 							month_file.write('
 								<html>
 									<head>
 										<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-										<title>' + month_s + ' ' + year_s + ' - ' + @dir_path + '</title>
+										<title>' << month_s << ' ' << year_s << ' - ' << @dir_path << '</title>
 										<link rel="stylesheet" href="style.css" type="text/css" />
 									</head>
 									<body>
-										<h1><a href="index.html">' + @dir_path + '</a></h1>
-										<p>Generated @ ' + DateTime.now.strftime('%Y-%m-%d %H:%M:%S') + ' by  <a href="' + ::TheFox::Wallet::HOMEPAGE + '">' + ::TheFox::Wallet::NAME + '</a> ' + ::TheFox::Wallet::VERSION + ' from <code>' + file_name + '</code></p>
+										<h1><a href="index.html">' << @dir_path << '</a></h1>
+										<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> ' << ::TheFox::Wallet::VERSION << ' from <code>' << file_name << '</code></p>
 										
-										<h2>Month: ' + month_s + ' <a href="' + year_file_name + '">' + year_s + '</a></h2>
+										<h2>Month: ' << month_s << ' <a href="' << year_file_name << '">' << year_s << '</a></h2>
 										<table class="list">
 											<tr>
 												<th class="left">#</th>
@@ -493,7 +493,6 @@ module TheFox
 						end
 						
 						data['days'].sort.each do |day_name, day_items|
-							#puts "\t\t" + 'day: ' + day_name
 							day_items.each do |entry|
 								entry_n += 1
 								revenue_month += entry['revenue']
@@ -511,14 +510,14 @@ module TheFox
 								if generate_html
 									month_file.write('
 										<tr>
-											<td valign="top" class="left">' + entry_n.to_s + '</td>
-											<td valign="top" class="left">' + Date.parse(entry['date']).strftime('%d.%m.%y') + '</td>
-											<td valign="top" class="left">' + entry['title'][0, 50] + '</td>
-											<td valign="top" class="right">' + revenue_out + '</td>
-											<td valign="top" class="right red">' + expense_out + '</td>
-											<td valign="top" class="right ' + (entry['balance'] < 0 ? 'red' : '') + '">' + ::TheFox::Wallet::NUMBER_FORMAT % entry['balance'] + '</td>
-											<td valign="top" class="right">' + category_out + '</td>
-											<td valign="top" class="left">' + comment_out + '</td>
+											<td valign="top" class="left">' << entry_n.to_s << '</td>
+											<td valign="top" class="left">' << Date.parse(entry['date']).strftime('%d.%m.%y') << '</td>
+											<td valign="top" class="left">' << entry['title'][0, 50] << '</td>
+											<td valign="top" class="right">' << revenue_out << '</td>
+											<td valign="top" class="right red">' << expense_out << '</td>
+											<td valign="top" class="right ' << (entry['balance'] < 0 ? 'red' : '') << '">' << ::TheFox::Wallet::NUMBER_FORMAT % entry['balance'] << '</td>
+											<td valign="top" class="right">' << category_out << '</td>
+											<td valign="top" class="left">' << comment_out << '</td>
 										</tr>
 									')
 								end
@@ -551,9 +550,9 @@ module TheFox
 										<th>&nbsp;</th>
 										<th>&nbsp;</th>
 										<th class="left"><b>TOTAL</b></th>
-										<th class="right">' + ::TheFox::Wallet::NUMBER_FORMAT % revenue_month + '</th>
-										<th class="right red">' + ::TheFox::Wallet::NUMBER_FORMAT % expense_month + '</th>
-										<th class="right ' + balance_class + '">' + ::TheFox::Wallet::NUMBER_FORMAT % balance_month + '</th>
+										<th class="right">' << ::TheFox::Wallet::NUMBER_FORMAT % revenue_month << '</th>
+										<th class="right red">' << ::TheFox::Wallet::NUMBER_FORMAT % expense_month << '</th>
+										<th class="right ' << balance_class << '">' << ::TheFox::Wallet::NUMBER_FORMAT % balance_month << '</th>
 										<th>&nbsp;</th>
 										<th>&nbsp;</th>
 									</tr>
@@ -564,13 +563,13 @@ module TheFox
 						
 						year_file.write('
 							<tr>
-								<td class="left"><a href="' + month_file_name + '">' + month_s + '</a></td>
-								<td class="right">' + ::TheFox::Wallet::NUMBER_FORMAT % revenue_month + '</td>
-								<td class="right red">' + ::TheFox::Wallet::NUMBER_FORMAT % expense_month + '</td>
-								<td class="right ' + balance_class + '">' + ::TheFox::Wallet::NUMBER_FORMAT % balance_month + '</td>')
+								<td class="left"><a href="' << month_file_name << '">' << month_s << '</a></td>
+								<td class="right">' << ::TheFox::Wallet::NUMBER_FORMAT % revenue_month << '</td>
+								<td class="right red">' << ::TheFox::Wallet::NUMBER_FORMAT % expense_month << '</td>
+								<td class="right ' << balance_class << '">' << ::TheFox::Wallet::NUMBER_FORMAT % balance_month << '</td>')
 						categories_available.each do |category|
 							category_balance = categories_month_balance[category]
-							year_file.write('<td class="right ' + (category_balance < 0 ? 'red' : '') + '">' + ::TheFox::Wallet::NUMBER_FORMAT % category_balance + '</td>')
+							year_file.write('<td class="right ' << (category_balance < 0 ? 'red' : '') << '">' << ::TheFox::Wallet::NUMBER_FORMAT % category_balance << '</td>')
 						end
 						year_file.write('</tr>')
 					end
@@ -580,12 +579,12 @@ module TheFox
 					year_file.write('
 							<tr>
 								<th class="left"><b>TOTAL</b></th>
-								<th class="right">' + ::TheFox::Wallet::NUMBER_FORMAT % revenue_year + '</th>
-								<th class="right red">' + ::TheFox::Wallet::NUMBER_FORMAT % expense_year + '</th>
-								<th class="right ' + (balance_year < 0 ? 'red' : '') + '">' + ::TheFox::Wallet::NUMBER_FORMAT % balance_year + '</th>')
+								<th class="right">' << ::TheFox::Wallet::NUMBER_FORMAT % revenue_year << '</th>
+								<th class="right red">' << ::TheFox::Wallet::NUMBER_FORMAT % expense_year << '</th>
+								<th class="right ' << (balance_year < 0 ? 'red' : '') << '">' << ::TheFox::Wallet::NUMBER_FORMAT % balance_year << '</th>')
 					categories_available.each do |category|
 						category_balance = categories_year_balance[category]
-						year_file.write('<td class="right ' + (category_balance < 0 ? 'red' : '') + '">' + ::TheFox::Wallet::NUMBER_FORMAT % category_balance + '</td>')
+						year_file.write('<td class="right ' << (category_balance < 0 ? 'red' : '') << '">' << ::TheFox::Wallet::NUMBER_FORMAT % category_balance << '</td>')
 					end
 					
 					year_file.write('
@@ -593,7 +592,7 @@ module TheFox
 						</table>
 					')
 					
-					year_file.write("<p><img src=\"year_#{year_s}.png\"></p>")
+					year_file.write(%{<p><img src="year_#{year_s}.png"></p>})
 					year_file.write('</body></html>')
 					year_file.close
 					
@@ -686,11 +685,11 @@ module TheFox
 				years_total.each do |year_name, year_data|
 					index_file.write('
 						<tr>
-							<td class="left"><a href="year_' + year_name + '.html">' + year_name + '</a></td>
-							<td class="right">' + ::TheFox::Wallet::NUMBER_FORMAT % year_data.revenue + '</td>
-							<td class="right red">' + ::TheFox::Wallet::NUMBER_FORMAT % year_data.expense + '</td>
-							<td class="right ' + (year_data.balance < 0 ? 'red' : '') + '">' + ::TheFox::Wallet::NUMBER_FORMAT % year_data.balance + '</td>
-							<td class="right ' + (year_data.balance_total < 0 ? 'red' : '') + '">' + ::TheFox::Wallet::NUMBER_FORMAT % year_data.balance_total + '</td>
+							<td class="left"><a href="year_' << year_name << '.html">' << year_name << '</a></td>
+							<td class="right">' << ::TheFox::Wallet::NUMBER_FORMAT % year_data.revenue << '</td>
+							<td class="right red">' << ::TheFox::Wallet::NUMBER_FORMAT % year_data.expense << '</td>
+							<td class="right ' << (year_data.balance < 0 ? 'red' : '') << '">' << ::TheFox::Wallet::NUMBER_FORMAT % year_data.balance << '</td>
+							<td class="right ' << (year_data.balance_total < 0 ? 'red' : '') << '">' << ::TheFox::Wallet::NUMBER_FORMAT % year_data.balance_total << '</td>
 						</tr>')
 				end
 				
@@ -699,9 +698,9 @@ module TheFox
 				index_file.write('
 						<tr>
 							<th class="left"><b>TOTAL</b></th>
-							<th class="right">' + ::TheFox::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } + '</th>
-							<th class="right red">' + ::TheFox::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } + '</th>
-							<th class="right ' + (balance_total < 0 ? 'red' : '') + '">' + ::TheFox::Wallet::NUMBER_FORMAT % balance_total + '</th>
+							<th class="right">' << ::TheFox::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } << '</th>
+							<th class="right red">' << ::TheFox::Wallet::NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } << '</th>
+							<th class="right ' << (balance_total < 0 ? 'red' : '') << '">' << ::TheFox::Wallet::NUMBER_FORMAT % balance_total << '</th>
 							<th>&nbsp;</th>
 						</tr>
 					</table>
