@@ -64,7 +64,7 @@ module TheFox::Wallet
 			puts "category:  #{@options[:entry_category]}"
 			puts "comment:  '#{@options[:entry_comment]}'"
 			puts "force:    #{@options[:force] ? 'YES' : 'NO'}"
-			puts "unique:   #{is_unique ? 'YES' : 'NO'}"
+			puts "unique:   #{is_unique ? 'YES' : 'NO'} (#{is_unique})"
 			
 			entry = Entry.new(@options[:entry_id], @options[:entry_title], @options[:entry_date], @options[:entry_revenue], @options[:entry_expense], @options[:entry_category], @options[:entry_comment])
 			wallet = Wallet.new(@options[:wallet_path])

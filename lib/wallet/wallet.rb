@@ -32,6 +32,9 @@ module TheFox
 				@transaction_files = Hash.new
 				
 				@entries_by_ids = nil
+				@entries_index_file_path = File.expand_path('index.yml', @data_path)
+				@entries_index = Array.new
+				@entries_index_is_loaded = false
 				
 				Signal.trap('SIGINT') do
 					puts
@@ -49,6 +52,7 @@ module TheFox
 				# puts "add, is_unique    #{is_unique}"
 				# puts "add, entry_exist? #{entry_exist?(entry)}"
 				# puts
+				
 				if is_unique && entry_exist?(entry)
 					return false
 				end
@@ -66,6 +70,8 @@ module TheFox
 					},
 					'days' => Hash.new,
 				}
+				
+				@entries_index << entry.id
 				
 				# puts 'dbfile_basename: ' + dbfile_basename
 				# puts 'dbfile_path:     ' + dbfile_path
@@ -122,6 +128,8 @@ module TheFox
 						store['days'] = file['days']
 					end
 					
+					save_entries_index_file
+					
 					if File.exist?(tmpfile_path)
 						File.rename(tmpfile_path, dbfile_path)
 					end
@@ -148,6 +156,7 @@ module TheFox
 						if @exit
 							throw :done
 						end
+						
 						# puts 'keys left: ' + @transaction_files.keys.count.to_s
 						# puts 'tr_file_key: ' + tr_file_key
 						# puts 'path:        ' + tr_file_data['path']
@@ -166,6 +175,8 @@ module TheFox
 						end
 					end
 				end
+				
+				save_entries_index_file
 				
 				@has_transaction = false
 				@transaction_files = Hash.new
@@ -830,10 +841,13 @@ module TheFox
 			
 			def entry_exist?(entry)
 				if !entry.is_a?(Entry)
-					raise ArgumentError, 'variable must be a Entry instance'
+					raise ArgumentError, 'variable must be an Entry instance'
 				end
 				
-				!find_entry_by_id(entry.id).nil?
+				if @entries_index.count == 0
+					load_entries_index_file
+				end
+				@entries_index.include?(entry.id)
 			end
 			
 			def build_entry_by_id_index(force = false)
@@ -884,6 +898,14 @@ module TheFox
 					gitignore_file.write('*')
 					gitignore_file.close
 				end
+				
+				if File.exist?(@entries_index_file_path)
+					load_entries_index_file
+				else
+					build_entry_by_id_index(true)
+					@entries_index = @entries_by_ids.keys
+					save_entries_index_file
+				end
 			end
 			
 			def calc_day(day, category = nil)
@@ -917,6 +939,23 @@ module TheFox
 			
 			def years
 				Dir[File.expand_path('month_*.yml', @data_path)].map{ |file_path| File.basename(file_path)[6, 4].to_i }.uniq
+			end
+			
+			def load_entries_index_file
+				unless @entries_index_is_loaded
+					@entries_index_is_loaded = true
+					if File.exist?(@entries_index_file_path)
+						data = YAML.load_file(@entries_index_file_path)
+						@entries_index = data['index']
+					end
+				end
+			end
+			
+			def save_entries_index_file
+				store = YAML::Store.new(@entries_index_file_path)
+				store.transaction do
+					store['index'] = @entries_index
+				end
 			end
 			
 		end
