@@ -180,7 +180,7 @@ module TheFox
 				expense = 0.0
 				balance = 0.0
 				
-				glob = @data_path + '/month_'
+				glob = File.expand_path('month_', @data_path)
 				if year == nil && month == nil
 					glob += '*.yml'
 				elsif year && month == nil
@@ -237,7 +237,7 @@ module TheFox
 				begin_month_f = '%02d' % begin_month.to_i
 				begin_day_f = '%02d' % begin_day.to_i
 				
-				glob = "#{@data_path}/month_"
+				glob = File.expand_path('month_', @data_path)
 				if begin_year == nil && begin_month == nil
 					glob += '*.yml'
 				elsif begin_year && begin_month == nil
@@ -295,7 +295,7 @@ module TheFox
 			
 			def categories
 				categories_h = Hash.new
-				Dir[@data_path + '/month_*.yml'].each do |file_path|
+				Dir[File.expand_path('month_*.yml', @data_path)].each do |file_path|
 					data = YAML.load_file(file_path)
 					
 					data['days'].each do |day_name, day_items|
@@ -320,7 +320,7 @@ module TheFox
 			def gen_html
 				create_dirs
 				
-				html_options_path = "#{@html_path}/options.yml"
+				html_options_path = File.expand_path('options.yml', @html_path)
 				html_options = {
 					'meta' => {
 						'version' => 1,
@@ -343,11 +343,11 @@ module TheFox
 				categories_total_balance = Hash.new
 				categories_available.map{ |item| categories_total_balance[item] = 0.0 }
 				
-				gitignore_file = File.open(@html_path + '/.gitignore', 'w')
+				gitignore_file = File.open(File.expand_path('.gitignore', @html_path), 'w')
 				gitignore_file.write('*')
 				gitignore_file.close
 				
-				css_file_path = @html_path + '/style.css'
+				css_file_path = File.expand_path('style.css', @html_path)
 				css_file = File.open(css_file_path, 'w')
 				css_file.write('
 					html {
@@ -372,7 +372,7 @@ module TheFox
 				')
 				css_file.close
 				
-				index_file_path = @html_path + '/index.html'
+				index_file_path = File.expand_path('index.html', @html_path)
 				index_file = File.open(index_file_path, 'w')
 				index_file.write('
 					<html>
@@ -390,7 +390,7 @@ module TheFox
 				years.each do |year|
 					year_s = year.to_s
 					year_file_name = 'year_' + year_s + '.html'
-					year_file_path = @html_path + '/' + year_file_name
+					year_file_path = File.expand_path(year_file_name, @html_path)
 					
 					year_file = File.open(year_file_path, 'w')
 					year_file.write('
@@ -429,11 +429,11 @@ module TheFox
 					year_total = Hash.new
 					
 					puts 'generate year ' + year_s
-					Dir[@data_path + '/month_' + year_s + '_*.yml'].each do |file_path|
+					Dir[File.expand_path('month_' + year_s + '_*.yml', @data_path)].each do |file_path|
 						file_name = File.basename(file_path)
 						month_n = file_name[11, 2]
 						month_file_name = 'month_' + year_s + '_' + month_n + '.html'
-						month_file_path = @html_path + '/' + month_file_name
+						month_file_path = File.expand_path(month_file_name, @html_path)
 						
 						month_s = Date.parse('2015-' + month_n + '-15').strftime('%B')
 						
@@ -597,7 +597,7 @@ module TheFox
 					year_file.write('</body></html>')
 					year_file.close
 					
-					yeardat_file_path = "#{@tmp_path}/year_#{year_s}.dat"
+					yeardat_file_path = File.expand_path("year_#{year_s}.dat", @tmp_path)
 					yeardat_file = File.new(yeardat_file_path, 'w')
 					yeardat_file.write(year_total
 						.map{ |k, m| "#{year_s}-#{m.month_s} #{m.revenue} #{m.expense} #{m.balance} #{m.balance_total} #{m.balance_total}" }
@@ -632,7 +632,7 @@ module TheFox
 					# puts "#{year_max} #{year_max.to_s.length} #{year_max_r} #{year_max_rl}"
 					# puts "#{year_min} #{year_min.to_s.length} #{year_min_r} #{year_min_rl}"
 					
-					gnuplot_file = File.new("#{@tmp_path}/year_#{year_s}.gp", 'w')
+					gnuplot_file = File.new(File.expand_path("year_#{year_s}.gp", @tmp_path), 'w')
 					gnuplot_file.puts("set title 'Year #{year_s}'")
 					gnuplot_file.puts("set xlabel 'Months'")
 					gnuplot_file.puts("set ylabel 'Euro'")
@@ -655,14 +655,14 @@ module TheFox
 					gnuplot_file.puts("set style line 4 linecolor rgb '#0000ff' linewidth 2 linetype 1 pointtype 2")
 					gnuplot_file.puts("set style data linespoints")
 					gnuplot_file.puts("set terminal png enhanced")
-					gnuplot_file.puts("set output '#{@html_path}/year_#{year_s}.png'")
+					gnuplot_file.puts("set output '" << File.expand_path("year_#{year_s}.png", @html_path) << "'")
 					gnuplot_file.puts("plot sum = 0, \\")
 					gnuplot_file.puts("\t'#{yeardat_file_path}' using 1:2 linestyle 1 title 'Revenue', \\")
 					gnuplot_file.puts("\t'' using 1:3 linestyle 2 title 'Expense', \\")
 					gnuplot_file.puts("\t'' using 1:4 linestyle 3 title 'Balance', \\")
 					gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
 					gnuplot_file.close
-					system("gnuplot #{@tmp_path}/year_#{year_s}.gp")
+					system("gnuplot " << File.expand_path("year_#{year_s}.gp", @tmp_path))
 					
 					years_total[year_s] = ::OpenStruct.new({
 						year: year_s,
@@ -726,12 +726,12 @@ module TheFox
 				end
 				totaldat_file_c = totaldat_file_c.join("\n")
 				
-				totaldat_file_path = "#{@tmp_path}/total.dat"
+				totaldat_file_path = File.expand_path('total.dat', @tmp_path)
 				totaldat_file = File.new(totaldat_file_path, 'w')
 				totaldat_file.write(totaldat_file_c)
 				totaldat_file.close
 				
-				gnuplot_file = File.new("#{@tmp_path}/total.gp", 'w')
+				gnuplot_file = File.new(File.expand_path('total.gp', @tmp_path), 'w')
 				gnuplot_file.puts("set title 'Total'")
 				gnuplot_file.puts("set xlabel 'Years'")
 				gnuplot_file.puts("set ylabel 'Euro'")
@@ -746,14 +746,15 @@ module TheFox
 				gnuplot_file.puts("set style line 4 linecolor rgb '#0000ff' linewidth 2 linetype 1 pointtype 2")
 				gnuplot_file.puts("set style data linespoints")
 				gnuplot_file.puts("set terminal png enhanced")
-				gnuplot_file.puts("set output '#{@html_path}/total.png'")
+				gnuplot_file.puts("set output '" << File.expand_path('total.png', @html_path) << "'")
 				gnuplot_file.puts("plot sum = 0, \\")
 				gnuplot_file.puts("\t'#{totaldat_file_path}' using 1:2 linestyle 1 title 'Revenue', \\")
 				gnuplot_file.puts("\t'' using 1:3 linestyle 2 title 'Expense', \\")
 				gnuplot_file.puts("\t'' using 1:4 linestyle 3 title 'Balance', \\")
 				gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
 				gnuplot_file.close
-				system("gnuplot #{@tmp_path}/total.gp")
+				
+				system("gnuplot " << File.expand_path('total.gp', @tmp_path))
 			end
 			
 			def import_csv_file(file_path)
@@ -805,7 +806,7 @@ module TheFox
 					# :encoding => 'ISO-8859-1',
 				}
 				CSV.open(file_path, 'wb', csv_options) do |csv|
-					Dir[@data_path + '/month_*.yml'].each do |yaml_file_path|
+					Dir[File.expand_path('month_*.yml', @data_path)].each do |yaml_file_path|
 						puts 'export ' + File.basename(yaml_file_path)
 						
 						data = YAML.load_file(yaml_file_path)
@@ -878,7 +879,7 @@ module TheFox
 					Dir.mkdir(@tmp_path)
 				end
 				
-				tmp_gitignore_path = @tmp_path + '/.gitignore'
+				tmp_gitignore_path = File.expand_path('.gitignore', @tmp_path)
 				if !File.exist?(tmp_gitignore_path)
 					gitignore_file = File.open(tmp_gitignore_path, 'w')
 					gitignore_file.write('*')
@@ -916,7 +917,7 @@ module TheFox
 			end
 			
 			def years
-				Dir[@data_path + '/month_*.yml'].map{ |file_path| File.basename(file_path)[6, 4].to_i }.uniq
+				Dir[File.expand_path('month_*.yml', @data_path)].map{ |file_path| File.basename(file_path)[6, 4].to_i }.uniq
 			end
 			
 		end
