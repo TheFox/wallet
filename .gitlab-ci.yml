@@ -14,7 +14,7 @@ test_21:
     stage: test
     environment: test
     only:
-        - master
+        - tags
     script:
         - make test
 
@@ -23,7 +23,7 @@ test_22:
     stage: test
     environment: test
     only:
-        - master
+        - tags
     script:
         - make test
 
@@ -32,7 +32,7 @@ test_23:
     stage: test
     environment: test
     only:
-        - master
+        - tags
     script:
         - make test
 
