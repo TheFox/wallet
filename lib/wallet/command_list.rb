@@ -78,23 +78,27 @@ module TheFox::Wallet
 				comment_l = 25
 			end
 			
-			entries_f = '%' + entries_l.to_s + 's'
-			title_f = '%-' + title_l.to_s + 's'
-			revenue_f = '%' + revenue_l.to_s + 's'
-			expense_f = '%' + expense_l.to_s + 's'
-			balance_f = '%' + balance_l.to_s + 's'
-			category_f = '%-' + category_l.to_s + 's'
-			comment_f = '%-' + comment_l.to_s + 's'
+			entries_f = "%#{entries_l}s"
+			title_f = "%-#{title_l}s"
+			revenue_f = "%#{revenue_l}s"
+			expense_f = "%#{expense_l}s"
+			balance_f = "%#{balance_l}s"
+			category_f = "%-#{category_l}s"
+			comment_f = "%-#{comment_l}s"
 			
 			header = ''
-			header += '#' * entries_l + '  '
-			header += 'Date ' + ' ' * 7
-			header += title_f % 'Title' + '  '
-			header += revenue_f % 'Revenue' + '  '
-			header += expense_f % 'Expense' + '  '
-			header += balance_f % 'Balance'
-			header += '  ' + category_f % 'Category' if has_category_col
-			header += '  ' + comment_f % 'Comment' if has_comment_col
+			header << '#' * entries_l << '  '
+			header << 'Date ' << ' ' * 7
+			header << title_f % 'Title' << '  '
+			header << revenue_f % 'Revenue' << '  '
+			header << expense_f % 'Expense' << '  '
+			header << balance_f % 'Balance'
+			if has_category_col
+				header << '  ' << category_f % 'Category'
+			end
+			if has_comment_col
+				header << '  ' << comment_f % 'Comment'
+			end
 			
 			header_l = header.length
 			header.sub!(/ +$/, '')
@@ -111,7 +115,9 @@ module TheFox::Wallet
 					entry_no += 1
 					
 					title = entry['title']
-					title = title[0, 22] + '...' if title.length >= 25
+					if title.length >= 25
+						title = title[0, 22] << '...'
+					end
 					
 					revenue_total += entry['revenue']
 					expense_total += entry['expense']
@@ -121,17 +127,19 @@ module TheFox::Wallet
 					# has_category = category != ''
 					
 					comment = entry['comment']
-					comment = comment[0, 22] + '...' if comment.length >= 25
+					if comment.length >= 25
+						comment = comment[0, 22] << '...'
+					end
 					
 					out = ''
-					out += entries_f % entry_no
-					out += '  ' + '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
-					out += '  ' + title_f % title
-					out += '  ' + revenue_f % (NUMBER_FORMAT % entry['revenue'])
-					out += '  ' + expense_f % (NUMBER_FORMAT % entry['expense'])
-					out += '  ' + balance_f % (NUMBER_FORMAT % entry['balance'])
-					out += '  ' + category_f % category if has_category_col
-					out += '  ' + comment_f % comment if has_comment_col
+					out << entries_f % entry_no
+					out << '  ' << '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
+					out << '  ' << title_f % title
+					out << '  ' << revenue_f % (NUMBER_FORMAT % entry['revenue'])
+					out << '  ' << expense_f % (NUMBER_FORMAT % entry['expense'])
+					out << '  ' << balance_f % (NUMBER_FORMAT % entry['balance'])
+					out << '  ' << category_f % category if has_category_col
+					out << '  ' << comment_f % comment if has_comment_col
 					
 					out.sub!(/ +$/, '')
 					puts out
@@ -142,11 +150,11 @@ module TheFox::Wallet
 			puts
 			
 			out = ''
-			out += ' ' * (12 + entries_l)
-			out += '  ' + title_f % 'TOTAL'
-			out += '  ' + revenue_f % (NUMBER_FORMAT % revenue_total)
-			out += '  ' + expense_f % (NUMBER_FORMAT % expense_total)
-			out += '  ' + balance_f % (NUMBER_FORMAT % balance_total)
+			out << ' ' * (12 + entries_l)
+			out << '  ' << title_f % 'TOTAL'
+			out << '  ' << revenue_f % (NUMBER_FORMAT % revenue_total)
+			out << '  ' << expense_f % (NUMBER_FORMAT % expense_total)
+			out << '  ' << balance_f % (NUMBER_FORMAT % balance_total)
 			puts out
 		end
 		

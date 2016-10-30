@@ -78,7 +78,7 @@ module TheFox
 				revenue_t = revenue.to_f
 				
 				if revenue_t < 0
-					raise RangeError, 'revenue (' + revenue_t.to_s + ') cannot be < 0. use expense instead!'
+					raise RangeError, "revenue (#{revenue_t}) cannot be < 0. use expense instead!"
 				end
 				
 				@revenue = revenue_t
@@ -89,7 +89,7 @@ module TheFox
 				expense_t = expense.to_f
 				
 				if expense_t > 0
-					raise RangeError, 'expense (' + expense_t.to_s + ') cannot be > 0. use revenue instead!'
+					raise RangeError, "expense (#{expense_t}) cannot be > 0. use revenue instead!"
 				end
 				
 				@expense = expense_t

@@ -5,6 +5,7 @@ CHANGELOG-*.txt
 /bin/test
 Gemfile.lock
 /releases/
+/test_wallet/
 /tmp/
 /wallet/
 /wallet_test/

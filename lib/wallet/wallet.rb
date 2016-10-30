@@ -73,9 +73,9 @@ module TheFox
 				
 				@entries_index << entry.id
 				
-				# puts 'dbfile_basename: ' + dbfile_basename
-				# puts 'dbfile_path:     ' + dbfile_path
-				# puts 'tmpfile_path:    ' + tmpfile_path
+				# puts 'dbfile_basename: ' << dbfile_basename
+				# puts 'dbfile_path:     ' << dbfile_path
+				# puts 'tmpfile_path:    ' << tmpfile_path
 				# puts
 				
 				if @has_transaction
@@ -157,10 +157,10 @@ module TheFox
 							throw :done
 						end
 						
-						# puts 'keys left: ' + @transaction_files.keys.count.to_s
-						# puts 'tr_file_key: ' + tr_file_key
-						# puts 'path:        ' + tr_file_data['path']
-						# puts 'tmp_path:    ' + tr_file_data['tmp_path']
+						# puts 'keys left: ' << @transaction_files.keys.count.to_s
+						# puts 'tr_file_key: ' << tr_file_key
+						# puts 'path:        ' << tr_file_data['path']
+						# puts 'tmp_path:    ' << tr_file_data['tmp_path']
 						# puts
 						
 						store = YAML::Store.new(tr_file_data['tmp_path'])
@@ -259,11 +259,11 @@ module TheFox
 				
 				category = category.to_s.downcase
 				
-				# puts 'glob:     ' + glob
-				# puts 'begin_year:     ' + '%-10s' % begin_year.class.to_s + '   = "' + begin_year.to_s + '"'
-				# puts 'begin_month:    ' + '%-10s' % begin_month.class.to_s + '   = "' + begin_month.to_s + '"'
-				# puts 'begin_day:      ' + '%-10s' % begin_day.class.to_s + '   = "' + begin_day.to_s + '"'
-				# puts 'category:       ' + '%-10s' % category.class.to_s + '   = "' + category.to_s + '"'
+				# puts 'glob:     ' << glob
+				# puts 'begin_year:     ' << '%-10s' % begin_year.class.to_s << '   = "' << begin_year.to_s << '"'
+				# puts 'begin_month:    ' << '%-10s' % begin_month.class.to_s << '   = "' << begin_month.to_s << '"'
+				# puts 'begin_day:      ' << '%-10s' % begin_day.class.to_s << '   = "' << begin_day.to_s << '"'
+				# puts 'category:       ' << '%-10s' % category.class.to_s << '   = "' << category.to_s << '"'
 				# puts
 				
 				entries_a = Hash.new
@@ -817,7 +817,7 @@ module TheFox
 				}
 				CSV.open(file_path, 'wb', csv_options) do |csv|
 					Dir[File.expand_path('month_*.yml', @data_path)].each do |yaml_file_path|
-						puts 'export ' + File.basename(yaml_file_path)
+						puts 'export ' << File.basename(yaml_file_path)
 						
 						data = YAML.load_file(yaml_file_path)
 						

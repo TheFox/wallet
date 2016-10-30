@@ -57,10 +57,10 @@ module TheFox::Wallet
 			
 			puts "id:       '#{@options[:entry_id]}'"
 			puts "title:    '#{@options[:entry_title]}'"
-			puts "date:      " + Date.parse(@options[:entry_date]).to_s
-			puts "revenue:   " + NUMBER_FORMAT % @options[:entry_revenue]
-			puts "expense:   " + NUMBER_FORMAT % @options[:entry_expense]
-			puts "balance:   " + NUMBER_FORMAT % [@options[:entry_revenue] + @options[:entry_expense]]
+			puts "date:      " << Date.parse(@options[:entry_date]).to_s
+			puts "revenue:   " << NUMBER_FORMAT % @options[:entry_revenue]
+			puts "expense:   " << NUMBER_FORMAT % @options[:entry_expense]
+			puts "balance:   " << NUMBER_FORMAT % [@options[:entry_revenue] + @options[:entry_expense]]
 			puts "category:  #{@options[:entry_category]}"
 			puts "comment:  '#{@options[:entry_comment]}'"
 			puts "force:    #{@options[:force] ? 'YES' : 'NO'}"
