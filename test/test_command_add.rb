@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'minitest/autorun'
+require 'pathname'
 require 'wallet'
-
 
 class TestAddCommand < MiniTest::Test
 	
@@ -10,23 +10,24 @@ class TestAddCommand < MiniTest::Test
 	
 	def test_add_command1
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => Pathname.new('wallet_test'),
 			:entry_title => 'Test1',
 			:entry_date => '2014-01-01',
 		}
 		cmd = AddCommand.new(options)
 		assert_equal(true, cmd.run)
 		
-		wallet = Wallet.new('wallet_test')
+		wallet = Wallet.new(options[:wallet_path])
 		entries = wallet.entries('2014-01-01')
 		assert_equal(1, entries['2014-01-01'].count)
 	end
 	
 	def test_add_command2
-		wallet = Wallet.new('wallet_test')
+		wallet_path = Pathname.new('wallet_test')
+		wallet = Wallet.new(wallet_path)
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test1',
 			:entry_date => '2014-01-01',
 			# :entry_id => ,
@@ -40,7 +41,7 @@ class TestAddCommand < MiniTest::Test
 		
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test2',
 			:entry_date => '2014-01-01',
 			# :entry_id => ,
@@ -54,7 +55,7 @@ class TestAddCommand < MiniTest::Test
 		
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test3',
 			:entry_date => '2014-01-01',
 			:entry_id => 'test1',
@@ -68,7 +69,7 @@ class TestAddCommand < MiniTest::Test
 		
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test4',
 			:entry_date => '2014-01-01',
 			:entry_id => 'test1',
@@ -82,7 +83,7 @@ class TestAddCommand < MiniTest::Test
 		
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test4',
 			:entry_date => '2014-01-01',
 			:entry_id => 'test1',
@@ -96,7 +97,7 @@ class TestAddCommand < MiniTest::Test
 		
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test4',
 			:entry_date => '2014-01-01',
 			:entry_id => 'test1',
@@ -110,7 +111,7 @@ class TestAddCommand < MiniTest::Test
 		
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test5',
 			:entry_date => '2014-01-01',
 			# :entry_id => 'test1',
@@ -124,7 +125,7 @@ class TestAddCommand < MiniTest::Test
 		
 		
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => wallet_path,
 			:entry_title => 'Test6',
 			:entry_date => '2014-01-01',
 			# :entry_id => 'test1',
@@ -139,7 +140,7 @@ class TestAddCommand < MiniTest::Test
 	
 	def test_command_exception
 		options = {
-			:wallet_path => 'wallet_test',
+			:wallet_path => Pathname.new('wallet_test'),
 		}
 		cmd = AddCommand.new(options)
 		assert_raises(RuntimeError){ cmd.run }
@@ -199,7 +200,10 @@ class TestAddCommand < MiniTest::Test
 	end
 	
 	def teardown
-		FileUtils.rm_r('wallet_test', {:force => true})
+		wallet_path = Pathname.new('wallet_test')
+		if wallet_path.exist?
+			wallet_path.rmtree
+		end
 	end
 	
 end

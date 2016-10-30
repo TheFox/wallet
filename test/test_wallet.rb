@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'minitest/autorun'
-require 'fileutils'
+require 'pathname'
 require 'wallet'
-
 
 class TestWallet < MiniTest::Test
 	
@@ -14,14 +13,16 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_base
-		wallet = Wallet.new('wallet_test')
+		wallet_path = Pathname.new('wallet_test')
+		wallet = Wallet.new(wallet_path)
 		
 		assert_instance_of(Wallet, wallet)
-		assert_equal(true, !Dir.exist?('wallet_test'))
+		assert_equal(false, wallet_path.exist?)
 	end
 	
 	def test_add1
-		wallet = Wallet.new('wallet_test')
+		wallet_path = Pathname.new('wallet_test')
+		wallet = Wallet.new(wallet_path)
 		
 		wallet.add(Entry.new(nil, 'test', '2014-01-01', 100))
 		wallet.add(Entry.new(nil, 'test', '2014-01-01', 50))
@@ -183,7 +184,8 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_add2
-		wallet = Wallet.new('wallet_test')
+		wallet_path = Pathname.new('wallet_test')
+		wallet = Wallet.new(wallet_path)
 		
 		assert_equal(true, wallet.add(Entry.new(nil, 'test', '2014-01-01', 1)))
 		assert_equal(true, wallet.add(Entry.new(nil, 'test', '2014-01-01', 1), true))
@@ -197,7 +199,8 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_exceptions
-		wallet = Wallet.new('wallet_test')
+		wallet_path = Pathname.new('wallet_test')
+		wallet = Wallet.new(wallet_path)
 		
 		assert_raises(ArgumentError) do
 			wallet.add(12)
@@ -205,7 +208,8 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_find_entry_by_id
-		wallet = Wallet.new('wallet_test')
+		wallet_path = Pathname.new('wallet_test')
+		wallet = Wallet.new(wallet_path)
 		
 		wallet.add(Entry.new(nil, 'test', '2014-01-01', -1))
 		wallet.add(Entry.new(1, 'test', '2014-01-01', 1))
@@ -230,7 +234,10 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def teardown
-		FileUtils.rm_r('wallet_test', {:force => true})
+		wallet_path = Pathname.new('wallet_test')
+		if wallet_path.exist?
+			wallet_path.rmtree
+		end
 	end
 	
 end

@@ -1,6 +1,6 @@
 
 require 'date'
-#require 'pp'
+require 'pathname'
 
 module TheFox::Wallet
 	
@@ -10,7 +10,7 @@ module TheFox::Wallet
 		
 		def initialize(options = Hash.new)
 			@options = options || Hash.new
-			@options[:wallet_path] ||= 'wallet'
+			@options[:wallet_path] ||= Pathname.new('wallet')
 			@options[:entry_id] ||= nil
 			@options[:entry_title] ||= nil
 			@options[:entry_date] ||= Date.today.to_s

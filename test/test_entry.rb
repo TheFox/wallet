@@ -3,7 +3,6 @@
 require 'minitest/autorun'
 require 'wallet'
 
-
 class TestEntry < MiniTest::Test
 	
 	include TheFox::Wallet

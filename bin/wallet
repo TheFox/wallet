@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'wallet'
 require 'tempfile'
+require 'pathname'
+require 'wallet'
 
 options = Hash.new
 opts = OptionParser.new do |o|
@@ -19,7 +20,7 @@ opts = OptionParser.new do |o|
 	o.separator('')
 	
 	o.on('-w', '--wallet <path>', 'Path to wallet directory.') do |path|
-		options[:wallet_path] = path
+		options[:wallet_path] = Pathname.new(path).expand_path
 	end
 	
 	o.on('--id <id>', 'ID used for the entry.') do |id|

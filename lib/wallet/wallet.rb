@@ -5,12 +5,9 @@ require 'logger'
 require 'yaml'
 require 'yaml/store'
 require 'csv'
-
-# OpenStruct use to generate HTML.
-require 'ostruct'
-
+require 'pathname'
+require 'ostruct' # OpenStruct use to generate HTML.
 # require 'pp'
-
 
 module TheFox
 	module Wallet
@@ -20,19 +17,21 @@ module TheFox
 			attr_writer :logger
 			attr_reader :html_path
 			
-			def initialize(dir_path = 'wallet')
+			def initialize(dir_path = nil)
 				@exit = false
 				@logger = nil
-				@dir_path = dir_path
-				@data_path = File.expand_path('data', @dir_path)
-				@html_path = File.expand_path('html', @dir_path)
-				@tmp_path = File.expand_path('tmp', @dir_path)
+				@dir_path = dir_path || Pathname.new('wallet')
+				@dir_path_basename = @dir_path.basename
+				@dir_path_basename_s = @dir_path_basename.to_s
+				@data_path = Pathname.new('data').expand_path(@dir_path)
+				@html_path = Pathname.new('html').expand_path(@dir_path)
+				@tmp_path = Pathname.new('tmp').expand_path(@dir_path)
 				
 				@has_transaction = false
 				@transaction_files = Hash.new
 				
 				@entries_by_ids = nil
-				@entries_index_file_path = File.expand_path('index.yml', @data_path)
+				@entries_index_file_path = Pathname.new('index.yml').expand_path(@data_path)
 				@entries_index = Array.new
 				@entries_index_is_loaded = false
 				
@@ -48,20 +47,18 @@ module TheFox
 					raise ArgumentError, 'variable must be a Entry instance'
 				end
 				
-				# puts "add, id #{entry.id}"
-				# puts "add, is_unique    #{is_unique}"
-				# puts "add, entry_exist? #{entry_exist?(entry)}"
-				# puts
-				
 				if is_unique && entry_exist?(entry)
 					return false
 				end
 				
+				create_dirs
+				
 				date = entry.date
 				date_s = date.to_s
-				dbfile_basename = "month_#{date.strftime('%Y_%m')}.yml"
-				dbfile_path = File.expand_path(dbfile_basename, @data_path)
-				tmpfile_path = "#{dbfile_path}.tmp"
+				dbfile_basename_s = "month_#{date.strftime('%Y_%m')}.yml"
+				dbfile_basename_p = Pathname.new(dbfile_basename_s)
+				dbfile_path = dbfile_basename_p.expand_path(@data_path)
+				tmpfile_path = Pathname.new("#{dbfile_path}.tmp")
 				file = {
 					'meta' => {
 						'version' => 1,
@@ -73,24 +70,19 @@ module TheFox
 				
 				@entries_index << entry.id
 				
-				# puts 'dbfile_basename: ' << dbfile_basename
-				# puts 'dbfile_path:     ' << dbfile_path
-				# puts 'tmpfile_path:    ' << tmpfile_path
-				# puts
-				
 				if @has_transaction
-					if @transaction_files.has_key?(dbfile_basename)
-						file = @transaction_files[dbfile_basename]['file']
+					if @transaction_files[dbfile_basename_s]
+						file = @transaction_files[dbfile_basename_s]['file']
 					else
-						if File.exist?(dbfile_path)
+						if dbfile_path.exist?
 							file = YAML.load_file(dbfile_path)
 							file['meta']['updated_at'] = DateTime.now.to_s
 						end
 						
-						@transaction_files[dbfile_basename] = {
-							'basename' => dbfile_basename,
-							'path' => dbfile_path,
-							'tmp_path' => tmpfile_path,
+						@transaction_files[dbfile_basename_s] = {
+							'basename' => dbfile_basename_s,
+							'path' => dbfile_path.to_s,
+							'tmp_path' => tmpfile_path.to_s,
 							'file' => file,
 						}
 					end
@@ -104,11 +96,9 @@ module TheFox
 					
 					file['days'][date_s].push(entry.to_h)
 					
-					@transaction_files[dbfile_basename]['file'] = file
+					@transaction_files[dbfile_basename_s]['file'] = file
 				else
-					create_dirs
-					
-					if File.exist?(dbfile_path)
+					if dbfile_path.exist?
 						file = YAML.load_file(dbfile_path)
 						file['meta']['updated_at'] = DateTime.now.to_s
 					end
@@ -130,8 +120,8 @@ module TheFox
 					
 					save_entries_index_file
 					
-					if File.exist?(tmpfile_path)
-						File.rename(tmpfile_path, dbfile_path)
+					if tmpfile_path.exist?
+						tmpfile_path.rename(dbfile_path)
 					end
 				end
 				
@@ -156,12 +146,6 @@ module TheFox
 						if @exit
 							throw :done
 						end
-						
-						# puts 'keys left: ' << @transaction_files.keys.count.to_s
-						# puts 'tr_file_key: ' << tr_file_key
-						# puts 'path:        ' << tr_file_data['path']
-						# puts 'tmp_path:    ' << tr_file_data['tmp_path']
-						# puts
 						
 						store = YAML::Store.new(tr_file_data['tmp_path'])
 						store.transaction do
@@ -259,16 +243,8 @@ module TheFox
 				
 				category = category.to_s.downcase
 				
-				# puts 'glob:     ' << glob
-				# puts 'begin_year:     ' << '%-10s' % begin_year.class.to_s << '   = "' << begin_year.to_s << '"'
-				# puts 'begin_month:    ' << '%-10s' % begin_month.class.to_s << '   = "' << begin_month.to_s << '"'
-				# puts 'begin_day:      ' << '%-10s' % begin_day.class.to_s << '   = "' << begin_day.to_s << '"'
-				# puts 'category:       ' << '%-10s' % category.class.to_s << '   = "' << category.to_s << '"'
-				# puts
-				
 				entries_a = Hash.new
 				Dir[glob].each do |file_path|
-					#puts "path: #{file_path}"
 					
 					data = YAML.load_file(file_path)
 					if category.length == 0
@@ -306,7 +282,7 @@ module TheFox
 			
 			def categories
 				categories_h = Hash.new
-				Dir[File.expand_path('month_*.yml', @data_path)].each do |file_path|
+				Dir[Pathname.new('month_*.yml').expand_path(@data_path)].each do |file_path|
 					data = YAML.load_file(file_path)
 					
 					data['days'].each do |day_name, day_items|
@@ -331,7 +307,7 @@ module TheFox
 			def gen_html
 				create_dirs
 				
-				html_options_path = File.expand_path('options.yml', @html_path)
+				html_options_path = Pathname.new('options.yml').expand_path(@html_path)
 				html_options = {
 					'meta' => {
 						'version' => 1,
@@ -340,13 +316,13 @@ module TheFox
 					},
 					'changes' => Hash.new,
 				}
-				if Dir.exist?(@html_path)
-					if File.exist?(html_options_path)
+				if @html_path.exist?
+					if html_options_path.exist?
 						html_options = YAML.load_file(html_options_path)
 						html_options['meta']['updated_at'] = DateTime.now.to_s
 					end
 				else
-					Dir.mkdir(@html_path)
+					@html_path.mkpath
 				end
 				
 				categories_available = categories
@@ -354,11 +330,12 @@ module TheFox
 				categories_total_balance = Hash.new
 				categories_available.map{ |item| categories_total_balance[item] = 0.0 }
 				
-				gitignore_file = File.open(File.expand_path('.gitignore', @html_path), 'w')
+				gitignore_file_path = Pathname.new('.gitignore').expand_path(@html_path)
+				gitignore_file = File.open(gitignore_file_path, 'w')
 				gitignore_file.write('*')
 				gitignore_file.close
 				
-				css_file_path = File.expand_path('style.css', @html_path)
+				css_file_path = Pathname.new('style.css').expand_path(@html_path)
 				css_file = File.open(css_file_path, 'w')
 				css_file.write('
 					html {
@@ -383,37 +360,38 @@ module TheFox
 				')
 				css_file.close
 				
-				index_file_path = File.expand_path('index.html', @html_path)
+				index_file_path = Pathname.new('index.html').expand_path(@html_path)
 				index_file = File.open(index_file_path, 'w')
 				index_file.write('
 					<html>
 						<head>
 							<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-							<title>' << @dir_path << '</title>
+							<title>' << @dir_path_basename_s << '</title>
 							<link rel="stylesheet" href="style.css" type="text/css" />
 						</head>
 						<body>
-							<h1>' << @dir_path << '</h1>
-							<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> ' << ::TheFox::Wallet::VERSION << '</p>
+							<h1>' << @dir_path_basename_s << '</h1>
+							<p>Generated @ ' << DateTime.now.strftime('%F %T') << ' by <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> v' << ::TheFox::Wallet::VERSION << '</p>
 				')
 				
 				years_total = Hash.new
 				years.each do |year|
 					year_s = year.to_s
-					year_file_name = "year_#{year}.html"
-					year_file_path = File.expand_path(year_file_name, @html_path)
+					year_file_name_s = "year_#{year}.html"
+					year_file_name_p = Pathname.new(year_file_name_s)
+					year_file_path = year_file_name_p.expand_path(@html_path)
 					
 					year_file = File.open(year_file_path, 'w')
 					year_file.write('
 						<html>
 							<head>
 								<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-								<title>' << year_s << ' - ' << @dir_path << '</title>
+								<title>' << year_s << ' - ' << @dir_path_basename_s << '</title>
 								<link rel="stylesheet" href="style.css" type="text/css" />
 							</head>
 							<body>
-								<h1><a href="index.html">' << @dir_path << '</a></h1>
-								<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> ' << ::TheFox::Wallet::VERSION << '</p>
+								<h1><a href="index.html">' << @dir_path_basename_s << '</a></h1>
+								<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> v' << ::TheFox::Wallet::VERSION << '</p>
 								
 								<h2>Year: ' << year_s << '</h2>
 								<table class="list">
@@ -428,7 +406,7 @@ module TheFox
 										<th colspan="4">&nbsp;</th>
 					')
 					categories_available.each do |category|
-						year_file.write('<th class="right">' << category << '</th>')
+						year_file.write(%(<th class="right">#{category}</th>))
 					end
 					year_file.write('</tr>')
 					
@@ -440,11 +418,15 @@ module TheFox
 					year_total = Hash.new
 					
 					puts "generate year #{year}"
-					Dir[File.expand_path("month_#{year}_*.yml", @data_path)].each do |file_path|
-						file_name = File.basename(file_path)
-						month_n = file_name[11, 2]
-						month_file_name = "month_#{year}_#{month_n}.html"
-						month_file_path = File.expand_path(month_file_name, @html_path)
+					Dir[Pathname.new("month_#{year}_*.yml").expand_path(@data_path)].each do |file_path|
+						file_path = Pathname.new(file_path)
+						file_name_p = file_path.basename
+						file_name_s = file_name_p.to_s
+						
+						month_n = file_name_s[11, 2]
+						month_file_name_s = "month_#{year}_#{month_n}.html"
+						month_file_name_p = Pathname.new(month_file_name_s)
+						month_file_path = month_file_name_p.expand_path(@html_path)
 						
 						month_s = Date.parse("2015-#{month_n}-15").strftime('%B')
 						
@@ -458,37 +440,37 @@ module TheFox
 						data = YAML.load_file(file_path)
 						
 						generate_html = false
-						if html_options['changes'].has_key?(file_name)
-							if html_options['changes'][file_name]['updated_at'] != data['meta']['updated_at']
-								html_options['changes'][file_name]['updated_at'] = data['meta']['updated_at']
+						if html_options['changes'][file_name_s]
+							if html_options['changes'][file_name_s]['updated_at'] != data['meta']['updated_at']
+								html_options['changes'][file_name_s]['updated_at'] = data['meta']['updated_at']
 								generate_html = true
 							end
 						else
-							html_options['changes'][file_name] = {
+							html_options['changes'][file_name_s] = {
 								'updated_at' => data['meta']['updated_at'],
 							}
 							generate_html = true
 						end
-						if !File.exist?(month_file_path)
+						unless month_file_path.exist?
 							generate_html = true
 						end
 						
 						if generate_html
-							puts "\tfile: #{month_file_name} (from #{file_name})"
+							puts "\tfile: #{month_file_name_s} (from #{file_name_s})"
 							
 							month_file = File.open(month_file_path, 'w')
 							month_file.write('
 								<html>
 									<head>
 										<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-										<title>' << month_s << ' ' << year_s << ' - ' << @dir_path << '</title>
+										<title>' << month_s << ' ' << year_s << ' - ' << @dir_path_basename_s << '</title>
 										<link rel="stylesheet" href="style.css" type="text/css" />
 									</head>
 									<body>
-										<h1><a href="index.html">' << @dir_path << '</a></h1>
-										<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> ' << ::TheFox::Wallet::VERSION << ' from <code>' << file_name << '</code></p>
+										<h1><a href="index.html">' << @dir_path_basename_s << '</a></h1>
+										<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << ::TheFox::Wallet::HOMEPAGE << '">' << ::TheFox::Wallet::NAME << '</a> v' << ::TheFox::Wallet::VERSION << ' from <code>' << file_name_s << '</code></p>
 										
-										<h2>Month: ' << month_s << ' <a href="' << year_file_name << '">' << year_s << '</a></h2>
+										<h2>Month: ' << month_s << ' <a href="' << year_file_name_s << '">' << year_s << '</a></h2>
 										<table class="list">
 											<tr>
 												<th class="left">#</th>
@@ -574,7 +556,7 @@ module TheFox
 						
 						year_file.write('
 							<tr>
-								<td class="left"><a href="' << month_file_name << '">' << month_s << '</a></td>
+								<td class="left"><a href="' << month_file_name_s << '">' << month_s << '</a></td>
 								<td class="right">' << ::TheFox::Wallet::NUMBER_FORMAT % revenue_month << '</td>
 								<td class="right red">' << ::TheFox::Wallet::NUMBER_FORMAT % expense_month << '</td>
 								<td class="right ' << balance_class << '">' << ::TheFox::Wallet::NUMBER_FORMAT % balance_month << '</td>')
@@ -607,42 +589,15 @@ module TheFox
 					year_file.write('</body></html>')
 					year_file.close
 					
-					yeardat_file_path = File.expand_path("year_#{year_s}.dat", @tmp_path)
+					yeardat_file_path = Pathname.new("year_#{year_s}.dat").expand_path(@tmp_path)
 					yeardat_file = File.new(yeardat_file_path, 'w')
 					yeardat_file.write(year_total
 						.map{ |k, m| "#{year_s}-#{m.month_s} #{m.revenue} #{m.expense} #{m.balance} #{m.balance_total} #{m.balance_total}" }
 						.join("\n"))
 					yeardat_file.close
 					
-					# year_max = year_total
-					# 	.map{ |k, m| [m.revenue, m.balance, m.balance_total] }
-					# 	.flatten
-					# 	.max
-					# 	.to_i
-					
-					# year_min = year_total
-					# 	.map{ |k, m| [m.expense, m.balance, m.balance_total] }
-					# 	.flatten
-					# 	.min
-					# 	.to_i
-					# 	.abs
-					
-					# year_max_rl = year_max.to_s.length - 2
-					# year_max_r = year_max.round(-year_max_rl)
-					# year_max_d = year_max_r - year_max
-					# year_max_r = year_max_r + 5 * 10 ** (year_max_rl - 1) if year_max_r < year_max
-					# year_max_r += 100
-					
-					# year_min_rl = year_min.to_s.length - 2
-					# year_min_r = year_min.round(-year_min_rl)
-					# year_min_d = year_min_r - year_min
-					# year_min_r = year_min_r + 5 * 10 ** (year_min_rl - 1) if year_min_r < year_min
-					# year_min_r += 100
-					
-					# puts "#{year_max} #{year_max.to_s.length} #{year_max_r} #{year_max_rl}"
-					# puts "#{year_min} #{year_min.to_s.length} #{year_min_r} #{year_min_rl}"
-					
-					gnuplot_file = File.new(File.expand_path("year_#{year_s}.gp", @tmp_path), 'w')
+					gnuplot_file_path = Pathname.new("year_#{year_s}.gp").expand_path(@tmp_path)
+					gnuplot_file = File.new(gnuplot_file_path, 'w')
 					gnuplot_file.puts("set title 'Year #{year_s}'")
 					gnuplot_file.puts("set xlabel 'Months'")
 					gnuplot_file.puts("set ylabel 'Euro'")
@@ -672,7 +627,7 @@ module TheFox
 					gnuplot_file.puts("\t'' using 1:4 linestyle 3 title 'Balance', \\")
 					gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
 					gnuplot_file.close
-					system("gnuplot " << File.expand_path("year_#{year_s}.gp", @tmp_path))
+					system("gnuplot #{gnuplot_file_path}")
 					
 					years_total[year_s] = ::OpenStruct.new({
 						year: year_s,
@@ -736,12 +691,13 @@ module TheFox
 				end
 				totaldat_file_c = totaldat_file_c.join("\n")
 				
-				totaldat_file_path = File.expand_path('total.dat', @tmp_path)
+				totaldat_file_path = Pathname.new('total.dat').expand_path(@tmp_path)
 				totaldat_file = File.new(totaldat_file_path, 'w')
 				totaldat_file.write(totaldat_file_c)
 				totaldat_file.close
 				
-				gnuplot_file = File.new(File.expand_path('total.gp', @tmp_path), 'w')
+				gnuplot_file_path = Pathname.new('total.gp').expand_path(@tmp_path)
+				gnuplot_file = File.new(gnuplot_file_path, 'w')
 				gnuplot_file.puts("set title 'Total'")
 				gnuplot_file.puts("set xlabel 'Years'")
 				gnuplot_file.puts("set ylabel 'Euro'")
@@ -764,7 +720,7 @@ module TheFox
 				gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
 				gnuplot_file.close
 				
-				system("gnuplot " << File.expand_path('total.gp', @tmp_path))
+				system("gnuplot #{gnuplot_file_path}")
 			end
 			
 			def import_csv_file(file_path)
@@ -816,8 +772,8 @@ module TheFox
 					# :encoding => 'ISO-8859-1',
 				}
 				CSV.open(file_path, 'wb', csv_options) do |csv|
-					Dir[File.expand_path('month_*.yml', @data_path)].each do |yaml_file_path|
-						puts 'export ' << File.basename(yaml_file_path)
+					Dir[Pathname.new('month_*.yml').expand_path(@data_path)].each do |yaml_file_path|
+						puts "export #{File.basename(yaml_file_path)}"
 						
 						data = YAML.load_file(yaml_file_path)
 						
@@ -854,9 +810,9 @@ module TheFox
 				if @entries_by_ids.nil? || force
 					@logger.debug('build entry-by-id index') if @logger
 					
-					glob = File.expand_path('month_*.yml', @data_path)
+					glob = Pathname.new('month_*.yml').expand_path(@data_path)
 					
-					@entries_by_ids = Dir[glob].map { |file_path|
+					@entries_by_ids = Dir[glob.to_s].map { |file_path|
 						data = YAML.load_file(file_path)
 						data['days'].map{ |day_name, day_items|
 							day_items.map{ |entry|
@@ -866,8 +822,6 @@ module TheFox
 					}.flatten.map{ |entry|
 						[entry.id, entry]
 					}.to_h
-					
-					# pp @entries_by_ids
 				end
 			end
 			
@@ -880,26 +834,26 @@ module TheFox
 			private
 			
 			def create_dirs
-				if !Dir.exist?(@dir_path)
-					Dir.mkdir(@dir_path)
+				unless @dir_path.exist?
+					@dir_path.mkpath
 				end
 				
-				if !Dir.exist?(@data_path)
-					Dir.mkdir(@data_path)
+				unless @data_path.exist?
+					@data_path.mkpath
 				end
 				
-				if !Dir.exist?(@tmp_path)
-					Dir.mkdir(@tmp_path)
+				unless @tmp_path.exist?
+					@tmp_path.mkpath
 				end
 				
-				tmp_gitignore_path = File.expand_path('.gitignore', @tmp_path)
-				if !File.exist?(tmp_gitignore_path)
+				tmp_gitignore_path = Pathname.new('.gitignore').expand_path(@tmp_path)
+				unless tmp_gitignore_path.exist?
 					gitignore_file = File.open(tmp_gitignore_path, 'w')
 					gitignore_file.write('*')
 					gitignore_file.close
 				end
 				
-				if File.exist?(@entries_index_file_path)
+				if @entries_index_file_path.exist?
 					load_entries_index_file
 				else
 					build_entry_by_id_index(true)
@@ -938,21 +892,21 @@ module TheFox
 			end
 			
 			def years
-				Dir[File.expand_path('month_*.yml', @data_path)].map{ |file_path| File.basename(file_path)[6, 4].to_i }.uniq
+				Dir[Pathname.new('month_*.yml').expand_path(@data_path)].map{ |file_path| File.basename(file_path)[6, 4].to_i }.uniq
 			end
 			
 			def load_entries_index_file
 				unless @entries_index_is_loaded
 					@entries_index_is_loaded = true
-					if File.exist?(@entries_index_file_path)
-						data = YAML.load_file(@entries_index_file_path)
+					if @entries_index_file_path.exist?
+						data = YAML.load_file(@entries_index_file_path.to_s)
 						@entries_index = data['index']
 					end
 				end
 			end
 			
 			def save_entries_index_file
-				store = YAML::Store.new(@entries_index_file_path)
+				store = YAML::Store.new(@entries_index_file_path.to_s)
 				store.transaction do
 					store['index'] = @entries_index
 				end
