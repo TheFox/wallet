@@ -36,8 +36,7 @@ module TheFox
 				@entries_index_is_loaded = false
 				
 				Signal.trap('SIGINT') do
-					puts
-					puts 'received SIGINT. break ...'
+					@logger.warning('received SIGINT. break ...') if @logger
 					@exit = true
 				end
 			end
@@ -417,7 +416,7 @@ module TheFox
 					categories_available.map{ |item| categories_year_balance[item] = 0.0 }
 					year_total = Hash.new
 					
-					puts "generate year #{year}"
+					@logger.info("generate year #{year}") if @logger
 					Dir[Pathname.new("month_#{year}_*.yml").expand_path(@data_path)].each do |file_path|
 						file_path = Pathname.new(file_path)
 						file_name_p = file_path.basename
@@ -456,7 +455,7 @@ module TheFox
 						end
 						
 						if generate_html
-							puts "\tfile: #{month_file_name_s} (from #{file_name_s})"
+							@logger.debug("file: #{month_file_name_s} (from #{file_name_s})") if @logger
 							
 							month_file = File.open(month_file_path, 'w')
 							month_file.write('
@@ -752,11 +751,10 @@ module TheFox
 					
 					added = add(Entry.new(id, title, date, revenue, expense, category, comment), true)
 					
-					puts "import row '#{id}' -- #{added ? 'YES' : 'NO'}"
+					@logger.debug("import row '#{id}' -- #{added ? 'YES' : 'NO'}") if @logger
 				end
 				
-				puts
-				puts 'save data ...'
+				@logger.info('save data ...') if @logger
 				
 				transaction_end
 			end
@@ -773,7 +771,7 @@ module TheFox
 				}
 				CSV.open(file_path, 'wb', csv_options) do |csv|
 					Dir[Pathname.new('month_*.yml').expand_path(@data_path)].each do |yaml_file_path|
-						puts "export #{File.basename(yaml_file_path)}"
+						@logger.info("export #{File.basename(yaml_file_path)}") if @logger
 						
 						data = YAML.load_file(yaml_file_path)
 						

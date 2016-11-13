@@ -7,9 +7,11 @@ module TheFox::Wallet
 		
 		def run
 			wallet = Wallet.new(@options[:wallet_path])
-			puts "generate html to #{wallet.html_path} ..."
+			wallet.logger = @options[:logger]
+			
+			@options[:logger].info("generate html to #{wallet.html_path} ...") if @options[:logger]
 			wallet.gen_html
-			puts 'generate html done'
+			@options[:logger].info('generate html done') if @options[:logger]
 		end
 		
 	end

@@ -10,6 +10,8 @@ module TheFox::Wallet
 		
 		def initialize(options = Hash.new)
 			@options = options || Hash.new
+			@options[:logger] ||= nil
+			
 			@options[:wallet_path] ||= Pathname.new('wallet')
 			@options[:entry_id] ||= nil
 			@options[:entry_title] ||= nil

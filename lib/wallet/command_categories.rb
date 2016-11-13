@@ -7,9 +7,7 @@ module TheFox::Wallet
 		
 		def run
 			wallet = Wallet.new(@options[:wallet_path])
-			categories = wallet.categories
-			puts "categories: #{categories.count}"
-			puts "\t" << categories.join("\n\t")
+			puts wallet.categories
 		end
 		
 	end

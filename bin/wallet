@@ -1,11 +1,15 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'tempfile'
 require 'pathname'
+require 'logger'
 require 'wallet'
 
-options = Hash.new
+@logger = Logger.new(STDOUT)
+@logger.level = Logger::INFO
+
+@options = Hash.new
+@options[:logger] = @logger
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: wallet <command> [options]'
 	o.separator('')
@@ -20,64 +24,68 @@ opts = OptionParser.new do |o|
 	o.separator('')
 	
 	o.on('-w', '--wallet <path>', 'Path to wallet directory.') do |path|
-		options[:wallet_path] = Pathname.new(path).expand_path
+		@options[:wallet_path] = Pathname.new(path).expand_path
 	end
 	
 	o.on('--id <id>', 'ID used for the entry.') do |id|
-		options[:entry_id] = id
+		@options[:entry_id] = id
 	end
 	
 	o.on('-t', '--title <title>', 'Title used for the entry.') do |title|
-		options[:entry_title] = title
+		@options[:entry_title] = title
 	end
 	
 	o.on('-d', '--date <date>', 'Date used for the entry.') do |date|
 	#o.on('-d', '--date <date>', 'Start date or date used for the entry.') do |date|
-		options[:entry_date] = date
+		@options[:entry_date] = date
 	end
 	
 	#o.on('-z', '--end <date>', 'End date.') do |date|
-	#	options[:entry_end_date] = date
+	#	@options[:entry_end_date] = date
 	#end
 	
 	o.on('-r', '--revenue <revenue>', 'Revenue used for the entry.') do |revenue|
-		options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
+		@options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
 	end
 	
 	o.on('-e', '--expense <expense>', 'Expense used for the entry.') do |expense|
-		options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
+		@options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
 	end
 	
 	o.on('-c', '--category <category>', 'Category used for the entry.') do |category|
-		options[:entry_category] = category
+		@options[:entry_category] = category
 	end
 	
 	o.on('-o', '--comment <comment>', 'Comment used for the entry.') do |comment|
-		options[:entry_comment] = comment
+		@options[:entry_comment] = comment
 	end
 	
 	o.on('--import', 'Import') do
-		options[:is_import] = true
+		@options[:is_import] = true
 	end
 	
 	o.on('--export', 'Export') do
-		options[:is_export] = true
+		@options[:is_export] = true
 	end
 	
 	o.on('-p', '--path <path>', 'Path used for csv import/export.') do |path|
-		options[:path] = path
+		@options[:path] = path
 	end
 	
 	o.on('-i', '--interactive', 'Use some commands interactively.') do
-		options[:is_interactively] = true
+		@options[:is_interactively] = true
 	end
 	
 	o.on('-f', '--force', 'Force add command.') do
-		options[:force] = true
+		@options[:force] = true
 	end
 	
 	o.on('--no-force', 'Do not force add command.') do
-		options[:force] = false
+		@options[:force] = false
+	end
+	
+	o.on('-v', '--verbose', 'Log on debug level.') do
+		@logger.level = Logger::DEBUG
 	end
 	
 	o.on_tail('-V', '--version', 'Show version.') do
@@ -98,10 +106,10 @@ command_name = commands.shift
 
 if command_name
 	begin
-		command = TheFox::Wallet::Command.create_by_name(command_name, options)
+		command = TheFox::Wallet::Command.create_by_name(command_name, @options)
 		command.run
 	rescue Exception => e
-		puts "ERROR: #{e}"
+		@logger.error(e.to_s)
 		exit 1
 	end
 else

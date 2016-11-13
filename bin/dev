@@ -7,4 +7,6 @@ require 'wallet'
 
 include TheFox::Wallet
 
+wallet = Wallet.new(Pathname.new('wallet_test2'))
+
 binding.pry

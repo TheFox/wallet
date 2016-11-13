@@ -11,15 +11,16 @@ module TheFox::Wallet
 			end
 			
 			wallet = Wallet.new(@options[:wallet_path])
+			wallet.logger = @options[:logger]
 			
 			if @options[:is_import] || !@options[:is_export]
-				puts "import csv #{@options[:path]} ..."
+				@options[:logger].info("import csv #{@options[:path]} ...") if @options[:logger]
 				wallet.import_csv_file(@options[:path])
-				puts "import csv #{@options[:path]} done"
+				@options[:logger].info("import csv #{@options[:path]} done") if @options[:logger]
 			elsif @options[:is_export]
-				puts "export csv #{@options[:path]} ..."
+				@options[:logger].info("export csv #{@options[:path]} ...") if @options[:logger]
 				wallet.export_csv_file(@options[:path])
-				puts "export csv #{@options[:path]} done"
+				@options[:logger].info("export csv #{@options[:path]} done") if @options[:logger]
 			end
 		end
 		
