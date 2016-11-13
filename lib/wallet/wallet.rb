@@ -892,7 +892,14 @@ module TheFox
 			end
 			
 			def years
-				Dir[Pathname.new('month_*.yml').expand_path(@data_path)].map{ |file_path| File.basename(file_path)[6, 4].to_i }.uniq
+				files = Array.new
+				@data_path.each_child(false) do |file|
+					if file.extname == '.yml' && /^month_/.match(file.to_s)
+						files << file
+					end
+				end
+				
+				files.map{ |file| file.to_s[6, 4].to_i }.uniq
 			end
 			
 			def load_entries_index_file
