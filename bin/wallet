@@ -3,6 +3,7 @@
 require 'optparse'
 require 'pathname'
 require 'logger'
+require 'date'
 require 'wallet'
 
 @logger = Logger.new(STDOUT)
@@ -36,13 +37,16 @@ opts = OptionParser.new do |o|
 	end
 	
 	o.on('-d', '--date <date>', 'Date used for the entry.') do |date|
-	#o.on('-d', '--date <date>', 'Start date or date used for the entry.') do |date|
 		@options[:entry_date] = date
 	end
 	
-	#o.on('-z', '--end <date>', 'End date.') do |date|
-	#	@options[:entry_end_date] = date
-	#end
+	o.on('--start <date>', 'Start date used for a range.') do |date|
+		@options[:entry_date_start] = Date.parse(date)
+	end
+	
+	o.on('--end <date>', 'End date used for a range.') do |date|
+		@options[:entry_date_end] = Date.parse(date)
+	end
 	
 	o.on('-r', '--revenue <revenue>', 'Revenue used for the entry.') do |revenue|
 		@options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs

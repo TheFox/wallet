@@ -16,6 +16,8 @@ module TheFox::Wallet
 			@options[:entry_id] ||= nil
 			@options[:entry_title] ||= nil
 			@options[:entry_date] ||= Date.today.to_s
+			@options[:entry_date_start] ||= Date.parse('1970-01-01')
+			@options[:entry_date_end] ||= Date.today
 			@options[:entry_revenue] ||= 0.0
 			@options[:entry_expense] ||= 0.0
 			@options[:entry_category] ||= nil

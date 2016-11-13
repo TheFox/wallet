@@ -1,5 +1,8 @@
 
+require 'date'
+
 module TheFox::Wallet
+	
 	class AddCommand < Command
 		
 		NAME = 'add'
