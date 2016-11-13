@@ -2,8 +2,8 @@
 module TheFox
 	module Wallet
 		NAME = 'Wallet'
-		VERSION = '0.15.0-dev.2'
-		DATE = '2016-10-30'
+		VERSION = '0.15.0-dev.3'
+		DATE = '2016-11-13'
 		HOMEPAGE = 'https://github.com/TheFox/wallet'
 		
 		NUMBER_FORMAT = '%.2f'
