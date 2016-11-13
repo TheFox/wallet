@@ -2,12 +2,12 @@
 .setup
 CHANGELOG-*.txt
 /coverage/
-/bin/test
 Gemfile.lock
 /releases/
 /test_wallet/
 /tmp/
 /wallet/
 /wallet_test/
+/wallet_test2/
 *.csv
 *.txt

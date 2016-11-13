@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'pp'
+require 'pry'
+require 'pathname'
+require 'wallet'
+
+include TheFox::Wallet
+
+binding.pry
