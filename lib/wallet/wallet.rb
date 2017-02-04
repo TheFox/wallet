@@ -35,7 +35,7 @@ module TheFox
 				@entries_index_is_loaded = false
 				
 				Signal.trap('SIGINT') do
-					@logger.warning('received SIGINT. break ...') if @logger
+					#@logger.warn('received SIGINT. break ...') if @logger
 					@exit = true
 				end
 			end
@@ -302,7 +302,11 @@ module TheFox
 				categories_a
 			end
 			
-			def gen_html(html_path, date_start = nil, date_end = nil, category = nil)
+			##
+			# Generate HTML files from date_start to date_end.
+			def generate_html(html_path, date_start = nil, date_end = nil, category = nil)
+				# @FIXME use @exit on all loops in this function
+				
 				create_dirs
 				
 				unless html_path.exist?
@@ -336,6 +340,7 @@ module TheFox
 				categories_total_balance = Hash.new
 				categories_available.map{ |item| categories_total_balance[item] = 0.0 }
 				
+				# Ignore the html directory.
 				gitignore_file_path = Pathname.new('.gitignore').expand_path(html_path)
 				gitignore_file = File.open(gitignore_file_path, 'w')
 				gitignore_file.write('*')
@@ -366,21 +371,10 @@ module TheFox
 				')
 				css_file.close
 				
-				index_file_path = Pathname.new('index.html').expand_path(html_path)
-				index_file = File.open(index_file_path, 'w')
-				index_file.write('
-					<html>
-						<head>
-							<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-							<title>' << @dir_path_basename_s << '</title>
-							<link rel="stylesheet" href="style.css" type="text/css" />
-						</head>
-						<body>
-							<h1>' << @dir_path_basename_s << '</h1>
-							<p>Generated @ ' << DateTime.now.strftime('%F %T') << ' by <a href="' << HOMEPAGE << '">' << NAME << '</a> v' << VERSION << '</p>
-				')
-				
+				# Use this for index.html.
 				years_total = Hash.new
+				
+				# Iterate over all years.
 				years(date_start, date_end).each do |year|
 					year_s = year.to_s
 					year_file_name_s = "year_#{year}.html"
@@ -458,23 +452,24 @@ module TheFox
 						entry_n = 0
 						data = YAML.load_file(file_path)
 						
-						generate_html = false
+						# Determine if the html file should be updated.
+						write_html = false
 						if html_options['changes'][file_name_s]
 							if html_options['changes'][file_name_s]['updated_at'] != data['meta']['updated_at']
 								html_options['changes'][file_name_s]['updated_at'] = data['meta']['updated_at']
-								generate_html = true
+								write_html = true
 							end
 						else
 							html_options['changes'][file_name_s] = {
 								'updated_at' => data['meta']['updated_at'],
 							}
-							generate_html = true
+							write_html = true
 						end
 						unless month_file_path.exist?
-							generate_html = true
+							write_html = true
 						end
 						
-						if generate_html
+						if write_html
 							@logger.debug("file: #{month_file_name_s} (from #{file_name_s})") if @logger
 							
 							month_file = File.open(month_file_path, 'w')
@@ -509,13 +504,7 @@ module TheFox
 								entry_date = Date.parse(entry['date'])
 								entry_date_s = entry_date.strftime('%d.%m.%y')
 								
-								date_start_oor = date_start > entry_date
-								date_end_oor = date_end < entry_date
-								
-								if category && !categories_available.include?(entry['category']) ||
-									date_start > entry_date ||
-									date_end < entry_date
-									
+								if category && !categories_available.include?(entry['category'])
 									next
 								end
 								
@@ -532,7 +521,7 @@ module TheFox
 								category_out = entry['category'] == 'default' ? '&nbsp;' : entry['category']
 								comment_out = entry['comment'] == '' ? '&nbsp;' : entry['comment']
 								
-								if generate_html
+								if write_html
 									month_file.write('
 										<tr>
 											<td valign="top" class="left">' << entry_n.to_s << '</td>
@@ -569,7 +558,7 @@ module TheFox
 						if balance_month < 0
 							balance_class = 'red'
 						end
-						if generate_html
+						if write_html
 							month_file.write('
 									<tr>
 										<th>&nbsp;</th>
@@ -671,6 +660,21 @@ module TheFox
 				
 				years_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(NUMBER_ROUND) }
 				
+				index_file_path = Pathname.new('index.html').expand_path(html_path)
+				index_file = File.open(index_file_path, 'w')
+				index_file.write('
+					<html>
+						<head>
+							<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+							<title>' << @dir_path_basename_s << '</title>
+							<link rel="stylesheet" href="style.css" type="text/css" />
+						</head>
+						<body>
+							<h1>' << @dir_path_basename_s << '</h1>
+							<p>Generated @ ' << DateTime.now.strftime('%F %T') << ' by <a href="' << HOMEPAGE << '">' << NAME << '</a> v' << VERSION << '</p>
+				')
+				
+				# Write total to index.html file.
 				index_file.write('
 						<table class="list">
 							<tr>
@@ -680,6 +684,8 @@ module TheFox
 								<th class="right">Balance</th>
 								<th class="right">Balance &#8721;</th>
 							</tr>')
+				
+				# Write years total to index.html file.
 				years_total.each do |year_name, year_data|
 					index_file.write('
 						<tr>
@@ -694,18 +700,16 @@ module TheFox
 				balance_total = years_total.inject(0.0){ |sum, item| sum + item[1].balance }
 				
 				index_file.write('
-						<tr>
-							<th class="left"><b>TOTAL</b></th>
-							<th class="right">' << NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } << '</th>
-							<th class="right red">' << NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } << '</th>
-							<th class="right ' << (balance_total < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % balance_total << '</th>
-							<th>&nbsp;</th>
-						</tr>
-					</table>
+								<tr>
+									<th class="left"><b>TOTAL</b></th>
+									<th class="right">' << NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } << '</th>
+									<th class="right red">' << NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } << '</th>
+									<th class="right ' << (balance_total < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % balance_total << '</th>
+									<th>&nbsp;</th>
+								</tr>
+							</table>
 					
-					<p><img src="total.png"></p>
-				')
-				index_file.write('
+							<p><img src="total.png"></p>
 						</body>
 					</html>
 				')
@@ -723,11 +727,13 @@ module TheFox
 				end
 				totaldat_file_c = totaldat_file_c.join("\n")
 				
+				# DAT file for GNUPlot.
 				totaldat_file_path = Pathname.new('total.dat').expand_path(@tmp_path)
 				totaldat_file = File.new(totaldat_file_path, 'w')
 				totaldat_file.write(totaldat_file_c)
 				totaldat_file.close
 				
+				# Generate image with GNUPlot.
 				png_file_path = Pathname.new('total.png').expand_path(html_path)
 				
 				gnuplot_file_path = Pathname.new('total.gp').expand_path(@tmp_path)

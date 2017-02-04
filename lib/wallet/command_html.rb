@@ -15,7 +15,7 @@ module TheFox::Wallet
 			end
 			
 			@options[:logger].info("generate html to #{html_path} ...") if @options[:logger]
-			wallet.gen_html(html_path, @options[:entry_date_start], @options[:entry_date_end], @options[:entry_category])
+			wallet.generate_html(html_path, @options[:entry_date_start], @options[:entry_date_end], @options[:entry_category])
 			@options[:logger].info('generate html done') if @options[:logger]
 		end
 		
