@@ -21,7 +21,6 @@ module TheFox::Wallet
 					else
 						@options[:entry_title] = title_t
 					end
-					puts "title: #{@options[:entry_title]}"
 				end
 				
 				print "date: [#{@options[:entry_date]}] "
