@@ -17,10 +17,11 @@ opts = OptionParser.new do |o|
 	o.separator('Commands:')
 	o.separator('')
 	o.separator('    add          Add a new entry')
-	o.separator('    list         List entries')
 	o.separator('    categories   List categories')
-	o.separator('    html         Generate HTML files')
+	o.separator('    clear        Clear temp and cache files')
 	o.separator('    csv          Import/Export CSV file')
+	o.separator('    html         Generate HTML files')
+	o.separator('    list         List entries')
 	o.separator('    vi           Import per VIM editor')
 	o.separator('')
 	
@@ -72,7 +73,7 @@ opts = OptionParser.new do |o|
 		@options[:is_export] = true
 	end
 	
-	o.on('-p', '--path <path>', 'Path used for csv import/export.') do |path|
+	o.on('-p', '--path <path>', 'Path used for csv import/export and html directory path.') do |path|
 		@options[:path] = path
 	end
 	

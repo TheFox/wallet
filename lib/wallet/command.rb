@@ -35,10 +35,11 @@ module TheFox::Wallet
 		def self.create_by_name(name, options = nil)
 			classes = [
 				AddCommand,
-				ListCommand,
 				CategoriesCommand,
-				HtmlCommand,
+				ClearCommand,
 				CsvCommand,
+				HtmlCommand,
+				ListCommand,
 			]
 			
 			classes.each do |cclass|

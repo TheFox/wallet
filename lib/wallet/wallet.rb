@@ -6,6 +6,7 @@ require 'yaml'
 require 'yaml/store'
 require 'csv'
 require 'pathname'
+require 'fileutils'
 require 'ostruct' # OpenStruct use to generate HTML.
 # require 'pp'
 
@@ -25,6 +26,7 @@ module TheFox
 				@dir_path_basename_s = @dir_path_basename.to_s
 				@data_path = Pathname.new('data').expand_path(@dir_path)
 				@tmp_path = Pathname.new('tmp').expand_path(@dir_path)
+				@html_path = Pathname.new('html').expand_path(@dir_path)
 				
 				@has_transaction = false
 				@transaction_files = Hash.new
@@ -304,8 +306,12 @@ module TheFox
 			
 			##
 			# Generate HTML files from date_start to date_end.
-			def generate_html(html_path, date_start = nil, date_end = nil, category = nil)
+			def generate_html(html_path = nil, date_start = nil, date_end = nil, category = nil)
 				# @FIXME use @exit on all loops in this function
+				
+				html_path ||= @html_path
+				
+				@logger.info("generate html to #{html_path} ...") if @logger
 				
 				create_dirs
 				
@@ -761,6 +767,8 @@ module TheFox
 				gnuplot_file.close
 				
 				system("gnuplot #{gnuplot_file_path} &> /dev/null")
+				
+				@logger.info('generate html done') if @logger
 			end
 			
 			def import_csv_file(file_path)
@@ -868,6 +876,33 @@ module TheFox
 				build_entry_by_id_index
 				
 				@entries_by_ids[id]
+			end
+			
+			def clear
+				c = 0
+				
+				# Take the standard html path instead of --path option.
+				# Do not provide the functionality to delete files from --path.
+				# If a user uses --path to generate html files outside of the
+				# wallet path the user needs to manual remove these files.
+				children = @tmp_path.children + @html_path.children
+				
+				children.each do |child|
+					
+					if child.basename.to_s[0] == '.'
+						# Ignore 'hidden' files like .gitignore.
+						next
+					end
+					
+					# puts "child #{child}"
+					FileUtils.rm_rf(child)
+					
+					c += 1
+					if c > 100
+						# If something goes wrong do not delete to whole harddisk. ;)
+						break
+					end
+				end
 			end
 			
 			private
