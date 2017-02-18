@@ -16,7 +16,12 @@ module TheFox::Wallet
 				print "title: [#{@options[:entry_title]}] "
 				title_t = STDIN.gets.strip
 				if title_t.length > 0
-					@options[:entry_title] = title_t
+					if @options[:entry_title] =~ /%d/
+						@options[:entry_title] = @options[:entry_title] % title_t.split(',').map{ |s| s.strip }
+					else
+						@options[:entry_title] = title_t
+					end
+					puts "title: #{@options[:entry_title]}"
 				end
 				
 				print "date: [#{@options[:entry_date]}] "
