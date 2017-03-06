@@ -14,6 +14,7 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 - Export data to CSV.
 - Generate HTML summary.
 - VI/editor import mode. (CSV)
+- Categories
 
 ## Install
 
@@ -29,6 +30,12 @@ or via `Gemfile`:
 Use it in your sources:
 
 	require 'thefox-wallet'
+
+## Categories
+
+Each entry can have one category. It's planned to implement [Multiple Categories](https://github.com/TheFox/wallet/issues/3) for entries.
+
+You can define the categories yourself. The `list` command has a filter option `-c` to list a certain category. The `html` command (for generating a HTML output) will also sum all entries for each category. If the category is not set on `add` command set category will be set to `default`. The `default` category will not be shown in list views.
 
 ## Project Links
 
