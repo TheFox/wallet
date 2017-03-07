@@ -1,5 +1,8 @@
 
 require 'wallet/version'
+require 'wallet/wumber'
+require 'wallet/revenue'
+require 'wallet/expense'
 require 'wallet/wallet'
 require 'wallet/entry'
 require 'wallet/command'

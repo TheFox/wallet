@@ -10,6 +10,9 @@ if ENV['COVERAGE'] && ENV['COVERAGE'].to_i != 0
 	end
 end
 
+require_relative 'test_wumber'
+# require_relative 'test_revenue'
+# require_relative 'test_expense'
 require_relative 'test_command'
 require_relative 'test_command_add'
 require_relative 'test_command_categories'

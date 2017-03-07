@@ -9,4 +9,9 @@ include TheFox::Wallet
 
 wallet = Wallet.new(Pathname.new('wallet_test2'))
 
+x = Wumber.new(1)
+y = Wumber.new(2)
+z1 = Expense.new(3)
+z2 = Expense.new(-2)
+
 binding.pry
