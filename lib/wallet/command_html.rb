@@ -3,6 +3,9 @@ require 'pathname'
 
 module TheFox::Wallet
 	
+	# Exports a wallet as HTML.
+	# List all years in an index HTML file and all months for each year.
+	# Generates a HTML file for each month based on entries.
 	class HtmlCommand < Command
 		
 		NAME = 'html'

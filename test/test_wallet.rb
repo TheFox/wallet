@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Test Wallet
+
 require 'minitest/autorun'
 require 'pathname'
 require 'wallet'
@@ -183,7 +185,7 @@ class TestWallet < MiniTest::Test
 		assert_equal(['default', 'c1', 'c2'], wallet.categories)
 	end
 	
-	def test_add2
+	def test_add_with_id
 		wallet_path = Pathname.new('wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
@@ -211,6 +213,7 @@ class TestWallet < MiniTest::Test
 		wallet_path = Pathname.new('wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
+		# Add test data.
 		wallet.add(Entry.new(nil, 'test', '2014-01-01', -1))
 		wallet.add(Entry.new(1, 'test', '2014-01-01', 1))
 		wallet.add(Entry.new(2, 'test', '2014-01-02', 2))
@@ -233,6 +236,7 @@ class TestWallet < MiniTest::Test
 		assert_nil(wallet.find_entry_by_id(6))
 	end
 	
+	# Clean up.
 	def teardown
 		wallet_path = Pathname.new('wallet_test')
 		if wallet_path.exist?

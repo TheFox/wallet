@@ -1,6 +1,7 @@
 
 module TheFox::Wallet
 	
+	# List all used categories.
 	class CategoriesCommand < Command
 		
 		NAME = 'categories'

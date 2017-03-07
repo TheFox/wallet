@@ -1,4 +1,7 @@
 
+# Basic Command
+# All other commands subclass from this class.
+
 require 'date'
 require 'pathname'
 
@@ -9,9 +12,9 @@ module TheFox::Wallet
 		NAME = 'default'
 		
 		def initialize(options = Hash.new)
+			# Initialize all options.
 			@options = options || Hash.new
 			@options[:logger] ||= nil
-			
 			@options[:wallet_path] ||= Pathname.new('wallet')
 			@options[:entry_id] ||= nil
 			@options[:entry_title] ||= nil
@@ -42,9 +45,11 @@ module TheFox::Wallet
 				ListCommand,
 			]
 			
+			# Search class by name.
 			classes.each do |cclass|
 				#puts "class: '#{cclass::NAME}' '#{cclass.is_matching_class(name)}'"
 				if cclass.is_matching_class(name)
+					# Create a new Object from the found Class.
 					return cclass.new(options)
 				end
 			end
