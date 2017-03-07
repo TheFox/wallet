@@ -20,56 +20,59 @@ opts = OptionParser.new do |o|
 	o.separator('    categories   List categories')
 	o.separator('    clear        Clear temp and cache files')
 	o.separator('    csv          Import/Export CSV file')
-	o.separator('    html         Generate HTML files')
+	o.separator('    html         Exports a wallet as HTML')
 	o.separator('    list         List entries')
-	o.separator('    vi           Import per VIM editor')
 	o.separator('')
 	
 	o.on('-w', '--wallet <path>', 'Path to wallet directory.') do |path|
 		@options[:wallet_path] = Pathname.new(path).expand_path
 	end
 	
-	o.on('--id <id>', 'ID used for the entry.') do |id|
+	o.on('--id <id>', 'ID used for a new entry.') do |id|
 		@options[:entry_id] = id
 	end
 	
-	o.on('-t', '--title <title>', 'Title used for the entry.') do |title|
+	o.on('-t', '--title <title>', 'Title used for a new entry.') do |title|
 		@options[:entry_title] = title
 	end
 	
-	o.on('-d', '--date <date>', 'Date used for the entry.') do |date|
+	o.on('-d', '--date <YYYY-MM-DD>', 'Date used for a new entry.') do |date|
 		@options[:entry_date] = date
 	end
 	
-	o.on('--start <date>', 'Start date used for a range.') do |date|
+	o.on('--start <YYYY-MM-DD>', 'Start-date used for a range.') do |date|
 		@options[:entry_date_start] = Date.parse(date)
 	end
 	
-	o.on('--end <date>', 'End date used for a range.') do |date|
+	o.on('--end <YYYY-MM-DD>', 'End-date used for a range.') do |date|
 		@options[:entry_date_end] = Date.parse(date)
 	end
 	
-	o.on('-r', '--revenue <revenue>', 'Revenue used for the entry.') do |revenue|
-		@options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
+	o.on('-r', '--revenue <revenue>', 'Revenue used for a new entry.') do |revenue|
+		# @TODO replace with Wumber.
+		# @options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
+		@options[:entry_revenue] = eval(revenue.to_s.to_s.gsub(/,/, '.')).to_f.round(TheFox::Wallet::NUMBER_ROUND).abs
 	end
 	
-	o.on('-e', '--expense <expense>', 'Expense used for the entry.') do |expense|
-		@options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
+	o.on('-e', '--expense <expense>', 'Expense used for a new entry.') do |expense|
+		# @TODO replace with Wumber.
+		# @options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
+		@options[:entry_expense] = -eval(expense.to_s.gsub(/,/, '.')).to_f.round(TheFox::Wallet::NUMBER_ROUND).abs
 	end
 	
-	o.on('-c', '--category <category>', 'Category used for the entry.') do |category|
+	o.on('-c', '--category <category>', 'Category used for a new entry.') do |category|
 		@options[:entry_category] = category
 	end
 	
-	o.on('-o', '--comment <comment>', 'Comment used for the entry.') do |comment|
+	o.on('-o', '--comment <comment>', 'Comment used for a new entry.') do |comment|
 		@options[:entry_comment] = comment
 	end
 	
-	o.on('--import', 'Import') do
+	o.on('--import', 'Import CSV') do
 		@options[:is_import] = true
 	end
 	
-	o.on('--export', 'Export') do
+	o.on('--export', 'Export CSV') do
 		@options[:is_export] = true
 	end
 	
@@ -118,5 +121,6 @@ if command_name
 		exit 1
 	end
 else
+	# Show help page when no argument was given.
 	opts.parse(['-h'])
 end

@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Test Add Command
+
 require 'minitest/autorun'
 require 'pathname'
 require 'wallet'
@@ -199,6 +201,7 @@ class TestAddCommand < MiniTest::Test
 		assert_equal(0.0, cmd.expense('0,1-0,1'))
 	end
 	
+	# Clean up.
 	def teardown
 		wallet_path = Pathname.new('wallet_test')
 		if wallet_path.exist?

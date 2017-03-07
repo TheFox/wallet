@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Test Basic Command
+
 require 'minitest/autorun'
 require 'wallet'
 

@@ -1,5 +1,5 @@
 
-# Schmeisst die Fuffies durch den Club und schreit Boah Boah!
+# Main Class
 
 require 'logger'
 require 'yaml'
@@ -7,8 +7,9 @@ require 'yaml/store'
 require 'csv'
 require 'pathname'
 require 'fileutils'
-require 'ostruct' # OpenStruct use to generate HTML.
-# require 'pp'
+
+# OpenStruct use to generate HTML.
+require 'ostruct'
 
 module TheFox
 	module Wallet
@@ -42,6 +43,7 @@ module TheFox
 				end
 			end
 			
+			# Used by Add Command.
 			def add(entry, is_unique = false)
 				if !entry.is_a?(Entry)
 					raise ArgumentError, 'variable must be a Entry instance'
@@ -225,8 +227,24 @@ module TheFox
 				sum(nil, nil, nil, category)
 			end
 			
+			# Used by List Command.
 			def entries(begin_date, category = nil)
-				begin_year, begin_month, begin_day = begin_date.split('-').map{ |n| n.to_i }
+				begin_year, begin_month, begin_day = begin_date.split('-') #.map{ |n| n.to_i }
+				
+				if begin_year.length > 4
+					# When begin_date got not splitted by '-'.
+					# YYYYM[MD[D]]
+					
+					begin_month = begin_year[4..-1]
+					begin_year = begin_year[0..3]
+					
+					if begin_month.length > 2
+						# YYYYMMD[D]
+						
+						begin_day = begin_month[2..-1]
+						begin_month = begin_month[0..1]
+					end
+				end
 				
 				begin_year_s = begin_year.to_i.to_s
 				begin_month_f = '%02d' % begin_month.to_i
@@ -280,6 +298,7 @@ module TheFox
 				entries_a
 			end
 			
+			# Used by Categories Command.
 			def categories
 				categories_h = Hash.new
 				Dir[Pathname.new('month_*.yml').expand_path(@data_path)].each do |file_path|
@@ -304,7 +323,7 @@ module TheFox
 				categories_a
 			end
 			
-			##
+			# Used by HTML Command.
 			# Generate HTML files from date_start to date_end.
 			def generate_html(html_path = nil, date_start = nil, date_end = nil, category = nil)
 				# @FIXME use @exit on all loops in this function
@@ -771,6 +790,7 @@ module TheFox
 				@logger.info('generate html done') if @logger
 			end
 			
+			# Used by CSV Command.
 			def import_csv_file(file_path)
 				transaction_start
 				
@@ -808,6 +828,7 @@ module TheFox
 				transaction_end
 			end
 			
+			# Used by CSV Command.
 			def export_csv_file(file_path)
 				csv_options = {
 					:col_sep => ',',
@@ -878,6 +899,7 @@ module TheFox
 				@entries_by_ids[id]
 			end
 			
+			# Used by Clear Command.
 			def clear
 				c = 0
 				

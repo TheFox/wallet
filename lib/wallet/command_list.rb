@@ -1,6 +1,8 @@
 
 module TheFox::Wallet
 	
+	# List entries. Per default this command lists all entries of today.
+	# @TODO Use terminal-table for output? https://github.com/tj/terminal-table
 	class ListCommand < Command
 		
 		NAME = 'list'
@@ -10,8 +12,8 @@ module TheFox::Wallet
 			
 			wallet = Wallet.new(@options[:wallet_path])
 			entries = wallet.entries(@options[:entry_date], @options[:entry_category].to_s)
-			#entries = wallet.entries(@options[:entry_date], @options[:entry_end_date], @options[:entry_category].to_s)
 			
+			# Get max length of all columns.
 			entries_l = entries
 				.map{ |day_name, day_items| day_items.count }
 				.inject{ |sum, n| sum + n }
@@ -55,6 +57,7 @@ module TheFox::Wallet
 				.select{ |i| i != '' }
 				.count > 0
 			
+			# Limit some columns to a maximum length.
 			if title_l < 6
 				title_l = 6
 			end
@@ -78,6 +81,7 @@ module TheFox::Wallet
 				comment_l = 25
 			end
 			
+			# Format String for each column.
 			entries_f = "%#{entries_l}s"
 			title_f = "%-#{title_l}s"
 			revenue_f = "%#{revenue_l}s"
@@ -86,6 +90,7 @@ module TheFox::Wallet
 			category_f = "%-#{category_l}s"
 			comment_f = "%-#{comment_l}s"
 			
+			# Create a table header.
 			header = ''
 			header << '#' * entries_l << '  '
 			header << 'Date ' << ' ' * 7
@@ -102,15 +107,24 @@ module TheFox::Wallet
 			
 			header_l = header.length
 			header.sub!(/ +$/, '')
+			
+			# Print table header.
 			puts header
 			puts '-' * header_l
 			
+			# Sums
 			revenue_total = 0.0
 			expense_total = 0.0
 			balance_total = 0.0
+			
+			# Do not repeat the same date over and over again.
 			previous_date = ''
+			
 			entry_no = 0
+			
+			# Iterate all days.
 			entries.sort.each do |day_name, day_items|
+				# Iterate all entries of a day.
 				day_items.each do |entry|
 					entry_no += 1
 					
@@ -124,7 +138,6 @@ module TheFox::Wallet
 					balance_total += entry['balance']
 					
 					category = entry['category'] == 'default' ? '' : entry['category']
-					# has_category = category != ''
 					
 					comment = entry['comment']
 					if comment.length >= 25

@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# Test CSV Command
+
 require 'minitest/autorun'
 require 'pathname'
 require 'wallet'
@@ -11,10 +13,13 @@ class TestCsvCommand < MiniTest::Test
 	def test_command
 		wallet_path = Pathname.new('wallet_test1')
 		wallet = Wallet.new(wallet_path)
+		
+		# Add test data.
 		wallet.add(Entry.new(nil, 'test', '2015-01-01', 100))
 		wallet.add(Entry.new(nil, 'test', '2015-01-01', 50))
 		wallet.add(Entry.new(nil, 'test', '2016-01-01', 50))
 		
+		# Export CSV
 		options = {
 			:wallet_path => wallet_path,
 			:path => 'test.csv',
@@ -24,6 +29,7 @@ class TestCsvCommand < MiniTest::Test
 		cmd = CsvCommand.new(options)
 		cmd.run
 		
+		# Import CSV
 		wallet_path = Pathname.new('wallet_test2')
 		options = {
 			:wallet_path => wallet_path,
@@ -34,6 +40,7 @@ class TestCsvCommand < MiniTest::Test
 		cmd = CsvCommand.new(options)
 		cmd.run
 		
+		# The entries of the import wallet.
 		wallet = Wallet.new(wallet_path)
 		entries = wallet.entries('2015-01-01')
 		
@@ -45,6 +52,7 @@ class TestCsvCommand < MiniTest::Test
 		assert_raises(RuntimeError){ cmd.run }
 	end
 	
+	# Clean up.
 	def teardown
 		wallet_path = Pathname.new('wallet_test1')
 		if wallet_path.exist?

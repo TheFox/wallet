@@ -37,6 +37,7 @@ module TheFox
 				revenue_t = revenue.to_f
 				expense_t = expense.to_f
 				if revenue_t < 0 && expense_t == 0
+					# Revenue is minus and no expense was provided.
 					self.revenue = 0.0
 					self.expense = revenue_t
 				else
@@ -57,19 +58,17 @@ module TheFox
 			end
 			
 			def date=(date)
-				# puts "class: #{date.class}"
 				case date
 				when String
-					# puts 'String'
+					# String
 					@date = Date.parse(date)
 				when Fixnum
-					# puts 'Fixnum'
+					# Fixnum
 					@date = Time.at(date).to_date
 				when Date
-					# puts 'Date'
+					# Date
 					@date = date
 				else
-					# puts 'RAISE'
 					raise ArgumentError, "Wrong class: #{date.class}"
 				end
 			end
@@ -104,6 +103,7 @@ module TheFox
 				@comment = comment.nil? ? '' : comment.to_s
 			end
 			
+			# Convert Entry to a Hash.
 			def to_h
 				{
 					'id' => @id,
@@ -117,6 +117,7 @@ module TheFox
 				}
 			end
 			
+			# Restore a Entry from a Hash.
 			def self.from_h(h)
 				id = h['id']
 				title = h['title']

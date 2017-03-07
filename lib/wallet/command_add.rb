@@ -3,6 +3,7 @@ require 'date'
 
 module TheFox::Wallet
 	
+	# Add a new Entry.
 	class AddCommand < Command
 		
 		NAME = 'add'
@@ -13,10 +14,14 @@ module TheFox::Wallet
 			end
 			
 			if @options[:is_interactively]
+				# Interactive User Input
+				
 				print "title: [#{@options[:entry_title]}] "
 				title_t = STDIN.gets.strip
 				if title_t.length > 0
+					# Search for '%d' in title.
 					if @options[:entry_title] =~ /%d/
+						# Like sprintf.
 						@options[:entry_title] = @options[:entry_title] % title_t.split(',').map{ |s| s.strip }
 					else
 						@options[:entry_title] = title_t
@@ -60,6 +65,8 @@ module TheFox::Wallet
 				raise "Option --title is required for command '#{NAME}'"
 			end
 			
+			# --force option
+			# --id    option
 			is_unique = !@options[:force] && @options[:entry_id]
 			
 			puts "id:       '#{@options[:entry_id]}'"
@@ -73,8 +80,13 @@ module TheFox::Wallet
 			puts "force:    #{@options[:force] ? 'YES' : 'NO'}"
 			puts "unique:   #{is_unique ? 'YES' : 'NO'} (#{is_unique})"
 			
+			# Create new Entry.
 			entry = Entry.new(@options[:entry_id], @options[:entry_title], @options[:entry_date], @options[:entry_revenue], @options[:entry_expense], @options[:entry_category], @options[:entry_comment])
+			
+			# Initialize Wallet.
 			wallet = Wallet.new(@options[:wallet_path])
+			
+			# Add Entry to Wallet.
 			added = wallet.add(entry, is_unique)
 			
 			puts "added:    #{added ? 'YES' : 'NO'}"
@@ -82,20 +94,23 @@ module TheFox::Wallet
 			added
 		end
 		
+		# @TODO replace with Wumber.
 		def revenue(revenue_s)
-			rv = nil
 			if !revenue_s.nil? && revenue_s.length > 0
-				rv = eval(revenue_s.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
+				# Replace , with . in numbers. '1,23' means '1.23'.
+				# eval the revenue so calculations are solved.
+				eval(revenue_s.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
 			end
-			rv
 		end
 		
+		# @TODO replace with Wumber.
 		def expense(expense_s)
-			rv = nil
 			if !expense_s.nil? && expense_s.length > 0
-				rv = -eval(expense_s.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
+				# Replace , with . in numbers. '1,23' means '1.23'.
+				# eval the revenue so calculations are solved.
+				# Expenses are always minus.
+				-eval(expense_s.to_s.gsub(/,/, '.')).to_f.round(NUMBER_ROUND).abs
 			end
-			rv
 		end
 		
 	end

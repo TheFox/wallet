@@ -3,6 +3,7 @@ require 'pathname'
 
 module TheFox::Wallet
 	
+	# Clear temp and cache files.
 	class ClearCommand < Command
 		
 		NAME = 'clear'
