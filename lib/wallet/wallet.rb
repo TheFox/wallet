@@ -1,5 +1,5 @@
 
-# Main Class
+# Wallet Main Class
 
 require 'logger'
 require 'yaml'
@@ -27,6 +27,8 @@ module TheFox
 				@dir_path_basename_s = @dir_path_basename.to_s
 				@data_path = Pathname.new('data').expand_path(@dir_path)
 				@tmp_path = Pathname.new('tmp').expand_path(@dir_path)
+				
+				# Internal path. Not the same as provided by --path option.
 				@html_path = Pathname.new('html').expand_path(@dir_path)
 				
 				@has_transaction = false
@@ -43,6 +45,7 @@ module TheFox
 				end
 			end
 			
+			# Add an Entry to the wallet.
 			# Used by Add Command.
 			def add(entry, is_unique = false)
 				if !entry.is_a?(Entry)
@@ -168,6 +171,7 @@ module TheFox
 				@transaction_files = Hash.new
 			end
 			
+			# Sums a year, a month, a day or a certain category.
 			def sum(year = nil, month = nil, day = nil, category = nil)
 				year_s = year.to_i.to_s
 				month_f = '%02d' % month.to_i
@@ -227,6 +231,7 @@ module TheFox
 				sum(nil, nil, nil, category)
 			end
 			
+			# Get all entries.
 			# Used by List Command.
 			def entries(begin_date, category = nil)
 				begin_year, begin_month, begin_day = begin_date.split('-') #.map{ |n| n.to_i }
@@ -261,7 +266,7 @@ module TheFox
 				
 				category = category.to_s.downcase
 				
-				entries_a = Hash.new
+				entries_h = Hash.new
 				Dir[glob].each do |file_path|
 					
 					data = YAML.load_file(file_path)
@@ -269,21 +274,21 @@ module TheFox
 						if begin_day
 							day_key = "#{begin_year_s}-#{begin_month_f}-#{begin_day_f}"
 							if data['days'].has_key?(day_key)
-								entries_a[day_key] = data['days'][day_key]
+								entries_h[day_key] = data['days'][day_key]
 							end
 						else
-							entries_a.merge!(data['days'])
+							entries_h.merge!(data['days'])
 						end
 					else
 						if begin_day
 							day_key = "#{begin_year_s}-#{begin_month_f}-#{begin_day_f}"
 							if data['days'].has_key?(day_key)
-								entries_a[day_key] = data['days'][day_key].keep_if{ |day_item|
+								entries_h[day_key] = data['days'][day_key].keep_if{ |day_item|
 									day_item['category'].downcase == category
 								}
 							end
 						else
-							entries_a.merge!(data['days'].map{ |day_name, day_items|
+							entries_h.merge!(data['days'].map{ |day_name, day_items|
 								day_items.keep_if{ |day_item|
 									day_item['category'].downcase == category
 								}
@@ -295,9 +300,10 @@ module TheFox
 					end
 					
 				end
-				entries_a
+				entries_h
 			end
 			
+			# Get all used categories.
 			# Used by Categories Command.
 			def categories
 				categories_h = Hash.new
@@ -371,6 +377,7 @@ module TheFox
 				gitignore_file.write('*')
 				gitignore_file.close
 				
+				# Write CSS file.
 				css_file_path = Pathname.new('style.css').expand_path(html_path)
 				css_file = File.open(css_file_path, 'w')
 				css_file.write('
@@ -746,10 +753,15 @@ module TheFox
 					store['changes'] = html_options['changes']
 				end
 				
+				# Convert Years Totals to DAT file rows.
 				totaldat_file_c = years_total.map{ |k, y| "#{y.year} #{y.revenue} #{y.expense} #{y.balance} #{y.balance_total}" }
+				
+				# Print maximal 10 years on GNUPlot.
 				if totaldat_file_c.count > 10
 					totaldat_file_c = totaldat_file_c.slice(-10, 10)
 				end
+				
+				# Convert DAT file rows to one String.
 				totaldat_file_c = totaldat_file_c.join("\n")
 				
 				# DAT file for GNUPlot.
@@ -874,6 +886,8 @@ module TheFox
 				@entries_index.include?(entry.id)
 			end
 			
+			# Build an entry-by-id Hash.
+			# ID => Entry
 			def build_entry_by_id_index(force = false)
 				if @entries_by_ids.nil? || force
 					@logger.debug('build entry-by-id index') if @logger
@@ -893,6 +907,7 @@ module TheFox
 				end
 			end
 			
+			# Find an Entry by a given ID.
 			def find_entry_by_id(id)
 				build_entry_by_id_index
 				
@@ -929,6 +944,7 @@ module TheFox
 			
 			private
 			
+			# Create all needed subdirectories for this wallet.
 			def create_dirs
 				unless @dir_path.exist?
 					@dir_path.mkpath
@@ -942,6 +958,7 @@ module TheFox
 					@tmp_path.mkpath
 				end
 				
+				# Ignore all files in wallet/tmp.
 				tmp_gitignore_path = Pathname.new('.gitignore').expand_path(@tmp_path)
 				unless tmp_gitignore_path.exist?
 					gitignore_file = File.open(tmp_gitignore_path, 'w')
@@ -952,12 +969,14 @@ module TheFox
 				if @entries_index_file_path.exist?
 					load_entries_index_file
 				else
+					# When the entries index file does not exist from an older Wallet version.
 					build_entry_by_id_index(true)
 					@entries_index = @entries_by_ids.keys
 					save_entries_index_file
 				end
 			end
 			
+			# Get the sums for a given day.
 			def calc_day(day, category = nil)
 				revenue = 0
 				expense = 0
@@ -987,8 +1006,9 @@ module TheFox
 				}
 			end
 			
+			# Get all used years.
+			# Range is optional.
 			def years(date_start = nil, date_end = nil)
-				
 				files = Array.new
 				@data_path.each_child(false) do |file|
 					if file.extname == '.yml' && /^month_/.match(file.to_s)
@@ -1008,16 +1028,20 @@ module TheFox
 					.keep_if{ |year| year >= date_start_year && year <= date_end_year }
 			end
 			
+			# Load the entries index file only once.
 			def load_entries_index_file
-				unless @entries_index_is_loaded
-					@entries_index_is_loaded = true
-					if @entries_index_file_path.exist?
-						data = YAML.load_file(@entries_index_file_path.to_s)
-						@entries_index = data['index']
-					end
+				if @entries_index_is_loaded
+					return
+				end
+				
+				@entries_index_is_loaded = true
+				if @entries_index_file_path.exist?
+					data = YAML.load_file(@entries_index_file_path.to_s)
+					@entries_index = data['index']
 				end
 			end
 			
+			# Save the entries index file.
 			def save_entries_index_file
 				store = YAML::Store.new(@entries_index_file_path.to_s)
 				store.transaction do
