@@ -422,7 +422,7 @@ module TheFox
 								<link rel="stylesheet" href="style.css" type="text/css" />
 							</head>
 							<body>
-								<h1><a href="index.html">' << @dir_path_basename_s << '</a></h1>
+								<h1><a href=".">' << @dir_path_basename_s << '</a></h1>
 								<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by <a href="' << HOMEPAGE << '">' << NAME << '</a> v' << VERSION << '</p>
 								
 								<h2>Year: ' << year_s << '</h2>
@@ -513,7 +513,7 @@ module TheFox
 										<link rel="stylesheet" href="style.css" type="text/css" />
 									</head>
 									<body>
-										<h1><a href="index.html">' << @dir_path_basename_s << '</a></h1>
+										<h1><a href=".">' << @dir_path_basename_s << '</a></h1>
 										<p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << HOMEPAGE << '">' << NAME << '</a> v' << VERSION << ' from <code>' << file_name_s << '</code></p>
 										
 										<h2>Month: ' << month_s << ' <a href="' << year_file_name_s << '">' << year_s << '</a></h2>
