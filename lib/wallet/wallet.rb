@@ -645,8 +645,10 @@ module TheFox
 					yeardat_file_path = Pathname.new("year_#{year_s}.dat").expand_path(@tmp_path)
 					yeardat_file = File.new(yeardat_file_path, 'w')
 					yeardat_file.write(year_total
+						.sort{ |a, b| a[0] <=> b[0] }
 						.map{ |k, m| "#{year_s}-#{m.month_s} #{m.revenue} #{m.expense} #{m.balance} #{m.balance_total} #{m.balance_total}" }
 						.join("\n"))
+					yeardat_file.write("\n")
 					yeardat_file.close
 					
 					gnuplot_file_path = Pathname.new("year_#{year_s}.gp").expand_path(@tmp_path)
@@ -1026,6 +1028,7 @@ module TheFox
 					.map{ |file| file.to_s[6, 4].to_i }
 					.uniq
 					.keep_if{ |year| year >= date_start_year && year <= date_end_year }
+					.sort
 			end
 			
 			# Load the entries index file only once.
