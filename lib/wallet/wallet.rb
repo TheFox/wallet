@@ -21,7 +21,7 @@ module TheFox
 			
 			def initialize(dir_path = nil)
 				@exit = false
-				@logger = nil
+				@logger = Logger.new(IO::NULL)
 				@dir_path = dir_path || Pathname.new('wallet').expand_path
 				@dir_path_basename = @dir_path.basename
 				@dir_path_basename_s = @dir_path_basename.to_s
@@ -40,7 +40,7 @@ module TheFox
 				@entries_index_is_loaded = false
 				
 				Signal.trap('SIGINT') do
-					#@logger.warn('received SIGINT. break ...') if @logger
+					#@logger.warn('received SIGINT. break ...')
 					@exit = true
 				end
 			end
@@ -336,7 +336,7 @@ module TheFox
 				
 				html_path ||= @html_path
 				
-				@logger.info("generate html to #{html_path} ...") if @logger
+				@logger.info("generate html to #{html_path} ...")
 				
 				create_dirs
 				
@@ -449,7 +449,7 @@ module TheFox
 					categories_available.map{ |item| categories_year_balance[item] = 0.0 }
 					year_total = Hash.new
 					
-					@logger.info("generate year #{year}") if @logger
+					@logger.info("generate year #{year}")
 					@data_path.each_child do |file_path|
 						file_name_p = file_path.basename
 						file_name_s = file_name_p.to_s
@@ -502,7 +502,7 @@ module TheFox
 						end
 						
 						if write_html
-							@logger.debug("file: #{month_file_name_s} (from #{file_name_s})") if @logger
+							@logger.debug("file: #{month_file_name_s} (from #{file_name_s})")
 							
 							month_file = File.open(month_file_path, 'w')
 							month_file.write('
@@ -799,7 +799,7 @@ module TheFox
 				
 				system("gnuplot #{gnuplot_file_path} &> /dev/null")
 				
-				@logger.info('generate html done') if @logger
+				@logger.info('generate html done')
 			end
 			
 			# Used by CSV Command.
@@ -832,10 +832,10 @@ module TheFox
 					
 					added = add(Entry.new(id, title, date, revenue, expense, category, comment), true)
 					
-					@logger.debug("import row '#{id}' -- #{added ? 'YES' : 'NO'}") if @logger
+					@logger.debug("import row '#{id}' -- #{added ? 'YES' : 'NO'}")
 				end
 				
-				@logger.info('save data ...') if @logger
+				@logger.info('save data ...')
 				
 				transaction_end
 			end
@@ -853,7 +853,7 @@ module TheFox
 				}
 				CSV.open(file_path, 'wb', csv_options) do |csv|
 					Dir[Pathname.new('month_*.yml').expand_path(@data_path)].each do |yaml_file_path|
-						@logger.info("export #{File.basename(yaml_file_path)}") if @logger
+						@logger.info("export #{File.basename(yaml_file_path)}")
 						
 						data = YAML.load_file(yaml_file_path)
 						
@@ -890,7 +890,7 @@ module TheFox
 			# ID => Entry
 			def build_entry_by_id_index(force = false)
 				if @entries_by_ids.nil? || force
-					@logger.debug('build entry-by-id index') if @logger
+					@logger.debug('build entry-by-id index')
 					
 					glob = Pathname.new('month_*.yml').expand_path(@data_path)
 					

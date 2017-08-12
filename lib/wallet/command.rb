@@ -13,8 +13,8 @@ module TheFox::Wallet
 		
 		def initialize(options = Hash.new)
 			# Initialize all options.
-			@options = options || Hash.new
-			@options[:logger] ||= nil
+			@options = options
+			@options[:logger] ||= Logger.new(IO::NULL)
 			@options[:wallet_path] ||= Pathname.new('wallet')
 			@options[:entry_id] ||= nil
 			@options[:entry_title] ||= nil
@@ -35,7 +35,7 @@ module TheFox::Wallet
 		def run
 		end
 		
-		def self.create_by_name(name, options = nil)
+		def self.create_by_name(name, options = Hash.new)
 			classes = [
 				AddCommand,
 				CategoriesCommand,
@@ -47,10 +47,10 @@ module TheFox::Wallet
 			
 			# Search class by name.
 			classes.each do |cclass|
-				#puts "class: '#{cclass::NAME}' '#{cclass.is_matching_class(name)}'"
 				if cclass.is_matching_class(name)
 					# Create a new Object from the found Class.
-					return cclass.new(options)
+					cmd = cclass.new(options)
+					return cmd
 				end
 			end
 			
