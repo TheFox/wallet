@@ -450,13 +450,17 @@ module TheFox
 					year_total = Hash.new
 					
 					@logger.info("generate year #{year}")
-					@data_path.each_child do |file_path|
+					
+					month_files = @data_path
+						.children
+						.sort
+						.keep_if{ |a|
+							a.extname == '.yml' && Regexp.new("^month_#{year}_").match(a.basename.to_s)
+						}
+					
+					month_files.each do |file_path|
 						file_name_p = file_path.basename
 						file_name_s = file_name_p.to_s
-						
-						if file_path.extname != '.yml' || Regexp.new("^month_#{year}_").match(file_name_s).nil?
-							next
-						end
 						
 						month_n = file_name_s[11, 2]
 						month_file_name_s = "month_#{year}_#{month_n}.html"
@@ -620,7 +624,11 @@ module TheFox
 						year_file.write('</tr>')
 					end
 					
-					year_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(NUMBER_ROUND) }
+					year_total
+						.sort
+						.inject(0.0){ |sum, item|
+							item[1].balance_total = (sum + item[1].balance).round(NUMBER_ROUND)
+						}
 					
 					year_file.write('
 							<tr>
