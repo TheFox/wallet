@@ -15,7 +15,7 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_base
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
 		assert_instance_of(Wallet, wallet)
@@ -23,7 +23,7 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_add1
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
 		wallet.add(Entry.new(nil, 'test', '2014-01-01', 100))
@@ -186,7 +186,7 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_add_with_id
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
 		assert_equal(true, wallet.add(Entry.new(nil, 'test', '2014-01-01', 1)))
@@ -201,7 +201,7 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_exceptions
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
 		assert_raises(ArgumentError) do
@@ -210,7 +210,7 @@ class TestWallet < MiniTest::Test
 	end
 	
 	def test_find_entry_by_id
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
 		# Add test data.
@@ -238,7 +238,7 @@ class TestWallet < MiniTest::Test
 	
 	# Clean up.
 	def teardown
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		if wallet_path.exist?
 			wallet_path.rmtree
 		end

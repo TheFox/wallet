@@ -11,7 +11,7 @@ class TestCsvCommand < MiniTest::Test
 	include TheFox::Wallet
 	
 	def test_command
-		wallet_path = Pathname.new('wallet_test1')
+		wallet_path = Pathname.new('tmp/wallet_test1')
 		wallet = Wallet.new(wallet_path)
 		
 		# Add test data.
@@ -22,7 +22,7 @@ class TestCsvCommand < MiniTest::Test
 		# Export CSV
 		options = {
 			:wallet_path => wallet_path,
-			:path => 'test.csv',
+			:path => 'tmp/test.csv',
 			:is_import => false,
 			:is_export => true,
 		}
@@ -30,10 +30,10 @@ class TestCsvCommand < MiniTest::Test
 		cmd.run
 		
 		# Import CSV
-		wallet_path = Pathname.new('wallet_test2')
+		wallet_path = Pathname.new('tmp/wallet_test2')
 		options = {
 			:wallet_path => wallet_path,
-			:path => 'test.csv',
+			:path => 'tmp/test.csv',
 			:is_import => true,
 			:is_export => false,
 		}
@@ -54,17 +54,17 @@ class TestCsvCommand < MiniTest::Test
 	
 	# Clean up.
 	def teardown
-		wallet_path = Pathname.new('wallet_test1')
+		wallet_path = Pathname.new('tmp/wallet_test1')
 		if wallet_path.exist?
 			wallet_path.rmtree
 		end
 		
-		wallet_path = Pathname.new('wallet_test2')
+		wallet_path = Pathname.new('tmp/wallet_test2')
 		if wallet_path.exist?
 			wallet_path.rmtree
 		end
 		
-		csv_file_path = Pathname.new('test.csv')
+		csv_file_path = Pathname.new('tmp/test.csv')
 		if csv_file_path.exist?
 			csv_file_path.unlink
 		end

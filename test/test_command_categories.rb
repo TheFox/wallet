@@ -11,7 +11,7 @@ class TestCategoriesCommand < MiniTest::Test
 	include TheFox::Wallet
 	
 	def test_command
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
 		# Add test data.
@@ -27,7 +27,7 @@ class TestCategoriesCommand < MiniTest::Test
 	
 	# Clean up.
 	def teardown
-		Pathname.new('wallet_test').rmtree
+		Pathname.new('tmp/wallet_test').rmtree
 	end
 	
 end

@@ -1,13 +1,7 @@
-/.bundle/
-.setup
+.env
 CHANGELOG-*.txt
-/coverage/
 Gemfile.lock
-/releases/
-/test_wallet/
-/tmp/
-/wallet/
-/wallet_test/
-/wallet_test2/
 *.csv
 *.txt
+/coverage/
+/tmp/

@@ -12,7 +12,7 @@ class TestAddCommand < MiniTest::Test
 	
 	def test_add_command1
 		options = {
-			:wallet_path => Pathname.new('wallet_test'),
+			:wallet_path => Pathname.new('tmp/wallet_test'),
 			:entry_title => 'Test1',
 			:entry_date => '2014-01-01',
 		}
@@ -25,7 +25,7 @@ class TestAddCommand < MiniTest::Test
 	end
 	
 	def test_add_command2
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		wallet = Wallet.new(wallet_path)
 		
 		options = {
@@ -142,7 +142,7 @@ class TestAddCommand < MiniTest::Test
 	
 	def test_command_exception
 		options = {
-			:wallet_path => Pathname.new('wallet_test'),
+			:wallet_path => Pathname.new('tmp/wallet_test'),
 		}
 		cmd = AddCommand.new(options)
 		assert_raises(RuntimeError){ cmd.run }
@@ -203,7 +203,7 @@ class TestAddCommand < MiniTest::Test
 	
 	# Clean up.
 	def teardown
-		wallet_path = Pathname.new('wallet_test')
+		wallet_path = Pathname.new('tmp/wallet_test')
 		if wallet_path.exist?
 			wallet_path.rmtree
 		end
