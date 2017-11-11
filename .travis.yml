@@ -11,11 +11,12 @@ before_install:
     - gem install bundler -v '~>1.13'
     - bundler --version
 install:
-    - make
+- bundler install
+    - ./bin/dev_setup.sh
     - gem build thefox-wallet.gemspec
     - gem install thefox-wallet-*.gem
     - gem list -l thefox-wallet
 script:
-    - make test
+    - ./bin/test.sh
     - cd
     - which -a wallet
