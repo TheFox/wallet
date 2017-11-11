@@ -1,6 +1,6 @@
 before_script:
     - gem update --system
-    - gem install bundler -v '~>1.13'
+    - gem install bundler -v '1.15.4'
     - bundler --version
     - bundler install
     - ./bin/dev_setup.sh
