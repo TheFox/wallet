@@ -16,4 +16,6 @@ if [[ ! -f .env ]]; then
 	cp .env.example .env
 fi
 
+bundler install
+
 ./bin/dev_data.sh

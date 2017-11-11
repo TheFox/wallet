@@ -152,8 +152,8 @@ class TestAddCommand < MiniTest::Test
 		cmd = AddCommand.new
 		
 		# String
-		assert_equal(nil, cmd.revenue(nil))
-		assert_equal(nil, cmd.revenue(''))
+		assert_nil(cmd.revenue(nil))
+		assert_nil(cmd.revenue(''))
 		assert_equal(21.0, cmd.revenue('21'))
 		assert_equal(21.0, cmd.revenue(' 21 '))
 		
@@ -178,8 +178,8 @@ class TestAddCommand < MiniTest::Test
 		cmd = AddCommand.new
 		
 		# String
-		assert_equal(nil, cmd.expense(nil))
-		assert_equal(nil, cmd.expense(''))
+		assert_nil(cmd.expense(nil))
+		assert_nil(cmd.expense(''))
 		assert_equal(-21.0, cmd.expense('21'))
 		assert_equal(-21.0, cmd.expense(' 21 '))
 		
