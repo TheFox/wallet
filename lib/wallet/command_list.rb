@@ -117,9 +117,6 @@ module TheFox::Wallet
 			expense_total = 0.0
 			balance_total = 0.0
 			
-			# Do not repeat the same date over and over again.
-			previous_date = ''
-			
 			entry_no = 0
 			
 			# Iterate all days.
@@ -146,7 +143,7 @@ module TheFox::Wallet
 					
 					out = ''
 					out << entries_f % entry_no
-					out << '  ' << '%10s' % (entry['date'] == previous_date ? '' : entry['date'])
+					out << '  ' << '%10s' % entry['date']
 					out << '  ' << title_f % title
 					out << '  ' << revenue_f % (NUMBER_FORMAT % entry['revenue'])
 					out << '  ' << expense_f % (NUMBER_FORMAT % entry['expense'])
@@ -156,8 +153,6 @@ module TheFox::Wallet
 					
 					out.sub!(/ +$/, '')
 					puts out
-					
-					previous_date = entry['date']
 				end
 			end
 			puts
