@@ -8,6 +8,7 @@ set -e
 which docker &> /dev/null || { echo 'ERROR: docker not found in PATH'; exit 1; }
 
 cd "${SCRIPT_BASEDIR}/.."
+. ./.env
 
-docker build --tag thefox/wallet:${DATE} .
-docker tag thefox/wallet:${DATE} thefox/wallet:latest
+docker build --tag ${IMAGE_NAME}:${DATE} .
+docker tag ${IMAGE_NAME}:${DATE} ${IMAGE_NAME}:latest

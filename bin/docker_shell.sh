@@ -7,5 +7,6 @@ set -e
 which docker &> /dev/null || { echo 'ERROR: docker not found in PATH'; exit 1; }
 
 cd "${SCRIPT_BASEDIR}/.."
+. ./.env
 
-docker exec --interactive --tty wallet bash
+docker exec --interactive --tty ${IMAGE_NAME_SHORT} bash

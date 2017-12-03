@@ -7,9 +7,10 @@ set -e
 which docker &> /dev/null || { echo 'ERROR: docker not found in PATH'; exit 1; }
 
 cd "${SCRIPT_BASEDIR}/.."
+. ./.env
 
 set -x
 docker start \
 	--attach \
 	--interactive \
-	wallet
+	${IMAGE_NAME_SHORT}
