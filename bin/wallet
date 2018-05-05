@@ -22,6 +22,7 @@ opts = OptionParser.new do |o|
 	o.separator('    csv          Import/Export CSV file')
 	o.separator('    html         Exports a wallet as HTML')
 	o.separator('    list         List entries')
+	o.separator('    nagios       Nagios Check')
 	o.separator('')
 	
 	o.on('-w', '--wallet <path>', 'Path to wallet directory.') do |path|
@@ -90,6 +91,33 @@ opts = OptionParser.new do |o|
 	
 	o.on('--no-force', 'Do not force add command.') do
 		@options[:force] = false
+	end
+	
+	o.on('-W', '--warning <number>', 'Warning threshold for Nagios Check command.') do |warning|
+		@options[:nagios_warning] = warning.to_f
+	end
+	
+	o.on('-C', '--critical <number>', 'Critical threshold for Nagios Check command.') do |critical|
+		@options[:nagios_critical] = critical.to_f
+	end
+	
+	o.on('-T', '--type <string>', 'Expense or Revenue') do |type|
+		type = type.downcase
+		if ['e', 'exp', 'expense'].include?(type)
+			@options[:entry_type] = :expense
+		elsif ['r', 'rev', 'revenue'].include?(type)
+			@options[:entry_type] = :revenue
+		else
+			@options[:entry_type] = nil
+		end
+	end
+	
+	o.on('-a', '--above', 'Return OK when sum is above. (default)') do
+		@options[:nagios_above] = true
+	end
+	
+	o.on('-b', '--below', 'Return OK when sum is below.') do
+		@options[:nagios_above] = false
 	end
 	
 	o.on('-v', '--verbose', 'Log on debug level.') do

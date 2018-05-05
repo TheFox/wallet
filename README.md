@@ -14,6 +14,7 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 - Export data to CSV.
 - Generate HTML summary.
 - Categories
+- Nagios Check
 
 ## Install
 

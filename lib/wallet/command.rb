@@ -23,6 +23,7 @@ module TheFox::Wallet
 			@options[:entry_date_end] ||= Date.today
 			@options[:entry_revenue] ||= 0.0
 			@options[:entry_expense] ||= 0.0
+			
 			@options[:entry_category] ||= nil
 			@options[:entry_comment] ||= nil
 			@options[:is_import] ||= false
@@ -30,6 +31,12 @@ module TheFox::Wallet
 			@options[:path] ||= nil
 			@options[:is_interactively] ||= false
 			@options[:force] ||= false
+			
+			# Nagios
+			@options[:nagios_warning] ||= nil
+			@options[:nagios_critical] ||= nil
+			@options[:entry_type] ||= nil # Maybe we do not only use this for Nagios.
+			@options[:nagios_above] ||= true
 		end
 		
 		def run
@@ -43,6 +50,7 @@ module TheFox::Wallet
 				CsvCommand,
 				HtmlCommand,
 				ListCommand,
+				NagiosCommand,
 			]
 			
 			# Search class by name.

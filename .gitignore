@@ -5,3 +5,4 @@ Gemfile.lock
 *.txt
 /coverage/
 /tmp/
+/.idea/
