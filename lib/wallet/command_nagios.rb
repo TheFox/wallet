@@ -22,7 +22,7 @@ module TheFox::Wallet
 					sum2 + y[type]
 				}
 				sum1 + s2
-			}.to_f
+			}.to_f.abs
 			
 			state = 0
 			if @options[:nagios_above]
@@ -42,10 +42,10 @@ module TheFox::Wallet
 			state_name = STATES[state]
 			
 			perf_data = [
-				state_name,	sum, # Normal Output
+				state_name,	type, sum, # Normal Output
 				type, sum, @options[:nagios_warning], @options[:nagios_critical]
 			]
-			puts '%s: %.2f | %s=%.2f;%.2f;%.2f' % perf_data
+			puts '%s: %s=%.2f | %s=%.2f;%.2f;%.2f' % perf_data
 			
 			state
 		end
