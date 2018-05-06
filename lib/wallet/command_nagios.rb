@@ -22,7 +22,7 @@ module TheFox::Wallet
 					sum2 + y[type]
 				}
 				sum1 + s2
-			}.to_f.abs
+			}.to_f
 			
 			state = 0
 			if @options[:nagios_above]
