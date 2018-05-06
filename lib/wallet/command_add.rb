@@ -91,7 +91,7 @@ module TheFox::Wallet
 			
 			puts "added:    #{added ? 'YES' : 'NO'}"
 			
-			added
+			added ? 0 : 1
 		end
 		
 		# @TODO replace with Wumber.

@@ -26,6 +26,8 @@ module TheFox::Wallet
 				wallet.export_csv_file(@options[:path])
 				@options[:logger].info("export csv #{@options[:path]} done") if @options[:logger]
 			end
+			
+			0
 		end
 		
 	end

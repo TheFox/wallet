@@ -9,6 +9,8 @@ module TheFox::Wallet
 		def run
 			wallet = Wallet.new(@options[:wallet_path])
 			puts wallet.categories
+			
+			0
 		end
 		
 	end

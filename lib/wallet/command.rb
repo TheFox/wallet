@@ -36,10 +36,11 @@ module TheFox::Wallet
 			@options[:nagios_warning] ||= nil
 			@options[:nagios_critical] ||= nil
 			@options[:entry_type] ||= nil # Maybe we do not only use this for Nagios.
-			@options[:nagios_above] ||= true
+			@options[:nagios_above] = @options[:nagios_above].nil? ? true : @options[:nagios_above]
 		end
 		
 		def run
+			0
 		end
 		
 		def self.create_by_name(name, options = Hash.new)

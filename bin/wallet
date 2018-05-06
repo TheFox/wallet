@@ -101,12 +101,14 @@ opts = OptionParser.new do |o|
 		@options[:nagios_critical] = critical.to_f
 	end
 	
-	o.on('-T', '--type <string>', 'Expense or Revenue') do |type|
+	o.on('-T', '--type <string>', 'Expense, Revenue or Balance') do |type|
 		type = type.downcase
 		if ['e', 'exp', 'expense'].include?(type)
 			@options[:entry_type] = :expense
 		elsif ['r', 'rev', 'revenue'].include?(type)
 			@options[:entry_type] = :revenue
+		elsif ['b', 'bal', 'balance', 's', 'sum'].include?(type)
+			@options[:entry_type] = :balance
 		else
 			@options[:entry_type] = nil
 		end
@@ -143,12 +145,14 @@ command_name = commands.shift
 if command_name
 	begin
 		command = TheFox::Wallet::Command.create_by_name(command_name, @options)
-		command.run
+		state = command.run
 	rescue Exception => e
 		@logger.error(e.to_s)
-		exit 1
+		state = 1
 	end
 else
 	# Show help page when no argument was given.
 	opts.parse(['-h'])
 end
+
+exit state

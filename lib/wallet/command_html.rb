@@ -18,6 +18,8 @@ module TheFox::Wallet
 			wallet = Wallet.new(@options[:wallet_path])
 			wallet.logger = @options[:logger]
 			wallet.generate_html(html_path, @options[:entry_date_start], @options[:entry_date_end], @options[:entry_category])
+			
+			0
 		end
 		
 	end

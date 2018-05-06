@@ -12,6 +12,8 @@ module TheFox::Wallet
 			wallet = Wallet.new(@options[:wallet_path])
 			wallet.logger = @options[:logger]
 			wallet.clear
+			
+			0
 		end
 		
 	end

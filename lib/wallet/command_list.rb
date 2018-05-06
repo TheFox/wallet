@@ -164,6 +164,8 @@ module TheFox::Wallet
 			out << '  ' << expense_f % (NUMBER_FORMAT % expense_total)
 			out << '  ' << balance_f % (NUMBER_FORMAT % balance_total)
 			puts out
+			
+			0
 		end
 		
 	end
