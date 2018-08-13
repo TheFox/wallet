@@ -2,7 +2,7 @@
 module TheFox
   module Wallet
     NAME = 'Wallet'
-    VERSION = '0.18.0-dev.6'
+    VERSION = '0.18.0'
     DATE = '2018-08-13'
     HOMEPAGE = 'https://github.com/TheFox/wallet'
     
