@@ -1,10 +1,10 @@
 {
-	"folders":[
-		{
-			"path": ".",
-			"name": "Wallet",
-			"folder_exclude_patterns": [ "coverage" ],
-			"file_exclude_patterns": [ ]
-		}
-	]
+  "folders":[
+    {
+      "path": ".",
+      "name": "Wallet",
+      "folder_exclude_patterns": [ "coverage" ],
+      "file_exclude_patterns": [ ]
+    }
+  ]
 }

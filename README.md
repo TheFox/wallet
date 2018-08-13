@@ -20,15 +20,21 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 The preferred method of installation is via RubyGems.org:  
 <https://rubygems.org/gems/thefox-wallet>
 
-	gem install thefox-wallet
+```sh
+$ gem install thefox-wallet
+```
 
 or via `Gemfile`:
 
-	gem 'thefox-wallet', '~>0.17'
+```sh
+$ gem 'thefox-wallet', '~>0.17'
+```
 
 Use it in your sources:
 
-	require 'thefox-wallet'
+```ruby
+require 'thefox-wallet'
+```
 
 ## Options
 
@@ -73,17 +79,21 @@ Use it in your sources:
 
 Add a new entry.
 
-	$ wallet add [-w <path>] [--id <id>] [-r <revenue>] [-e <expense>] [-c <category>] [-o <comment>] [-i] [-f|--no-force] -t|--title <title>
+```sh
+$ wallet add [-w <path>] [--id <id>] [-r <revenue>] [-e <expense>] [-c <category>] [-o <comment>] [-i] [-f|--no-force] -t|--title <title>
+```
 
 When `--interactive` (`-i`) option is used, parse `%d` with `printf`. Separate multiple `%`-variables with `,`. This feature can be used on template scripts that run the `wallet add` command with pre-defined texts.
 
 For example. To use the following in a template script
 
-	$ wallet add --title 'Income tax %d/Q%d' --interactive
+```sh
+$ wallet add --title 'Income tax %d/Q%d' --interactive
+```
 
 and set the values on interactive input when the command is running.
 
-```bash
+```sh
 $ wallet add --title 'Income tax %d/Q%d' --interactive
 title: [Income tax %d/Q%d] 2017,1
 ```
@@ -94,13 +104,17 @@ Expenses are always converted to minus.
 
 Calculations will be `eval`ed as Ruby code. For example:
 
-	$ wallet add --title Test --expense 14+7
+```sh
+$ wallet add --title Test --expense 14+7
+```
 
 The expense will be `-21`. Expenses are always minus.
 
 In the following example the expense will be `-3`:
 
-	$ wallet add --title Test --expense 10-7
+```sh
+$ wallet add --title Test --expense 10-7
+```
 
 The same applies to revenue.
 
@@ -110,7 +124,9 @@ See `AddCommand::revenue` and `AddCommand::expense` functions.
 
 List all used categories.
 
-	$ wallet categories [-w <path>]
+```sh
+$ wallet categories [-w <path>]
+```
 
 Each entry can have one category. It's planned to implement [Multiple Categories](https://github.com/TheFox/wallet/issues/3) for entries.
 
@@ -120,7 +136,9 @@ You can define the categories yourself. The `list` command has a filter option `
 
 Clear temp and cache files.
 
-	$ wallet clear [-w <path>]
+```sh
+$ wallet clear [-w <path>]
+```
 
 If the html directory path (`-p`) provided to the `html` command is outside of the wallet base path (`-w`) this directory will **NOT** be deleted by the `clear` command. If the default html directory (`wallet/html`) is used this directory will be removed. This command does **NOT** delete any entries stored at `wallet/data`.
 
@@ -128,13 +146,17 @@ If the html directory path (`-p`) provided to the `html` command is outside of t
 
 Import or export to/from CSV file format.
 
-	$ wallet csv [-w <path>] [--import|--export] -p <path>
+```sh
+$ wallet csv [-w <path>] [--import|--export] -p <path>
+```
 
 ### HTML Command
 
 Exports a wallet as HTML. List all years in an index HTML file and all months for each year. Generates a HTML file for each month based on entries.
 
-	$ wallet html [-w <path>] [--start <date>] [--end <date>] [-c <category,...>] [-p <path>] [-v]
+```sh
+$ wallet html [-w <path>] [--start <date>] [--end <date>] [-c <category,...>] [-p <path>] [-v]
+```
 
 Option `-c` can take multiple categories separated by `,`.
 
@@ -142,7 +164,9 @@ Option `-c` can take multiple categories separated by `,`.
 
 List entries. Per default this command lists all entries of today's date.
 
-	$ wallet list [-w <path>] [-d <YYYY>[-<MM>[-<DD>]]] [-c <category>]
+```sh
+$ wallet list [-w <path>] [-d <YYYY>[-<MM>[-<DD>]]] [-c <category>]
+```
 
 You can either provide a year `YYYY`, a month `YYYY-MM` or a day `YYYY-MM-DD`.
 

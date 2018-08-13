@@ -12,115 +12,115 @@ require 'wallet'
 @options = Hash.new
 @options[:logger] = @logger
 opts = OptionParser.new do |o|
-	o.banner = 'Usage: wallet <command> [options]'
-	o.separator('')
-	o.separator('Commands:')
-	o.separator('')
-	o.separator('    add          Add a new entry')
-	o.separator('    categories   List categories')
-	o.separator('    clear        Clear temp and cache files')
-	o.separator('    csv          Import/Export CSV file')
-	o.separator('    html         Exports a wallet as HTML')
-	o.separator('    list         List entries')
-	o.separator('')
-	
-	o.on('-w', '--wallet <path>', 'Path to wallet directory.') do |path|
-		@options[:wallet_path] = Pathname.new(path).expand_path
-	end
-	
-	o.on('--id <id>', 'ID used for a new entry.') do |id|
-		@options[:entry_id] = id
-	end
-	
-	o.on('-t', '--title <title>', 'Title used for a new entry.') do |title|
-		@options[:entry_title] = title
-	end
-	
-	o.on('-d', '--date <YYYY-MM-DD>', 'Date used for a new entry.') do |date|
-		@options[:entry_date] = date
-	end
-	
-	o.on('--start <YYYY-MM-DD>', 'Start-date used for a range.') do |date|
-		@options[:entry_date_start] = Date.parse(date)
-	end
-	
-	o.on('--end <YYYY-MM-DD>', 'End-date used for a range.') do |date|
-		@options[:entry_date_end] = Date.parse(date)
-	end
-	
-	o.on('-r', '--revenue <revenue>', 'Revenue used for a new entry.') do |revenue|
-		# @TODO replace with Wumber.
-		# @options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
-		@options[:entry_revenue] = eval(revenue.to_s.to_s.gsub(/,/, '.')).to_f.round(TheFox::Wallet::NUMBER_ROUND).abs
-	end
-	
-	o.on('-e', '--expense <expense>', 'Expense used for a new entry.') do |expense|
-		# @TODO replace with Wumber.
-		# @options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
-		@options[:entry_expense] = -eval(expense.to_s.gsub(/,/, '.')).to_f.round(TheFox::Wallet::NUMBER_ROUND).abs
-	end
-	
-	o.on('-c', '--category <category>', 'Category used for a new entry.') do |category|
-		@options[:entry_category] = category
-	end
-	
-	o.on('-o', '--comment <comment>', 'Comment used for a new entry.') do |comment|
-		@options[:entry_comment] = comment
-	end
-	
-	o.on('--import', 'Import CSV') do
-		@options[:is_import] = true
-	end
-	
-	o.on('--export', 'Export CSV') do
-		@options[:is_export] = true
-	end
-	
-	o.on('-p', '--path <path>', 'Path used for csv import/export and html directory path.') do |path|
-		@options[:path] = path
-	end
-	
-	o.on('-i', '--interactive', 'Use some commands interactively.') do
-		@options[:is_interactively] = true
-	end
-	
-	o.on('-f', '--force', 'Force add command.') do
-		@options[:force] = true
-	end
-	
-	o.on('--no-force', 'Do not force add command.') do
-		@options[:force] = false
-	end
-	
-	o.on('-v', '--verbose', 'Log on debug level.') do
-		@logger.level = Logger::DEBUG
-	end
-	
-	o.on_tail('-V', '--version', 'Show version.') do
-		puts "#{::TheFox::Wallet::NAME} #{::TheFox::Wallet::VERSION} (#{::TheFox::Wallet::DATE})"
-		puts TheFox::Wallet::HOMEPAGE
-		exit
-	end
-	
-	o.on_tail('-h', '--help', 'Show this message.') do
-		puts o
-		puts
-		exit 3
-	end
+  o.banner = 'Usage: wallet <command> [options]'
+  o.separator('')
+  o.separator('Commands:')
+  o.separator('')
+  o.separator('    add          Add a new entry')
+  o.separator('    categories   List categories')
+  o.separator('    clear        Clear temp and cache files')
+  o.separator('    csv          Import/Export CSV file')
+  o.separator('    html         Exports a wallet as HTML')
+  o.separator('    list         List entries')
+  o.separator('')
+  
+  o.on('-w', '--wallet <path>', 'Path to wallet directory.') do |path|
+    @options[:wallet_path] = Pathname.new(path).expand_path
+  end
+  
+  o.on('--id <id>', 'ID used for a new entry.') do |id|
+    @options[:entry_id] = id
+  end
+  
+  o.on('-t', '--title <title>', 'Title used for a new entry.') do |title|
+    @options[:entry_title] = title
+  end
+  
+  o.on('-d', '--date <YYYY-MM-DD>', 'Date used for a new entry.') do |date|
+    @options[:entry_date] = date
+  end
+  
+  o.on('--start <YYYY-MM-DD>', 'Start-date used for a range.') do |date|
+    @options[:entry_date_start] = Date.parse(date)
+  end
+  
+  o.on('--end <YYYY-MM-DD>', 'End-date used for a range.') do |date|
+    @options[:entry_date_end] = Date.parse(date)
+  end
+  
+  o.on('-r', '--revenue <revenue>', 'Revenue used for a new entry.') do |revenue|
+    # @TODO replace with Wumber.
+    # @options[:entry_revenue] = revenue.to_s.sub(/,/, '.').to_f.abs
+    @options[:entry_revenue] = eval(revenue.to_s.to_s.gsub(/,/, '.')).to_f.round(TheFox::Wallet::NUMBER_ROUND).abs
+  end
+  
+  o.on('-e', '--expense <expense>', 'Expense used for a new entry.') do |expense|
+    # @TODO replace with Wumber.
+    # @options[:entry_expense] = -expense.to_s.sub(/,/, '.').to_f.abs
+    @options[:entry_expense] = -eval(expense.to_s.gsub(/,/, '.')).to_f.round(TheFox::Wallet::NUMBER_ROUND).abs
+  end
+  
+  o.on('-c', '--category <category>', 'Category used for a new entry.') do |category|
+    @options[:entry_category] = category
+  end
+  
+  o.on('-o', '--comment <comment>', 'Comment used for a new entry.') do |comment|
+    @options[:entry_comment] = comment
+  end
+  
+  o.on('--import', 'Import CSV') do
+    @options[:is_import] = true
+  end
+  
+  o.on('--export', 'Export CSV') do
+    @options[:is_export] = true
+  end
+  
+  o.on('-p', '--path <path>', 'Path used for csv import/export and html directory path.') do |path|
+    @options[:path] = path
+  end
+  
+  o.on('-i', '--interactive', 'Use some commands interactively.') do
+    @options[:is_interactively] = true
+  end
+  
+  o.on('-f', '--force', 'Force add command.') do
+    @options[:force] = true
+  end
+  
+  o.on('--no-force', 'Do not force add command.') do
+    @options[:force] = false
+  end
+  
+  o.on('-v', '--verbose', 'Log on debug level.') do
+    @logger.level = Logger::DEBUG
+  end
+  
+  o.on_tail('-V', '--version', 'Show version.') do
+    puts "#{::TheFox::Wallet::NAME} #{::TheFox::Wallet::VERSION} (#{::TheFox::Wallet::DATE})"
+    puts TheFox::Wallet::HOMEPAGE
+    exit
+  end
+  
+  o.on_tail('-h', '--help', 'Show this message.') do
+    puts o
+    puts
+    exit 3
+  end
 end
 ARGV << '-h' if ARGV.count == 0
 commands = opts.parse(ARGV)
 command_name = commands.shift
 
 if command_name
-	begin
-		command = TheFox::Wallet::Command.create_by_name(command_name, @options)
-		command.run
-	rescue Exception => e
-		@logger.error(e.to_s)
-		exit 1
-	end
+  begin
+    command = TheFox::Wallet::Command.create_by_name(command_name, @options)
+    command.run
+  rescue Exception => e
+    @logger.error(e.to_s)
+    exit 1
+  end
 else
-	# Show help page when no argument was given.
-	opts.parse(['-h'])
+  # Show help page when no argument was given.
+  opts.parse(['-h'])
 end
