@@ -45,6 +45,15 @@ test_24:
   script:
     - ./bin/test.sh
 
+test_25:
+  image: ruby:2.5
+  stage: test
+  environment: test
+  only:
+    - tags
+  script:
+    - ./bin/test.sh
+
 release:
   image: ruby:2.4
   stage: release
