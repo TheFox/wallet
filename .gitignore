@@ -3,6 +3,8 @@ CHANGELOG-*.txt
 Gemfile.lock
 *.csv
 *.txt
+*.gem
 /coverage/
 /tmp/
 /.idea/
+/.vagrant/

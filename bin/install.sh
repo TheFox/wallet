@@ -34,7 +34,7 @@ if [[ -z "$gem_file" ]] ; then
 fi
 
 echo "install gem file '$gem_file'"
-gem install "$gem_file"
+sudo gem install "$gem_file"
 
 # Create tmp directory.
 if [[ ! -d tmp/releases ]]; then
