@@ -5,6 +5,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/debian9"
   config.vm.box_check_update = false
 
+  config.vm.hostname = 'wallet'
   # config.vm.network "forwarded_port", guest: 4000, host: 4001
 
   # config.vm.network "private_network", ip: "192.168.33.10"
