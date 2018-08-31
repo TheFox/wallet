@@ -36,6 +36,10 @@ opts = OptionParser.new do |o|
     @options[:entry_title] = title
   end
   
+  o.on('-m', '--message <message>', 'Alias for --title.') do |message|
+    @options[:entry_title] = message
+  end
+  
   o.on('-d', '--date <YYYY-MM-DD>', 'Date used for a new entry.') do |date|
     @options[:entry_date] = date
   end
