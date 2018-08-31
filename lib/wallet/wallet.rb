@@ -7,6 +7,9 @@ require 'yaml/store'
 require 'csv'
 require 'pathname'
 require 'fileutils'
+require 'rubygems'
+require 'liquid'
+require 'pp'
 
 # OpenStruct use to generate HTML.
 require 'ostruct'
@@ -38,6 +41,10 @@ module TheFox
         @entries_index_file_path = Pathname.new('index.yml').expand_path(@data_path)
         @entries_index = Array.new
         @entries_index_is_loaded = false
+        
+        spec = Gem::Specification.find_by_name('thefox-wallet')
+        @gem_root = Pathname.new(spec.gem_dir)
+        @resources_root = Pathname.new('resources').expand_path(@gem_root)
         
         Signal.trap('SIGINT') do
           #@logger.warn('received SIGINT. break ...')
@@ -376,35 +383,20 @@ module TheFox
         gitignore_file = File.open(gitignore_file_path, 'w')
         gitignore_file.write('*')
         gitignore_file.close
-        
+                
         # Write CSS file.
-        css_file_path = Pathname.new('style.css').expand_path(html_path)
-        css_file = File.open(css_file_path, 'w')
-        css_file.write('
-          html {
-            -webkit-text-size-adjust: none;
-          }
-          table.list, table.list th, table.list td {
-            border: 1px solid black;
-          }
-          th.left, td.left {
-            text-align: left;
-          }
-          th.right, td.right {
-            text-align: right;
-          }
-          th.first_column {
-            min-width: 180px;
-            width: 180px;
-          }
-          th.red, td.red {
-            color: #ff0000;
-          }
-        ')
-        css_file.close
+        src_css_file_path = Pathname.new('css/style.css').expand_path(@resources_root).to_s
+        dst_css_file_path = Pathname.new('style.css').expand_path(html_path).to_s
+        
+        # FileUtils.cp_r(src_css_file_path, dst_css_file_path, {:verbose => true})
+        %x[cp #{src_css_file_path} #{dst_css_file_path}];
         
         # Use this for index.html.
         years_total = Hash.new
+        
+        # Year HTML Template
+        year_liquid_tpl_src = Pathname.new('views/year.liquid').expand_path(@resources_root).to_s
+        year_liquid_tpl = Liquid::Template.parse(File.read(year_liquid_tpl_src))
         
         # Iterate over all years.
         years(date_start, date_end).each do |year|
@@ -412,35 +404,6 @@ module TheFox
           year_file_name_s = "year_#{year}.html"
           year_file_name_p = Pathname.new(year_file_name_s)
           year_file_path = year_file_name_p.expand_path(html_path)
-          
-          year_file = File.open(year_file_path, 'w')
-          year_file.write('
-            <html>
-              <head>
-                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-                <title>' << year_s << ' - ' << @dir_path_basename_s << '</title>
-                <link rel="stylesheet" href="style.css" type="text/css" />
-              </head>
-              <body>
-                <h1><a href=".">' << @dir_path_basename_s << '</a></h1>
-                <p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by <a href="' << HOMEPAGE << '">' << NAME << '</a> v' << VERSION << '</p>
-                
-                <h2>Year: ' << year_s << '</h2>
-                <table class="list">
-                  <tr>
-                    <th class="left">Month</th>
-                    <th class="right">Revenue</th>
-                    <th class="right">Expense</th>
-                    <th class="right">Balance</th>
-                    <th colspan="' << categories_available.count.to_s << '">' << categories_available.count.to_s << ' Categories</th>
-                  </tr>
-                  <tr>
-                    <th colspan="4">&nbsp;</th>
-          ')
-          categories_available.each do |category|
-            year_file.write(%(<th class="right">#{category}</th>))
-          end
-          year_file.write('</tr>')
           
           revenue_year = 0.0
           expense_year = 0.0
@@ -611,17 +574,20 @@ module TheFox
               month_file.close
             end
             
-            year_file.write('
+            # @TODO
+            puts('
               <tr>
                 <td class="left"><a href="' << month_file_name_s << '">' << month_s << '</a></td>
                 <td class="right">' << NUMBER_FORMAT % revenue_month << '</td>
                 <td class="right red">' << NUMBER_FORMAT % expense_month << '</td>
                 <td class="right ' << balance_class << '">' << NUMBER_FORMAT % balance_month << '</td>')
+            
             categories_available.each do |category|
               category_balance = categories_month_balance[category]
-              year_file.write('<td class="right ' << (category_balance < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % category_balance << '</td>')
+              puts('<td class="right ' << (category_balance < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % category_balance << '</td>')
             end
-            year_file.write('</tr>')
+            
+            puts('</tr>')
           end
           
           year_total
@@ -630,24 +596,32 @@ module TheFox
               item[1].balance_total = (sum + item[1].balance).round(NUMBER_ROUND)
             }
           
-          year_file.write('
-              <tr>
-                <th class="left"><b>TOTAL</b></th>
-                <th class="right">' << NUMBER_FORMAT % revenue_year << '</th>
-                <th class="right red">' << NUMBER_FORMAT % expense_year << '</th>
-                <th class="right ' << (balance_year < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % balance_year << '</th>')
-          categories_available.each do |category|
-            category_balance = categories_year_balance[category]
-            year_file.write('<td class="right ' << (category_balance < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % category_balance << '</td>')
-          end
+          categories_year_balance_formatted = categories_available.map{ |category|
+            # @logger.info('ok ' + category + ' >' + categories_year_balance[category].to_s + '<')
+            [category, {
+              'balance' => NUMBER_FORMAT % categories_year_balance[category],
+              'class' => categories_year_balance[category] < 0 ? 'red' : '',
+            }]
+          }.to_h
           
-          year_file.write('
-              </tr>
-            </table>
-          ')
-          
-          year_file.write(%{<p><img src="year_#{year_s}.png"></p>})
-          year_file.write('</body></html>')
+          year_file = File.open(year_file_path, 'w')
+          year_file.write(year_liquid_tpl.render({
+            'year_s' => year_s,
+            'dir_path' => @dir_path_basename_s,
+            'now' => DateTime.now.strftime(DATETIME_FORMAT),
+            'app_homepage' => HOMEPAGE,
+            'app_name' => NAME,
+            'app_version' => VERSION,
+            'categories_available_count' => categories_available.count.to_s,
+            'categories_available' => categories_available,
+            # 'categories_available_columns' => categories_available.map { |category|  }
+            'revenue_year' => NUMBER_FORMAT % revenue_year,
+            'expense_year' => NUMBER_FORMAT % expense_year,
+            'balance_year_class' => balance_year < 0 ? 'red' : '',
+            'balance_year' => NUMBER_FORMAT % balance_year,
+            # 'categories_year_balance' => categories_year_balance,
+            'categories_year_balance_formatted' => categories_year_balance_formatted,
+          }))
           year_file.close
           
           yeardat_file_path = Pathname.new("year_#{year_s}.dat").expand_path(@tmp_path)
@@ -701,60 +675,41 @@ module TheFox
         end
         
         years_total.sort.inject(0.0){ |sum, item| item[1].balance_total = (sum + item[1].balance).round(NUMBER_ROUND) }
+        balance_total = years_total.inject(0.0){ |sum, item| sum + item[1].balance }
+        
+        index_liquid_tpl_src = Pathname.new('views/index.liquid').expand_path(@resources_root).to_s
+        index_liquid_tpl = Liquid::Template.parse(File.read(index_liquid_tpl_src))
+        
+        years_total_formatted = years_total.map{ |year_name, year_data|
+          {
+            'name' => year_name,
+            'revenue' => NUMBER_FORMAT % year_data.revenue,
+            'expense' => NUMBER_FORMAT % year_data.expense,
+            
+            'balance' => NUMBER_FORMAT % year_data.balance,
+            'balance_class' => year_data.balance < 0 ? 'red' : '',
+            
+            'balance_total' => NUMBER_FORMAT % year_data.balance_total,
+            'balance_total_class' => year_data.balance_total < 0 ? 'red' : '',
+          }
+        }
         
         index_file_path = Pathname.new('index.html').expand_path(html_path)
         index_file = File.open(index_file_path, 'w')
-        index_file.write('
-          <html>
-            <head>
-              <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-              <title>' << @dir_path_basename_s << '</title>
-              <link rel="stylesheet" href="style.css" type="text/css" />
-            </head>
-            <body>
-              <h1>' << @dir_path_basename_s << '</h1>
-              <p>Generated @ ' << DateTime.now.strftime('%F %T') << ' by <a href="' << HOMEPAGE << '">' << NAME << '</a> v' << VERSION << '</p>
-        ')
-        
-        # Write total to index.html file.
-        index_file.write('
-            <table class="list">
-              <tr>
-                <th class="left">Year</th>
-                <th class="right">Revenue</th>
-                <th class="right">Expense</th>
-                <th class="right">Balance</th>
-                <th class="right">Balance &#8721;</th>
-              </tr>')
-        
-        # Write years total to index.html file.
-        years_total.each do |year_name, year_data|
-          index_file.write('
-            <tr>
-              <td class="left"><a href="year_' << year_name << '.html">' << year_name << '</a></td>
-              <td class="right">' << NUMBER_FORMAT % year_data.revenue << '</td>
-              <td class="right red">' << NUMBER_FORMAT % year_data.expense << '</td>
-              <td class="right ' << (year_data.balance < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % year_data.balance << '</td>
-              <td class="right ' << (year_data.balance_total < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % year_data.balance_total << '</td>
-            </tr>')
-        end
-        
-        balance_total = years_total.inject(0.0){ |sum, item| sum + item[1].balance }
-        
-        index_file.write('
-                <tr>
-                  <th class="left"><b>TOTAL</b></th>
-                  <th class="right">' << NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue } << '</th>
-                  <th class="right red">' << NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense } << '</th>
-                  <th class="right ' << (balance_total < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % balance_total << '</th>
-                  <th>&nbsp;</th>
-                </tr>
-              </table>
+        index_file.write(index_liquid_tpl.render({
+          'dir_path' => @dir_path_basename_s,
+          'now' => DateTime.now.strftime(DATETIME_FORMAT),
+          'app_homepage' => HOMEPAGE,
+          'app_name' => NAME,
+          'app_version' => VERSION,
           
-              <p><img src="total.png"></p>
-            </body>
-          </html>
-        ')
+          'years_total_formatted' => years_total_formatted,
+          
+          'revenue_total' => NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].revenue },
+          'expense_total' => NUMBER_FORMAT % years_total.inject(0.0){ |sum, item| sum + item[1].expense },
+          'balance_total' => NUMBER_FORMAT % balance_total,
+          'balance_total_class' => balance_total < 0 ? 'red' : '',
+        }))
         index_file.close
         
         store = YAML::Store.new(html_options_path)
@@ -775,7 +730,7 @@ module TheFox
         totaldat_file_c = totaldat_file_c.join("\n")
         
         # DAT file for GNUPlot.
-        totaldat_file_path = Pathname.new('total.dat').expand_path(@tmp_path)
+        totaldat_file_path = Pathname.new('total.dat').expand_path(@tmp_path).to_s
         totaldat_file = File.new(totaldat_file_path, 'w')
         totaldat_file.write(totaldat_file_c)
         totaldat_file.close
@@ -783,28 +738,15 @@ module TheFox
         # Generate image with GNUPlot.
         png_file_path = Pathname.new('total.png').expand_path(html_path)
         
+        gnuplot_liquid_tpl_src = Pathname.new('gnuplot/total_config.liquid').expand_path(@resources_root).to_s
+        gnuplot_liquid_tpl = Liquid::Template.parse(File.read(gnuplot_liquid_tpl_src))
+        
         gnuplot_file_path = Pathname.new('total.gp').expand_path(@tmp_path)
         gnuplot_file = File.new(gnuplot_file_path, 'w')
-        gnuplot_file.puts("set title 'Total'")
-        gnuplot_file.puts("set xlabel 'Years'")
-        gnuplot_file.puts("set ylabel 'Euro'")
-        gnuplot_file.puts("set grid")
-        gnuplot_file.puts("set key below center horizontal noreverse enhanced autotitle box dashtype solid")
-        gnuplot_file.puts("set tics out nomirror")
-        gnuplot_file.puts("set border 3 front linetype black linewidth 1.0 dashtype solid")
-        gnuplot_file.puts("set xtics 1")
-        gnuplot_file.puts("set style line 1 linecolor rgb '#00ff00' linewidth 2 linetype 1 pointtype 2")
-        gnuplot_file.puts("set style line 2 linecolor rgb '#ff0000' linewidth 2 linetype 1 pointtype 2")
-        gnuplot_file.puts("set style line 3 linecolor rgb '#000000' linewidth 2 linetype 1 pointtype 2")
-        gnuplot_file.puts("set style line 4 linecolor rgb '#0000ff' linewidth 2 linetype 1 pointtype 2")
-        gnuplot_file.puts("set style data linespoints")
-        gnuplot_file.puts("set terminal png enhanced")
-        gnuplot_file.puts("set output '#{png_file_path}'")
-        gnuplot_file.puts("plot sum = 0, \\")
-        gnuplot_file.puts("\t'#{totaldat_file_path}' using 1:2 linestyle 1 title 'Revenue', \\")
-        gnuplot_file.puts("\t'' using 1:3 linestyle 2 title 'Expense', \\")
-        gnuplot_file.puts("\t'' using 1:4 linestyle 3 title 'Balance', \\")
-        gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
+        gnuplot_file.write(gnuplot_liquid_tpl.render({
+          'png_file_path' => png_file_path,
+          'totaldat_file_path' => totaldat_file_path,
+        }))
         gnuplot_file.close
         
         system("gnuplot #{gnuplot_file_path} &> /dev/null")

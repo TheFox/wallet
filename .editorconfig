@@ -10,6 +10,6 @@ charset = utf-8
 trim_trailing_whitespace = false
 insert_final_newline = true
 
-[*.{sh}]
+[*.{sh,css}]
 indent_style = tab
 indent_size = 4

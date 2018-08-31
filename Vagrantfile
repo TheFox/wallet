@@ -19,11 +19,14 @@ Vagrant.configure('2') do |config|
   config.vm.provision 'shell' do |s|
     s.env = {
       'DEBIAN_FRONTEND' => 'noninteractive',
+      'WORKING_DIR' => '/app',
     }
     s.inline = <<-SHELL
+      echo "cd ${WORKING_DIR}" >> /home/vagrant/.bashrc
+      
       apt-get update -yqq
       apt-get upgrade -y
-      apt-get install -y htop vim lsof net-tools rsync ruby ruby-dev
+      apt-get install -y htop vim lsof net-tools rsync ruby ruby-dev gnuplot
 
       gem update --system && \
       gem install bundler -v '1.15.4' && \
