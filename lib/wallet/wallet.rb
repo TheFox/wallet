@@ -445,11 +445,6 @@ module TheFox
             if date_start && date_end
               file_date_start = Date.parse("#{year}-#{month_n}-01")
               file_date_end = Date.parse("#{year}-#{month_n}-01").next_month.prev_day
-              
-              if date_end < file_date_start ||
-                date_start > file_date_end
-                next
-              end
             end
             
             revenue_month = 0.0
