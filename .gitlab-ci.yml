@@ -1,9 +1,9 @@
 before_script:
   - gem update --system
-  - gem install bundler -v '1.15.4'
+  - gem install bundler
   - bundler --version
   - bundler install
-  - ./bin/dev_setup.sh
+  - ./bin/dev_data.sh
 
 stages:
   - test
@@ -37,12 +37,12 @@ test_25:
     - ./bin/test.sh
 
 release:
-  image: ruby:2.4
+  image: ruby:2.5
   stage: release
   environment: gem
   only:
     - tags
   script:
     - mkdir -p ~/.gem
-    - 'printf "%s\n:rubygems_api_key: %s" "---" "${RUBYGEMSORG_API_KEY}" > ~/.gem/credentials; chmod 0600 ~/.gem/credentials'
+    - 'printf "%s\n:rubygems_api_key: %s\n" "---" "${RUBYGEMSORG_API_KEY}" > ~/.gem/credentials; chmod 0600 ~/.gem/credentials'
     - ./bin/release.sh
