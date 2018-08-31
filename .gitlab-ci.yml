@@ -9,15 +9,6 @@ stages:
   - test
   - release
 
-test_21:
-  image: ruby:2.1
-  stage: test
-  environment: test
-  only:
-    - tags
-  script:
-    - ./bin/test.sh
-
 test_22:
   image: ruby:2.2
   stage: test
