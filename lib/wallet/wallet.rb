@@ -347,7 +347,7 @@ module TheFox
         
         create_dirs
         
-        unless html_path.exist?
+        if not html_path.exist?
           html_path.mkpath
         end
         
@@ -474,7 +474,7 @@ module TheFox
               }
               write_html = true
             end
-            unless month_file_path.exist?
+            if not month_file_path.exist?
               write_html = true
             end
             
@@ -869,21 +869,21 @@ module TheFox
       
       # Create all needed subdirectories for this wallet.
       def create_dirs
-        unless @dir_path.exist?
+        if not @dir_path.exist?
           @dir_path.mkpath
         end
         
-        unless @data_path.exist?
+        if not @data_path.exist?
           @data_path.mkpath
         end
         
-        unless @tmp_path.exist?
+        if not @tmp_path.exist?
           @tmp_path.mkpath
         end
         
         # Ignore all files in wallet/tmp.
         tmp_gitignore_path = Pathname.new('.gitignore').expand_path(@tmp_path)
-        unless tmp_gitignore_path.exist?
+        if not tmp_gitignore_path.exist?
           gitignore_file = File.open(tmp_gitignore_path, 'w')
           gitignore_file.write('*')
           gitignore_file.close
