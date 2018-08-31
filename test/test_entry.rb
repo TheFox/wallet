@@ -52,6 +52,7 @@ class TestEntry < MiniTest::Test
     
     entry = Entry.new
     entry.date = 1473660305
+    assert_equal('Date', entry.date.class.to_s)
     assert_equal('2016-09-12', entry.date.to_s)
   end
   

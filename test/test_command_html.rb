@@ -4,6 +4,7 @@
 
 require 'minitest/autorun'
 require 'pathname'
+require 'fileutils'
 require 'wallet'
 
 class TestHtmlCommand < MiniTest::Test
@@ -25,7 +26,7 @@ class TestHtmlCommand < MiniTest::Test
   
   # Clean up.
   def teardown
-    Pathname.new('tmp/wallet_test').rmtree
+    FileUtils.rm_rf('tmp/wallet_test')
   end
   
 end
