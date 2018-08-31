@@ -28,6 +28,19 @@
         {% endfor %}
       </tr>
       
+      {% for month in months %}
+        <tr>
+          <td class="left"><a href="{{ month['month_file_name_s'] }}">{{ month['month_s'] }}</a></td>
+          <td class="right">{{ month['revenue_month'] }}</td>
+          <td class="right red">{{ month['expense_month'] }}</td>
+          <td class="right {{ month['balance_class'] }}">{{ month['balance_month'] }}</td>
+          
+          {% for category in month['categories'] %}
+            <td class="right {{ category['class'] }}">{{ category['balance'] }}</td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      
       <tr>
         <th class="left"><b>TOTAL</b></th>
         <th class="right">{{ revenue_year }}</th>

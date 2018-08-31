@@ -398,6 +398,10 @@ module TheFox
         year_liquid_tpl_src = Pathname.new('views/year.liquid').expand_path(@resources_root).to_s
         year_liquid_tpl = Liquid::Template.parse(File.read(year_liquid_tpl_src))
         
+        # Month HTML Template
+        month_liquid_tpl_src = Pathname.new('views/month.liquid').expand_path(@resources_root).to_s
+        month_liquid_tpl = Liquid::Template.parse(File.read(month_liquid_tpl_src))
+        
         # Iterate over all years.
         years(date_start, date_end).each do |year|
           year_s = year.to_s
@@ -413,6 +417,8 @@ module TheFox
           year_total = Hash.new
           
           @logger.info("generate year #{year}")
+          
+          tpl_months = Array.new()
           
           month_files = @data_path
             .children
@@ -468,35 +474,9 @@ module TheFox
               write_html = true
             end
             
-            if write_html
-              @logger.debug("file: #{month_file_name_s} (from #{file_name_s})")
-              
-              month_file = File.open(month_file_path, 'w')
-              month_file.write('
-                <html>
-                  <head>
-                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-                    <title>' << month_s << ' ' << year_s << ' - ' << @dir_path_basename_s << '</title>
-                    <link rel="stylesheet" href="style.css" type="text/css" />
-                  </head>
-                  <body>
-                    <h1><a href=".">' << @dir_path_basename_s << '</a></h1>
-                    <p>Generated @ ' << DateTime.now.strftime('%Y-%m-%d %H:%M:%S') << ' by  <a href="' << HOMEPAGE << '">' << NAME << '</a> v' << VERSION << ' from <code>' << file_name_s << '</code></p>
-                    
-                    <h2>Month: ' << month_s << ' <a href="' << year_file_name_s << '">' << year_s << '</a></h2>
-                    <table class="list">
-                      <tr>
-                        <th class="left">#</th>
-                        <th class="left">Date</th>
-                        <th class="left first_column">Title</th>
-                        <th class="right">Revenue</th>
-                        <th class="right">Expense</th>
-                        <th class="right">Balance</th>
-                        <th class="right">Category</th>
-                        <th class="left">Comment</th>
-                      </tr>
-              ')
-            end
+            # write_html = true
+            
+            tpl_days = Array.new()
             
             data['days'].sort.each do |day_name, day_items|
               day_items.each do |entry|
@@ -520,22 +500,23 @@ module TheFox
                 category_out = entry['category'] == 'default' ? '&nbsp;' : entry['category']
                 comment_out = entry['comment'] == '' ? '&nbsp;' : entry['comment']
                 
-                if write_html
-                  month_file.write('
-                    <tr>
-                      <td valign="top" class="left">' << entry_n.to_s << '</td>
-                      <td valign="top" class="left">' << entry_date_s << '</td>
-                      <td valign="top" class="left">' << entry['title'][0, 50] << '</td>
-                      <td valign="top" class="right">' << revenue_out << '</td>
-                      <td valign="top" class="right red">' << expense_out << '</td>
-                      <td valign="top" class="right ' << (entry['balance'] < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % entry['balance'] << '</td>
-                      <td valign="top" class="right">' << category_out << '</td>
-                      <td valign="top" class="left">' << comment_out << '</td>
-                    </tr>
-                  ')
-                end
+                tpl_days << {
+                  'entry_n' => entry_n.to_s,
+                  'entry_date_s' => entry_date_s,
+                  'title' => entry['title'][0, 50],
+                  'revenue_out' => revenue_out,
+                  'expense_out' => expense_out,
+                  
+                  'balance_class' => entry['balance'] < 0 ? 'red' : '',
+                  'balance' => NUMBER_FORMAT % entry['balance'],
+                  
+                  'category_out' => category_out,
+                  'comment_out' => comment_out,
+                }
               end
             end
+            
+            # pp tpl_days
             
             revenue_year += revenue_month
             expense_year += expense_month
@@ -558,37 +539,51 @@ module TheFox
               balance_class = 'red'
             end
             if write_html
-              month_file.write('
-                  <tr>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th class="left"><b>TOTAL</b></th>
-                    <th class="right">' << NUMBER_FORMAT % revenue_month << '</th>
-                    <th class="right red">' << NUMBER_FORMAT % expense_month << '</th>
-                    <th class="right ' << balance_class << '">' << NUMBER_FORMAT % balance_month << '</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                  </tr>
-                </table>')
-              month_file.write('</body></html>')
+              @logger.debug("file: #{month_file_name_s} (from #{file_name_s})")
+              
+              month_file = File.open(month_file_path, 'w')
+              month_file.write(month_liquid_tpl.render({
+                'month_s' => month_s,
+                'year_s' => year_s,
+                'year_file_name_s' => year_file_name_s,
+                'dir_path' => @dir_path_basename_s,
+                'file_name_s' => file_name_s,
+                
+                'now' => DateTime.now.strftime(DATETIME_FORMAT),
+                
+                'app_homepage' => HOMEPAGE,
+                'app_name' => NAME,
+                'app_version' => VERSION,
+                
+                'revenue_month' => NUMBER_FORMAT % revenue_month,
+                'expense_month' => NUMBER_FORMAT % expense_month,
+                'balance_class' => balance_class,
+                'balance_month' => NUMBER_FORMAT % balance_month,
+                
+                'days' => tpl_days,
+              }))
               month_file.close
             end
             
-            # @TODO
-            puts('
-              <tr>
-                <td class="left"><a href="' << month_file_name_s << '">' << month_s << '</a></td>
-                <td class="right">' << NUMBER_FORMAT % revenue_month << '</td>
-                <td class="right red">' << NUMBER_FORMAT % expense_month << '</td>
-                <td class="right ' << balance_class << '">' << NUMBER_FORMAT % balance_month << '</td>')
-            
-            categories_available.each do |category|
+            tpl_months_categories = categories_available.map{ |category|
               category_balance = categories_month_balance[category]
-              puts('<td class="right ' << (category_balance < 0 ? 'red' : '') << '">' << NUMBER_FORMAT % category_balance << '</td>')
-            end
+              
+              {
+                'class' => category_balance < 0 ? 'red' : '',
+                'balance' => category_balance > 0.0 ? NUMBER_FORMAT % category_balance : '&nbsp;',
+              }
+            }
             
-            puts('</tr>')
-          end
+            tpl_months << {
+              'month_file_name_s' => month_file_name_s,
+              'month_s' => month_s,
+              'revenue_month' => NUMBER_FORMAT % revenue_month,
+              'expense_month' => NUMBER_FORMAT % expense_month,
+              'balance_class' => balance_class,
+              'balance_month' => NUMBER_FORMAT % balance_month,
+              'categories' => tpl_months_categories,
+            }
+          end # month_files.each
           
           year_total
             .sort
@@ -597,7 +592,6 @@ module TheFox
             }
           
           categories_year_balance_formatted = categories_available.map{ |category|
-            # @logger.info('ok ' + category + ' >' + categories_year_balance[category].to_s + '<')
             [category, {
               'balance' => NUMBER_FORMAT % categories_year_balance[category],
               'class' => categories_year_balance[category] < 0 ? 'red' : '',
@@ -614,13 +608,12 @@ module TheFox
             'app_version' => VERSION,
             'categories_available_count' => categories_available.count.to_s,
             'categories_available' => categories_available,
-            # 'categories_available_columns' => categories_available.map { |category|  }
             'revenue_year' => NUMBER_FORMAT % revenue_year,
             'expense_year' => NUMBER_FORMAT % expense_year,
             'balance_year_class' => balance_year < 0 ? 'red' : '',
             'balance_year' => NUMBER_FORMAT % balance_year,
-            # 'categories_year_balance' => categories_year_balance,
             'categories_year_balance_formatted' => categories_year_balance_formatted,
+            'months' => tpl_months,
           }))
           year_file.close
           
@@ -736,7 +729,7 @@ module TheFox
         totaldat_file.close
         
         # Generate image with GNUPlot.
-        png_file_path = Pathname.new('total.png').expand_path(html_path)
+        png_file_path = Pathname.new('total.png').expand_path(html_path).to_s
         
         gnuplot_liquid_tpl_src = Pathname.new('gnuplot/total_config.liquid').expand_path(@resources_root).to_s
         gnuplot_liquid_tpl = Liquid::Template.parse(File.read(gnuplot_liquid_tpl_src))
