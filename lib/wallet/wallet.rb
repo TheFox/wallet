@@ -564,7 +564,7 @@ module TheFox
               
               {
                 'class' => category_balance < 0 ? 'red' : '',
-                'balance' => category_balance > 0.0 ? NUMBER_FORMAT % category_balance : '&nbsp;',
+                'balance' => category_balance == 0.0 ? NUMBER_FORMAT % category_balance : '&nbsp;',
               }
             }
             

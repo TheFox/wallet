@@ -15,7 +15,7 @@ th.right, td.right {
 }
 th.first_column {
   min-width: 180px;
-  width: 180px;
+  width: 300px;
 }
 th.red, td.red {
   color: #ff0000;
