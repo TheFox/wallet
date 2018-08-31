@@ -62,8 +62,8 @@ module TheFox
         when String
           # String
           @date = Date.parse(date)
-        when Fixnum
-          # Fixnum
+        when Integer
+          # Integer
           @date = Time.at(date).to_date
         when Date
           # Date
