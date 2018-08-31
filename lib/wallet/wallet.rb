@@ -9,7 +9,6 @@ require 'pathname'
 require 'fileutils'
 require 'rubygems'
 require 'liquid'
-require 'pp'
 
 # OpenStruct use to generate HTML.
 require 'ostruct'
