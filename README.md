@@ -27,7 +27,7 @@ $ gem install thefox-wallet
 or via `Gemfile`:
 
 ```sh
-$ gem 'thefox-wallet', '~>0.18'
+$ gem 'thefox-wallet', '~>0.19'
 ```
 
 Use it in your sources:
