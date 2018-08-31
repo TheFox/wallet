@@ -402,6 +402,10 @@ module TheFox
         month_liquid_tpl_src = Pathname.new('views/month.liquid').expand_path(@resources_root).to_s
         month_liquid_tpl = Liquid::Template.parse(File.read(month_liquid_tpl_src))
         
+        # Gnuplot Template
+        gnuplot_year_liquid_tpl_src = Pathname.new('gnuplot/year_config.liquid').expand_path(@resources_root).to_s
+        gnuplot_year_liquid_tpl = Liquid::Template.parse(File.read(gnuplot_year_liquid_tpl_src))
+        
         # Iterate over all years.
         years(date_start, date_end).each do |year|
           year_s = year.to_s
@@ -474,8 +478,6 @@ module TheFox
               write_html = true
             end
             
-            # write_html = true
-            
             tpl_days = Array.new()
             
             data['days'].sort.each do |day_name, day_items|
@@ -515,8 +517,6 @@ module TheFox
                 }
               end
             end
-            
-            # pp tpl_days
             
             revenue_year += revenue_month
             expense_year += expense_month
@@ -617,7 +617,7 @@ module TheFox
           }))
           year_file.close
           
-          yeardat_file_path = Pathname.new("year_#{year_s}.dat").expand_path(@tmp_path)
+          yeardat_file_path = Pathname.new("year_#{year_s}.dat").expand_path(@tmp_path).to_s
           yeardat_file = File.new(yeardat_file_path, 'w')
           yeardat_file.write(year_total
             .sort{ |a, b| a[0] <=> b[0] }
@@ -628,35 +628,13 @@ module TheFox
           
           gnuplot_file_path = Pathname.new("year_#{year_s}.gp").expand_path(@tmp_path)
           gnuplot_file = File.new(gnuplot_file_path, 'w')
-          gnuplot_file.puts("set title 'Year #{year_s}'")
-          gnuplot_file.puts("set xlabel 'Months'")
-          gnuplot_file.puts("set ylabel 'Euro'")
-          gnuplot_file.puts("set grid")
-          gnuplot_file.puts("set key below center horizontal noreverse enhanced autotitle box dashtype solid")
-          gnuplot_file.puts("set tics out nomirror")
-          gnuplot_file.puts("set border 3 front linetype black linewidth 1.0 dashtype solid")
-          
-          gnuplot_file.puts("set timefmt '%Y-%m'")
-          gnuplot_file.puts("set xdata time")
-          gnuplot_file.puts("set format x '%b'")
-          gnuplot_file.puts("set xrange ['#{year_s}-01-01':'#{year_s}-12-31']")
-          gnuplot_file.puts("set xtics '#{year_s}-01-01', 2592000, '#{year_s}-12-31'")
-          # gnuplot_file.puts("set yrange [-#{year_min_r}:#{year_max_r}]")
-          gnuplot_file.puts("set autoscale y")
-          
-          gnuplot_file.puts("set style line 1 linecolor rgb '#00ff00' linewidth 2 linetype 1 pointtype 2")
-          gnuplot_file.puts("set style line 2 linecolor rgb '#ff0000' linewidth 2 linetype 1 pointtype 2")
-          gnuplot_file.puts("set style line 3 linecolor rgb '#000000' linewidth 2 linetype 1 pointtype 2")
-          gnuplot_file.puts("set style line 4 linecolor rgb '#0000ff' linewidth 2 linetype 1 pointtype 2")
-          gnuplot_file.puts("set style data linespoints")
-          gnuplot_file.puts("set terminal png enhanced")
-          gnuplot_file.puts("set output '" << File.expand_path("year_#{year_s}.png", html_path) << "'")
-          gnuplot_file.puts("plot sum = 0, \\")
-          gnuplot_file.puts("\t'#{yeardat_file_path}' using 1:2 linestyle 1 title 'Revenue', \\")
-          gnuplot_file.puts("\t'' using 1:3 linestyle 2 title 'Expense', \\")
-          gnuplot_file.puts("\t'' using 1:4 linestyle 3 title 'Balance', \\")
-          gnuplot_file.puts("\t'' using 1:5 linestyle 4 title '∑ Balance'")
+          gnuplot_file.write(gnuplot_year_liquid_tpl.render({
+            'year_s' => year_s,
+            'yeardat_file_path' => yeardat_file_path,
+            'output_path' => File.expand_path('year_%s.png' % year_s, html_path),
+          }))
           gnuplot_file.close
+          
           system("gnuplot #{gnuplot_file_path} &> /dev/null")
           
           years_total[year_s] = ::OpenStruct.new({
@@ -731,12 +709,12 @@ module TheFox
         # Generate image with GNUPlot.
         png_file_path = Pathname.new('total.png').expand_path(html_path).to_s
         
-        gnuplot_liquid_tpl_src = Pathname.new('gnuplot/total_config.liquid').expand_path(@resources_root).to_s
-        gnuplot_liquid_tpl = Liquid::Template.parse(File.read(gnuplot_liquid_tpl_src))
+        gnuplot_total_liquid_tpl_src = Pathname.new('gnuplot/total_config.liquid').expand_path(@resources_root).to_s
+        gnuplot_total_liquid_tpl = Liquid::Template.parse(File.read(gnuplot_total_liquid_tpl_src))
         
         gnuplot_file_path = Pathname.new('total.gp').expand_path(@tmp_path)
         gnuplot_file = File.new(gnuplot_file_path, 'w')
-        gnuplot_file.write(gnuplot_liquid_tpl.render({
+        gnuplot_file.write(gnuplot_total_liquid_tpl.render({
           'png_file_path' => png_file_path,
           'totaldat_file_path' => totaldat_file_path,
         }))
