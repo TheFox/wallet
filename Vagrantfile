@@ -1,22 +1,22 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
-  config.vm.box = "generic/debian9"
+Vagrant.configure('2') do |config|
+  config.vm.box = 'generic/debian9'
   config.vm.box_check_update = false
 
   config.vm.hostname = 'wallet'
-  # config.vm.network "forwarded_port", guest: 4000, host: 4001
+  # config.vm.network 'forwarded_port', guest: 4000, host: 4001
 
-  # config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.synced_folder ".", "/app"
+  # config.vm.network 'private_network', ip: '192.168.33.10'
+  config.vm.synced_folder '.', '/app'
 
-  config.vm.provider "virtualbox" do |vb|
+  config.vm.provider 'virtualbox' do |vb|
     vb.gui = false
     vb.memory = 1024
   end
 
-  config.vm.provision "shell" do |s|
+  config.vm.provision 'shell' do |s|
     s.env = {
       'DEBIAN_FRONTEND' => 'noninteractive',
     }
