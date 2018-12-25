@@ -2,7 +2,7 @@
 <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <title>{{ year_s }} - {{ dir_path }}</title>
+    <title>{{ year_s }} -- {{ dir_path }}</title>
     <link rel="stylesheet" href="style.css" type="text/css" />
   </head>
   
@@ -13,44 +13,50 @@
     
     <h2>Year: {{ year_s }}</h2>
     <table class="list">
-      <tr>
-        <th class="left">Month</th>
-        <th class="right">Revenue</th>
-        <th class="right">Expense</th>
-        <th class="right">Balance</th>
-        <th colspan="{{ categories_available_count }}">{{ categories_available_count }} Categories</th>
-      </tr>
-      <tr>
-        <th colspan="4">&nbsp;</th>
-        
-        {% for category in categories_available %}
-          <th class="right">{{ category }}</th>
-        {% endfor %}
-      </tr>
-      
-      {% for month in months %}
+      <thead>
         <tr>
-          <td class="left"><a href="{{ month['month_file_name_s'] }}">{{ month['month_s'] }}</a></td>
-          <td class="right">{{ month['revenue_month'] }}</td>
-          <td class="right red">{{ month['expense_month'] }}</td>
-          <td class="right {{ month['balance_class'] }}">{{ month['balance_month'] }}</td>
+          <th class="left">Month</th>
+          <th class="right">Revenue</th>
+          <th class="right">Expense</th>
+          <th class="right">Balance</th>
+          <th colspan="{{ categories_available_count }}">{{ categories_available_count }} Categories</th>
+        </tr>
+        <tr>
+          <th colspan="4">&nbsp;</th>
           
-          {% for category in month['categories'] %}
-            <td class="right {{ category['class'] }}">{{ category['balance'] }}</td>
+          {% for category in categories_available %}
+            <th class="right">{{ category }}</th>
           {% endfor %}
         </tr>
-      {% endfor %}
+      </thead>
       
-      <tr>
-        <th class="left"><b>TOTAL</b></th>
-        <th class="right">{{ revenue_year }}</th>
-        <th class="right red">{{ expense_year }}</th>
-        <th class="right {{ balance_year_class }}">{{ balance_year }}</th>
-        
-        {% for category in categories_available %}
-          <th class="right {{ categories_year_balance_formatted[category]['class'] }}">{{ categories_year_balance_formatted[category]['balance'] }}</th>
+      <tbody>
+        {% for month in months %}
+          <tr>
+            <td class="left"><a href="{{ month['month_file_name_s'] }}">{{ month['month_s'] }}</a></td>
+            <td class="right">{{ month['revenue_month'] }}</td>
+            <td class="right red">{{ month['expense_month'] }}</td>
+            <td class="right {{ month['balance_class'] }}">{{ month['balance_month'] }}</td>
+            
+            {% for category in month['categories'] %}
+              <td class="right {{ category['class'] }}">{{ category['balance'] }}</td>
+            {% endfor %}
+          </tr>
         {% endfor %}
-      </tr>
+      </tbody>
+      
+      <tfoot>
+        <tr>
+          <td class="left">TOTAL</td>
+          <td class="right">{{ revenue_year }}</td>
+          <td class="right red">{{ expense_year }}</td>
+          <td class="right {{ balance_year_class }}">{{ balance_year }}</td>
+          
+          {% for category in categories_available %}
+            <td class="right {{ categories_year_balance_formatted[category]['class'] }}">{{ categories_year_balance_formatted[category]['balance'] }}</td>
+          {% endfor %}
+        </tr>
+      </tfoot>
     </table>
     
     <p><img src="year_{{ year_s }}.png"></p>

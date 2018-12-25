@@ -2,52 +2,60 @@
 <html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <title>{{ month_s }} {{ year_s }} - {{ dir_path }}</title>
+    <title>{{ month_s }} {{ year_s }} -- {{ dir_path }}</title>
     <link rel="stylesheet" href="style.css" type="text/css" />
   </head>
   
   <body>
     <h1><a href="./index.html">{{ dir_path }}</a></h1>
     
-    <p>Generated @ {{ now }} by <a href="{{ app_homepage }}">{{ app_name }}</a> v{{ app_version }} from <code>{{ file_name_s }}</code></p>
+    <p>
+      Generated @ {{ now }} by <a href="{{ app_homepage }}">{{ app_name }}</a> v{{ app_version }} from <code>{{ file_name_s }}</code>
+    </p>
     
     <h2>Month: {{ month_s }} <a href="{{ year_file_name_s }}">{{ year_s }}</a></h2>
     
     <table class="list">
-      <tr>
-        <th class="left">#</th>
-        <th class="left">Date</th>
-        <th class="left first_column">Title</th>
-        <th class="right">Revenue</th>
-        <th class="right">Expense</th>
-        <th class="right">Balance</th>
-        <th class="right">Category</th>
-        <th class="left">Comment</th>
-      </tr>
-      
-      {% for day in days %}
+      <thead>
         <tr>
-          <td valign="top" class="left">{{ day['entry_n'] }}</td>
-          <td valign="top" class="left">{{ day['entry_date_s'] }}</td>
-          <td valign="top" class="left">{{ day['title'] }}</td>
-          <td valign="top" class="right">{{ day['revenue_out'] }}</td>
-          <td valign="top" class="right red">{{ day['expense_out'] }}</td>
-          <td valign="top" class="right {{ day['balance_class'] }}">{{ day['balance'] }}</td>
-          <td valign="top" class="right">{{ day['category_out'] }}</td>
-          <td valign="top" class="left">{{ day['comment_out'] }}</td>
+          <th class="left">#</th>
+          <th class="left">Date</th>
+          <th class="left first_column">Title</th>
+          <th class="right">Revenue</th>
+          <th class="right">Expense</th>
+          <th class="right">Balance</th>
+          <th class="right">Category</th>
+          <th class="left">Comment</th>
         </tr>
-      {% endfor %}
+      </thead>
       
-      <tr>
-        <th>&nbsp;</th>
-        <th>&nbsp;</th>
-        <th class="left"><b>TOTAL</b></th>
-        <th class="right">{{ revenue_month }}</th>
-        <th class="right red">{{ expense_month }}</th>
-        <th class="right {{ balance_class }}">{{ balance_month }}</th>
-        <th>&nbsp;</th>
-        <th>&nbsp;</th>
-      </tr>
+      <tbody>
+        {% for day in days %}
+          <tr>
+            <td valign="top" class="left">{{ day['entry_n'] }}</td>
+            <td valign="top" class="left">{{ day['entry_date_s'] }}</td>
+            <td valign="top" class="left">{{ day['title'] }}</td>
+            <td valign="top" class="right">{{ day['revenue_out'] }}</td>
+            <td valign="top" class="right red">{{ day['expense_out'] }}</td>
+            <td valign="top" class="right {{ day['balance_class'] }}">{{ day['balance'] }}</td>
+            <td valign="top" class="right">{{ day['category_out'] }}</td>
+            <td valign="top" class="left">{{ day['comment_out'] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      
+      <tfoot>
+        <tr>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td class="left">TOTAL</td>
+          <td class="right">{{ revenue_month }}</td>
+          <td class="right red">{{ expense_month }}</td>
+          <td class="right {{ balance_class }}">{{ balance_month }}</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+      </tfoot>
     </table>
     
   </body>
