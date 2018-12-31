@@ -1,10 +1,10 @@
 # Wallet
 
-A spreadsheet likewise Ruby library to track your finances. Using the best data format ever, YAML. It's designed to host the data offline, e.g. in a Git repository.
+A spreadsheet likewise Ruby program to track your finances. Using the best data format ever, YAML. It's designed to host the data offline, e.g. in a Git repository.
 
 ## Why this project?
 
-While conventionally programs like Microsoft Excel or [LibreOffice](https://www.libreoffice.org/) use [proprietary file formats](https://en.wikipedia.org/wiki/Proprietary_format) and [binary files](https://en.wikipedia.org/wiki/Binary_file) to save your data this script uses [YAML](https://en.wikipedia.org/wiki/YAML). YAML is a human-readable data serialization format. This means you can edit the YAML files on any [operating system](https://en.wikipedia.org/wiki/Operating_system) with any text editor.
+While conventionally programs like Microsoft Excel or [LibreOffice](https://www.libreoffice.org/) use [proprietary file formats](https://en.wikipedia.org/wiki/Proprietary_format) and [binary files](https://en.wikipedia.org/wiki/Binary_file) to store your data, this program uses [YAML](https://en.wikipedia.org/wiki/YAML). YAML is a human-readable data serialization format. This means you can edit the YAML files on any [operating system](https://en.wikipedia.org/wiki/Operating_system) with any text editor.
 
 ## Features
 
