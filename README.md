@@ -4,7 +4,7 @@ A spreadsheet likewise Ruby program to track your finances. Using the best data 
 
 ## Why this project?
 
-While conventionally programs like Microsoft Excel or [LibreOffice](https://www.libreoffice.org/) use [proprietary file formats](https://en.wikipedia.org/wiki/Proprietary_format) and [binary files](https://en.wikipedia.org/wiki/Binary_file) to store your data, this program uses [YAML](https://en.wikipedia.org/wiki/YAML). YAML is a human-readable data serialization format. This means you can edit the YAML files on any [operating system](https://en.wikipedia.org/wiki/Operating_system) with any text editor.
+While conventionally programs like Microsoft Excel or [LibreOffice](https://www.libreoffice.org/) use [proprietary file formats](https://en.wikipedia.org/wiki/Proprietary_format) and [binary files](https://en.wikipedia.org/wiki/Binary_file) to store your data, this program uses [YAML](https://en.wikipedia.org/wiki/YAML). YAML is a human-readable data serialization format. This means you can edit the YAML files on any [operating system](https://en.wikipedia.org/wiki/Operating_system), using any text editor.
 
 ## Features
 
