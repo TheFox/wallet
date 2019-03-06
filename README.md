@@ -6,6 +6,12 @@ A spreadsheet likewise Ruby program to track your finances. Using the best data 
 
 While conventionally programs like Microsoft Excel or [LibreOffice](https://www.libreoffice.org/) use [proprietary file formats](https://en.wikipedia.org/wiki/Proprietary_format) and [binary files](https://en.wikipedia.org/wiki/Binary_file) to store your data, this program uses [YAML](https://en.wikipedia.org/wiki/YAML). YAML is a human-readable data serialization format. This means you can edit the YAML files on any [operating system](https://en.wikipedia.org/wiki/Operating_system), using any text editor.
 
+## Project Outlines
+
+The project outlines as described in my blog post about [Open Source Software Collaboration](https://blog.fox21.at/2019/02/21/open-source-software-collaboration.html).
+
+- I'll not add new features to this project since there is a newer version called [WalletCpp](https://github.com/TheFox/wallet-cpp). But feel free to create Pull Request for this project here.
+
 ## Features
 
 - Save revenues/expenses entries monthly.
