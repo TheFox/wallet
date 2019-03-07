@@ -10,7 +10,7 @@ While conventionally programs like Microsoft Excel or [LibreOffice](https://www.
 
 The project outlines as described in my blog post about [Open Source Software Collaboration](https://blog.fox21.at/2019/02/21/open-source-software-collaboration.html).
 
-- I'll not add new features to this project since there is a newer version called [WalletCpp](https://github.com/TheFox/wallet-cpp). But feel free to create Pull Request for this project here.
+- I'll not add new features to this project since there is a newer version called [WalletCpp](https://github.com/TheFox/wallet-cpp). Anyway, feel free to create a Pull Request here.
 
 ## Features
 
