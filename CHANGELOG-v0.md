@@ -8,8 +8,6 @@
 
 - HTML restructured.
 
-## v0.19.4
-
 ## v0.19.3
 
 - Do not show 0.0, but numbers < 0.0.
@@ -114,8 +112,6 @@
 ## v0.8.2
 
 - Dependency fixes.
-
-## v0.8.1
 
 ## v0.8.0
 
