@@ -1,5 +1,9 @@
 # Release Notes for Wallet v0.x
 
+## v0.21.0 [unreleased]
+
+- MIT License
+
 ## v0.20.1
 
 - Do not update gem system. Use already installed bundler version.
