@@ -184,7 +184,6 @@ Dates (`<date>` or `YYYY-MM-DD`) used in this documentation are not limited to `
 
 - [Blog Post about Wallet](http://blog.fox21.at/2015/07/09/wallet.html)
 - [Wallet Gem](https://rubygems.org/gems/thefox-wallet)
-- [Travis CI Repository](https://travis-ci.org/TheFox/wallet)
 
 ## Similar Projects
 
